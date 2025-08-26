@@ -1,0 +1,25 @@
+{% extends 'adminpanel/base.html' %}
+{% block content %}
+<h1 class="text-xl font-semibold mb-4">Notifications push</h1>
+<form class="space-y-3 max-w-2xl">
+    <div>
+        <label class="block text-sm text-textMuted">Titre</label>
+        <input class="w-full border rounded-lg px-3 py-2" placeholder="Promo spéciale" />
+    </div>
+    <div>
+        <label class="block text-sm text-textMuted">Message</label>
+        <textarea class="w-full border rounded-lg px-3 py-2" rows="4"
+            placeholder="-20% sur les soins visage…"></textarea>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <input class="border rounded-lg px-3 py-2" placeholder="Ville (optionnel)" />
+        <input class="border rounded-lg px-3 py-2" placeholder="Service (optionnel)" />
+        <select class="border rounded-lg px-3 py-2">
+            <option>Tous abonnements</option>
+            <option>Actif</option>
+            <option>Inactif</option>
+        </select>
+    </div>
+    <button class="bg-rosePastel text-white px-4 py-2 rounded-lg">Envoyer</button>
+</form>
+{% endblock %}

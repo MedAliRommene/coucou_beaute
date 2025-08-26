@@ -1,0 +1,12 @@
+# Dépendances de développement - Coucou Beauté
+# Installer avec: pip install -r requirements/development.txt
+
+-r base.txt
+
+# Outils de développement
+django-debug-toolbar>=4.0.0,<5.0.0
+django-extensions>=3.2.0,<4.0.0
+ipython>=8.0.0,<9.0.0
+black>=23.0.0,<24.0.0
+flake8>=6.0.0,<7.0.0
+isort>=5.12.0,<6.0.0

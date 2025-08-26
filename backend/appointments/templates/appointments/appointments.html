@@ -1,0 +1,26 @@
+{% extends 'adminpanel/base.html' %}
+{% block content %}
+<h1 class="text-xl font-semibold mb-4">Rendez-vous</h1>
+<table class="w-full text-sm">
+    <thead class="text-textMuted">
+        <tr>
+            <th class="text-left py-2">Client</th>
+            <th class="text-left">Pro</th>
+            <th class="text-left">Service</th>
+            <th class="text-left">Date</th>
+            <th class="text-left">Statut</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for a in items %}
+        <tr class="border-t">
+            <td class="py-2">{{ a.client.email }}</td>
+            <td>{{ a.professional.user.email }}</td>
+            <td>{{ a.service.name }}</td>
+            <td>{{ a.start_time|date:'Y-m-d H:i' }}</td>
+            <td>{{ a.status }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

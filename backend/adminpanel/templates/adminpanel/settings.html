@@ -1,0 +1,18 @@
+{% extends 'adminpanel/base.html' %}
+{% block content %}
+<h1 class="text-xl font-semibold mb-4">Paramètres</h1>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="rounded-2xl border border-gray-100 p-4">
+        <div class="font-semibold mb-3">Profil admin</div>
+        <form class="space-y-3">
+            <input class="w-full border rounded-lg px-3 py-2" placeholder="Nom affiché" />
+            <input class="w-full border rounded-lg px-3 py-2" placeholder="Email" />
+            <button class="bg-rosePastel text-white px-4 py-2 rounded-lg">Enregistrer</button>
+        </form>
+    </div>
+    <div class="rounded-2xl border border-gray-100 p-4">
+        <div class="font-semibold mb-3">Rôles & permissions</div>
+        <p class="text-textMuted text-sm">Gestion fine à intégrer (groupes Django).</p>
+    </div>
+</div>
+{% endblock %}

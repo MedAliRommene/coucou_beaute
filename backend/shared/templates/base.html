@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Coucou Beauté{% endblock %}</title>
+    
+    <!-- Styles globaux -->
+    <link rel="stylesheet" href="{% static 'css/global.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Header -->
+    <header class="main-header">
+        {% block header %}
+        <nav class="main-nav">
+            <!-- Navigation principale -->
+        </nav>
+        {% endblock %}
+    </header>
+    
+    <!-- Contenu principal -->
+    <main class="main-content">
+        {% block content %}
+        <!-- Le contenu sera défini dans les templates enfants -->
+        {% endblock %}
+    </main>
+    
+    <!-- Footer -->
+    <footer class="main-footer">
+        {% block footer %}
+        <p>&copy; 2025 Coucou Beauté. Tous droits réservés.</p>
+        {% endblock %}
+    </footer>
+    
+    <!-- Scripts globaux -->
+    <script src="{% static 'js/global.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

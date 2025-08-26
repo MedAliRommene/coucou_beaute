@@ -1,0 +1,28 @@
+{% extends 'adminpanel/base.html' %}
+{% block content %}
+<h1 class="text-xl font-semibold mb-4">Avis & Feedbacks</h1>
+<table class="w-full text-sm">
+    <thead class="text-textMuted">
+        <tr>
+            <th class="text-left py-2">Pro</th>
+            <th class="text-left">Note</th>
+            <th class="text-left">Commentaire</th>
+            <th class="text-left">Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for r in items %}
+        <tr class="border-t">
+            <td class="py-2">{{ r.professional.user.email }}</td>
+            <td>{{ r.rating }}/5</td>
+            <td class="max-w-xl truncate">{{ r.comment }}</td>
+            <td class="space-x-2">
+                <button class="bg-blueLight text-white px-3 py-1 rounded-full text-xs">Approuver</button>
+                <button class="bg-rosePastel text-white px-3 py-1 rounded-full text-xs">Masquer</button>
+                <button class="bg-gray-800 text-white px-3 py-1 rounded-full text-xs">Supprimer</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

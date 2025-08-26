@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="fr">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Coucou Beauté – Admin Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { rosePastel: '#F28BB2', blueLight: '#6CA9E0', textMuted: '#6B7280' },
+                }
+            }
+        }
+    </script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial;
+        }
+
+        .grad-btn {
+            background: linear-gradient(90deg, #F28BB2 0%, #6CA9E0 100%);
+        }
+
+        .glass {
+            backdrop-filter: blur(12px);
+            background: rgba(255, 255, 255, 0.75);
+            box-shadow: 0 10px 30px rgba(108, 169, 224, 0.15);
+        }
+
+        /* Logo enhancement */
+        .logo-enhanced {
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
+        }
+
+        /* Disable previous soft-blob CSS background */
+        .bg-anim {
+            display: none;
+        }
+
+        /* 3D background canvas */
+        #three-bg {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen relative overflow-hidden bg-white">
+    <!-- Interactive 3D background (inserted canvas) -->
+    <div id="three-bg"></div>
+    <!-- (soft pastel blobs removed) -->
+
+    <div class="min-h-screen flex items-center justify-center px-6 py-12">
+        <div class="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-12 items-center justify-items-center">
+            <!-- left: form (wider) -->
+            <div class="glass rounded-3xl p-8 border border-white/60 w-[620px] md:w-[660px]">
+                <div class="flex items-center justify-center mb-8">
+                    <img src="/media/logo%20coucou%20beaute.png" alt="Coucou Beauté"
+                        class="h-24 w-auto object-contain logo-enhanced" />
+                </div>
+                {% if messages %}
+                <ul class="mb-4 text-rosePastel">{% for m in messages %}<li>{{ m }}</li>{% endfor %}</ul>
+                {% endif %}
+                <form method="post" class="space-y-4">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ next }}" />
+                    <div>
+                        <label class="block text-sm text-textMuted mb-1">Email</label>
+                        <div class="flex items-center gap-2 border rounded-xl px-3 py-3 bg-white/60">
+                            <i data-lucide="mail" class="w-5 h-5 text-rosePastel"></i>
+                            <input name="username" type="email" required
+                                class="w-full border-0 focus:ring-0 bg-transparent"
+                                placeholder="admin@coucoubeaute.com" />
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm text-textMuted mb-1">Mot de passe</label>
+                        <div class="flex items-center gap-2 border rounded-xl px-3 py-3 bg-white/60">
+                            <i data-lucide="lock" class="w-5 h-5 text-blueLight"></i>
+                            <input name="password" type="password" required
+                                class="w-full border-0 focus:ring-0 bg-transparent" placeholder="••••••••" />
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <label class="inline-flex items-center gap-2 text-sm text-textMuted"><input type="checkbox"
+                                class="rounded"> Se souvenir de moi</label>
+                        <a href="#" class="text-blueLight text-sm">Mot de passe oublié ?</a>
+                    </div>
+                    <button
+                        class="grad-btn text-white w-full py-3 rounded-xl font-semibold shadow-lg shadow-blueLight/20 hover:shadow-rosePastel/40 transition">Se
+                        connecter</button>
+                    <div class="flex items-center gap-3">
+                        <div class="h-px bg-gray-200 w-full"></div><span class="text-textMuted text-sm">ou</span>
+                        <div class="h-px bg-gray-200 w-full"></div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <button type="button"
+                            class="w-full border rounded-xl py-3 bg-white/70 hover:bg-white transition flex items-center justify-center gap-2"><img
+                                src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" /> Continuer
+                            avec Google</button>
+                        <button type="button"
+                            class="w-full border rounded-xl py-3 bg-white/70 hover:bg-white transition flex items-center justify-center gap-2"><img
+                                src="https://www.svgrepo.com/show/448224/facebook.svg" class="w-5 h-5" /> Continuer avec
+                            Facebook</button>
+                    </div>
+                </form>
+                <div class="mt-6 text-center text-textMuted text-sm">© 2025 Coucou Beauté – Tous droits réservés.</div>
+            </div>
+
+            <!-- right: illustration -->
+            <div class="hidden md:block">
+                <div
+                    class="rounded-3xl overflow-hidden shadow-[0_15px_50px_rgba(108,169,224,0.25)] ring-1 ring-white/60 w-[460px] md:w-[520px]">
+                    <img src="/media/image.png" alt="Beauté & bien-être — simple et élégant"
+                        class="w-full h-auto object-cover" />
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>lucide.createIcons();</script>
+    <!-- three.js accessories-only background -->
+    <script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
+    <script>
+        (function () {
+            const container = document.getElementById('three-bg');
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 100);
+            camera.position.z = 7;
+
+            const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.8));
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            container.appendChild(renderer.domElement);
+
+            // Soft, neutral light for clarity without heavy effects
+            scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+
+            // Utility: draw beauty accessory on offscreen canvas and return texture
+            function makeAccessoryTexture(kind, size = 192) {
+                const c = document.createElement('canvas'); c.width = c.height = size; const ctx = c.getContext('2d');
+                ctx.clearRect(0, 0, size, size); ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+                const grad = ctx.createLinearGradient(0, 0, size, size); grad.addColorStop(0, '#F28BB2'); grad.addColorStop(1, '#6CA9E0');
+                ctx.fillStyle = grad; ctx.strokeStyle = grad; ctx.lineWidth = size * 0.07;
+                // subtle shadow
+                ctx.shadowColor = 'rgba(0,0,0,0.15)'; ctx.shadowBlur = size * 0.06; ctx.shadowOffsetY = size * 0.02;
+                if (kind === 'lipstick') {
+                    ctx.fillRect(size * 0.42, size * 0.48, size * 0.16, size * 0.28);
+                    ctx.fillRect(size * 0.40, size * 0.30, size * 0.20, size * 0.18);
+                    ctx.beginPath(); ctx.moveTo(size * 0.40, size * 0.30); ctx.lineTo(size * 0.60, size * 0.30); ctx.lineTo(size * 0.50, size * 0.15); ctx.closePath(); ctx.fill();
+                } else if (kind === 'comb') {
+                    ctx.fillRect(size * 0.22, size * 0.56, size * 0.56, size * 0.12);
+                    for (let i = 0; i < 12; i++) { ctx.fillRect(size * (0.24 + i * 0.045), size * 0.38, size * 0.02, size * 0.18); }
+                } else if (kind === 'scissors') {
+                    ctx.lineWidth = size * 0.05; ctx.beginPath(); ctx.moveTo(size * 0.28, size * 0.66); ctx.lineTo(size * 0.74, size * 0.34); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(size * 0.28, size * 0.34); ctx.lineTo(size * 0.74, size * 0.66); ctx.stroke();
+                    ctx.lineWidth = size * 0.06; ctx.beginPath(); ctx.arc(size * 0.28, size * 0.34, size * 0.10, 0, Math.PI * 2); ctx.stroke();
+                    ctx.beginPath(); ctx.arc(size * 0.28, size * 0.66, size * 0.10, 0, Math.PI * 2); ctx.stroke();
+                } else if (kind === 'nail') {
+                    ctx.fillRect(size * 0.36, size * 0.44, size * 0.28, size * 0.26);
+                    ctx.fillRect(size * 0.44, size * 0.22, size * 0.12, size * 0.20);
+                    ctx.beginPath(); ctx.moveTo(size * 0.44, size * 0.22); ctx.lineTo(size * 0.56, size * 0.22); ctx.lineTo(size * 0.50, size * 0.12); ctx.closePath(); ctx.fill();
+                } else if (kind === 'dryer') {
+                    if (!ctx.roundRect) { ctx.roundRect = function (x, y, w, h, r) { this.beginPath(); this.moveTo(x + r, y); this.arcTo(x + w, y, x + w, y + h, r); this.arcTo(x + w, y + h, x, y + h, r); this.arcTo(x, y + h, x, y, r); this.arcTo(x, y, x + w, y, r); this.closePath(); }; }
+                    ctx.beginPath(); ctx.roundRect(size * 0.30, size * 0.30, size * 0.40, size * 0.22, size * 0.10); ctx.fill();
+                    ctx.fillRect(size * 0.70, size * 0.36, size * 0.16, size * 0.10);
+                    ctx.beginPath(); ctx.roundRect(size * 0.36, size * 0.50, size * 0.12, size * 0.20, size * 0.06); ctx.fill();
+                }
+                return new THREE.CanvasTexture(c);
+            }
+
+            const kinds = ['lipstick', 'comb', 'scissors', 'nail', 'dryer'];
+            const accessories = new THREE.Group(); scene.add(accessories);
+            for (let i = 0; i < 26; i++) {
+                const k = kinds[i % kinds.length]; const tex = makeAccessoryTexture(k);
+                const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, opacity: 0.38 });
+                const sp = new THREE.Sprite(mat);
+                sp.position.set((Math.random() - 0.5) * 20, (Math.random() - 0.3) * 10, -1.5 - Math.random());
+                const s = 0.9 + Math.random() * 1.7; sp.scale.set(s, s, 1);
+                sp.userData = { vy: 0.003 + Math.random() * 0.004, vx: (Math.random() - 0.5) * 0.003, vr: (Math.random() - 0.5) * 0.006 };
+                accessories.add(sp);
+            }
+
+            // Parallax
+            let targetX = 0, targetY = 0;
+            window.addEventListener('mousemove', (e) => {
+                const nx = (e.clientX / window.innerWidth) * 2 - 1;
+                const ny = (e.clientY / window.innerHeight) * 2 - 1;
+                targetX = nx; targetY = ny;
+            });
+
+            function animate() {
+                requestAnimationFrame(animate);
+                for (const a of accessories.children) {
+                    a.position.x += a.userData.vx; a.position.y += a.userData.vy; a.rotation.z += a.userData.vr;
+                    if (a.position.y > 6) { a.position.y = -4 - Math.random() * 2; a.position.x = (Math.random() - 0.5) * 20; }
+                }
+                scene.position.x += (targetX * 0.35 - scene.position.x) * 0.02;
+                scene.position.y += (-targetY * 0.25 - scene.position.y) * 0.02;
+                renderer.render(scene, camera);
+            }
+            animate();
+
+            function onResize() { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); }
+            window.addEventListener('resize', onResize);
+        })();
+    </script>
+</body>
+
+</html>

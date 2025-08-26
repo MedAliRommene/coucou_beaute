@@ -1,0 +1,19 @@
+{% extends 'adminpanel/base.html' %}
+{% block content %}
+<h1 class="text-xl font-semibold mb-4">Statistiques & Rapports</h1>
+<div class="flex gap-3 mb-4">
+    <button class="bg-blueLight text-white px-4 py-2 rounded-lg">Exporter PDF</button>
+    <button class="bg-rosePastel text-white px-4 py-2 rounded-lg">Exporter CSV</button>
+</div>
+<div class="rounded-2xl border border-gray-100 p-4">
+    <div class="font-semibold mb-2">Top services (créés)</div>
+    <canvas id="chartTopServices" height="100"></canvas>
+</div>
+<script>
+    const labels = [{% for s in services_hist %}'{{ s.name }}', {% endfor %}];
+    const values = [{% for s in services_hist %}{ { s.cnt } }, {% endfor %}];
+    new Chart(document.getElementById('chartTopServices').getContext('2d'), {
+        type: 'bar', data: { labels, datasets: [{ data: values, backgroundColor: labels.map((_, i) => i % 2 ? '#6CA9E0' : '#F28BB2') }] }, options: { plugins: { legend: { display: false } } }
+    });
+</script>
+{% endblock %}

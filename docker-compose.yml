@@ -1,0 +1,35 @@
+version: "3.9"
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ./backend
+    env_file: .env
+    command: bash -c "python manage.py makemigrations && python manage.py migrate && gunicorn coucou_beaute.wsgi:application --bind 0.0.0.0:8000"
+    volumes:
+      - ./backend:/app
+      - media:/app/media
+      - static:/app/static
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+  # redis:
+  #   image: redis:7-alpine
+  #   ports:
+  #     - "6379:6379"
+
+volumes:
+  pgdata:
+  media:
+  static:

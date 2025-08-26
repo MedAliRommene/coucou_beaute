@@ -1,0 +1,10 @@
+# Dépendances de test - Coucou Beauté
+# Installer avec: pip install -r requirements/test.txt
+
+-r base.txt
+
+# Tests
+pytest>=7.4.0,<8.0.0
+pytest-django>=4.5.0,<5.0.0
+pytest-cov>=4.1.0,<5.0.0
+factory-boy>=3.2.0,<4.0.0
