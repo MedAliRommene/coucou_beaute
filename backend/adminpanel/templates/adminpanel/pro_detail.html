@@ -1,0 +1,113 @@
+{% extends 'adminpanel/base.html' %}
+
+{% block title %}Détail du Professionnel - Coucou Beauté{% endblock %}
+
+{% block content %}
+<div class="p-6 space-y-6">
+    <div class="flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+            <div
+                class="w-12 h-12 rounded-full bg-gradient-to-br from-pink-400 to-blue-400 flex items-center justify-center text-white">
+                <i data-lucide="factory" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">Centre professionnel</h1>
+                <p class="text-gray-600 mt-1">Vue analytique et informations clés</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-2">
+            <a href="{% url 'adminpanel:pros' %}" class="btn-secondary-glass">Retour</a>
+            <button class="btn-glass text-blue-700">Éditer le profil</button>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="kpi-glass flex items-center gap-4 p-5">
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-300 to-blue-300"></div>
+            <div class="flex-1">
+                <div class="text-sm text-gray-600">Nom du centre</div>
+                <div class="text-xl font-semibold">{{ pro.business_name|default:'—' }}</div>
+            </div>
+        </div>
+        <div class="kpi-glass flex items-center gap-4 p-5">
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-green-300 to-teal-300"></div>
+            <div class="flex-1">
+                <div class="text-sm text-gray-600">Vérifié</div>
+                <div class="text-xl font-semibold">{{ pro.is_verified|yesno:'Oui,Non' }}</div>
+            </div>
+        </div>
+        <div class="kpi-glass flex items-center gap-4 p-5">
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-200 to-amber-300"></div>
+            <div class="flex-1">
+                <div class="text-sm text-gray-600">Créé le</div>
+                <div class="text-xl font-semibold">{{ pro.created_at }}</div>
+            </div>
+        </div>
+        <div class="kpi-glass flex items-center gap-4 p-5">
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-300 to-pink-300"></div>
+            <div class="flex-1">
+                <div class="text-sm text-gray-600">Email</div>
+                <div class="text-xl font-semibold">{{ pro.email }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="glass p-6">
+        <div class="flex items-center justify-between mb-3">
+            <h2 class="text-xl font-semibold text-gray-900">Analytique</h2>
+            <div class="text-sm text-gray-600">(exemple) prochainement relié aux réservations/avis</div>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-white/40 rounded-xl border p-4">
+                <h3 class="text-sm font-medium text-gray-700 mb-2">Réservations par semaine</h3>
+                <canvas id="chartReservations" height="120"></canvas>
+            </div>
+            <div class="bg-white/40 rounded-xl border p-4">
+                <h3 class="text-sm font-medium text-gray-700 mb-2">Répartition des services</h3>
+                <canvas id="chartServices" height="120"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="glass p-6 lg:col-span-2">
+            <h2 class="text-xl font-semibold text-gray-900 mb-3">Informations du centre</h2>
+            <div class="grid md:grid-cols-2 gap-4">
+                <div class="p-4 rounded-xl border bg-white/50">
+                    <div class="text-xs text-gray-500">Adresse</div>
+                    <div class="text-gray-900 mt-1">{{ pro.address|default:'—' }}</div>
+                </div>
+                <div class="p-4 rounded-xl border bg-white/50">
+                    <div class="text-xs text-gray-500">Téléphone</div>
+                    <div class="text-gray-900 mt-1">{{ pro.phone|default:'—' }}</div>
+                </div>
+                <div class="p-4 rounded-xl border bg-white/50">
+                    <div class="text-xs text-gray-500">Email</div>
+                    <div class="text-gray-900 mt-1">{{ pro.email }}</div>
+                </div>
+                <div class="p-4 rounded-xl border bg-white/50">
+                    <div class="text-xs text-gray-500">Créé le</div>
+                    <div class="text-gray-900 mt-1">{{ pro.created_at }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="glass p-6">
+            <h2 class="text-xl font-semibold text-gray-900 mb-3">Actions rapides</h2>
+            <div class="flex flex-col gap-2">
+                <button class="btn-glass">Envoyer une invitation</button>
+                <button class="btn-secondary-glass">Désactiver le profil</button>
+                <button class="btn-secondary-glass text-red-700">Supprimer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Demo charts; wire to real data later
+    const ctx1 = document.getElementById('chartReservations').getContext('2d');
+    new Chart(ctx1, { type: 'line', data: { labels: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'], datasets: [{ data: [3, 5, 4, 6, 5, 7, 6], borderColor: 'rgb(236,72,153)', backgroundColor: 'rgba(236,72,153,.1)', tension: .4, fill: true }] }, options: { responsive: true, plugins: { legend: { display: false } } });
+    const ctx2 = document.getElementById('chartServices').getContext('2d');
+    new Chart(ctx2, { type: 'doughnut', data: { labels: ['Coiffure', 'Esthétique', 'Manucure', 'Massage'], datasets: [{ data: [40, 25, 20, 15], backgroundColor: ['rgba(236,72,153,.8)', 'rgba(108,169,224,.8)', 'rgba(34,197,94,.8)', 'rgba(251,146,60,.8)'], borderWidth: 2 }] }, options: { plugins: { legend: { position: 'bottom' } } } });
+</script>
+{% endblock %}

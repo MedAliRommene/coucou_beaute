@@ -130,6 +130,16 @@ SIMPLE_JWT = {
 CORS_ALLOWED_ORIGINS = [u for u in os.getenv('DJANGO_CORS_ORIGINS', '').split(',') if u]
 CORS_ALLOW_ALL_ORIGINS = not CORS_ALLOWED_ORIGINS
 
+# --- Email settings (Gmail SMTP defaults; overridable via env) ---
+EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', 'dalyrommen@gmail.com')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', 'nrcboduwsrpkqeki')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'dalyrommen@gmail.com')
+SERVER_EMAIL = os.getenv('SERVER_EMAIL', DEFAULT_FROM_EMAIL)
+
 if os.getenv('AWS_STORAGE_BUCKET_NAME'):
 	DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 	AWS_S3_REGION_NAME = os.getenv('AWS_S3_REGION_NAME')

@@ -1,9 +1,27 @@
 from django.urls import path
 from . import views
+from . import views_api
 
 app_name = 'users'
 
 urlpatterns = [
-    # TODO: Ajouter les URLs pour users
-    # path('', views.index, name='index'),
+    # API mobile
+    path('auth/login/', views_api.login_with_email, name='login_with_email'),
+    path('applications/professionals/', views_api.submit_professional_application, name='submit_professional_application'),
+    path('applications/upload/', views_api.upload_application_file, name='upload_application_file'),
+
+    # Admin/API backoffice
+    path('applications/professionals/pending/', views.pending_professional_applications, name='pending_professional_applications'),
+    path('applications/professionals/<int:app_id>/approve/', views.approve_professional_application, name='approve_professional_application'),
+    path('applications/professionals/<int:app_id>/reject/', views.reject_professional_application, name='reject_professional_application'),
+    path('applications/<int:app_id>/delete/', views.delete_application, name='delete_application'),
+    path('professionals/', views.list_professionals, name='list_professionals'),
+    path('professionals/summary/', views.professionals_summary, name='professionals_summary'),
+    path('professionals/sync/', views.sync_professionals_from_approved, name='sync_professionals_from_approved'),
+    path('professionals/<int:pro_id>/verify/', views.verify_professional, name='verify_professional'),
+    path('professionals/<int:pro_id>/delete/', views.delete_professional, name='delete_professional'),
+    path('applications/summary/', views.applications_summary, name='applications_summary'),
+    path('applications/', views.list_applications, name='list_applications'),
+    path('applications/purge/', views.purge_applications, name='purge_applications'),
+    path('applications/audit/', views.application_actions_audit, name='application_actions_audit'),
 ]

@@ -84,6 +84,71 @@
             animation: blob 7s infinite;
         }
 
+        /* Glass styles */
+        .glass {
+            background: rgba(255, 255, 255, 0.55);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 8px 24px rgba(16, 24, 40, 0.08);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 16px;
+        }
+
+        .kpi-glass {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.65), rgba(255, 255, 255, 0.45));
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: 18px;
+            padding: 16px;
+            box-shadow: 0 10px 30px rgba(16, 24, 40, 0.10);
+            transition: transform .18s ease, box-shadow .18s ease;
+        }
+
+        .kpi-glass:hover {
+            transform: translateY(-2px) scale(1.01);
+            box-shadow: 0 18px 36px rgba(16, 24, 40, 0.16);
+        }
+
+        .btn-glass {
+            background: rgba(255, 255, 255, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-radius: 12px;
+            padding: 8px 14px;
+            transition: transform .15s ease, box-shadow .15s ease;
+        }
+
+        .btn-glass:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 24px rgba(16, 24, 40, 0.12);
+        }
+
+        .btn-secondary-glass {
+            background: rgba(248, 250, 252, 0.35);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            border-radius: 12px;
+            padding: 8px 12px;
+            transition: transform .15s ease, box-shadow .15s ease;
+        }
+
+        .btn-secondary-glass:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 24px rgba(16, 24, 40, 0.10);
+        }
+
+        .table-glass thead {
+            background: rgba(248, 250, 252, 0.55);
+            backdrop-filter: blur(6px);
+        }
+
+        .table-glass tbody tr {
+            transition: background .12s ease, transform .12s ease;
+        }
+
+        .table-glass tbody tr:hover {
+            background: rgba(248, 250, 252, 0.6);
+        }
+
         .animate-blob-2 {
             animation: blob 7s infinite;
             animation-delay: 2s;
@@ -276,10 +341,12 @@
                     </div>
 
                     <div class="flex items-center gap-4">
-                        <button class="relative p-2 text-gray-500 hover:text-gray-700 transition-colors">
+                        <a href="/pros/pending/"
+                            class="relative p-2 text-gray-500 hover:text-gray-700 transition-colors">
                             <i data-lucide="bell" class="w-5 h-5"></i>
-                            <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-                        </button>
+                            <span id="notifDot"
+                                class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full hidden"></span>
+                        </a>
                         <div
                             class="w-8 h-8 rounded-full bg-gradient-to-r from-pink-400 to-blue-400 flex items-center justify-center text-white text-sm font-medium">
                             {{ user.get_full_name|default:user.email|first|upper }}
@@ -310,6 +377,12 @@
             if (mainContent) {
                 mainContent.classList.toggle('expanded');
             }
+        });
+
+        // Notification dot for pending applications
+        fetch('/api/applications/summary/').then(r => r.ok ? r.json() : null).then(s => {
+            if (!s) return; const dot = document.getElementById('notifDot');
+            if (s.pending && s.pending.value > 0) { dot.classList.remove('hidden'); }
         });
 
         // Add hover effects to sidebar items

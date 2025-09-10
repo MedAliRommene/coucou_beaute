@@ -4,17 +4,279 @@
 
 {% block content %}
 <div class="p-6">
-    <div class="mb-6">
-        <h1 class="text-3xl font-bold text-gray-900">Gestion des Professionnels</h1>
-        <p class="text-gray-600 mt-1">Gérez votre équipe de professionnels</p>
-    </div>
-
-    <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-        <div class="text-center py-12">
-            <i data-lucide="user-check" class="w-16 h-16 text-gray-300 mx-auto mb-4"></i>
-            <h3 class="text-lg font-medium text-gray-900 mb-2">Page en cours de développement</h3>
-            <p class="text-gray-500">Cette fonctionnalité sera bientôt disponible</p>
+    <div class="mb-6 flex items-center gap-3">
+        <div
+            class="w-12 h-12 rounded-full bg-gradient-to-br from-pink-400 to-blue-400 flex items-center justify-center text-white">
+            <i data-lucide="user-check" class="w-6 h-6"></i>
+        </div>
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Gestion des Professionnels</h1>
+            <p class="text-gray-600 mt-1">Gérez votre équipe de professionnels</p>
         </div>
     </div>
+
+    <div id="pros" class="glass p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-semibold text-gray-900">Professionnels approuvés</h2>
+            <div class="flex items-center gap-2">
+                <a href="/pros/pending/" class="btn-secondary-glass">Voir demandes en attente</a>
+                <button id="syncBtn" class="btn-glass text-blue-700">Synchroniser</button>
+            </div>
+        </div>
+        <div id="appsKpis" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6"></div>
+
+        <h3 class="text-lg font-semibold text-gray-900 mb-3">Liste des professionnels</h3>
+        <div id="empty" class="text-center py-12 hidden">
+            <i data-lucide="user-check" class="w-16 h-16 text-gray-300 mx-auto mb-4"></i>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">Aucun professionnel</h3>
+            <p class="text-gray-500">Les professionnels approuvés apparaîtront ici</p>
+        </div>
+        <div id="list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"></div>
+        <!-- Historique déplacé vers pros_pending.html -->
+    </div>
 </div>
+
+<script>
+    async function fetchPros() {
+        const res = await fetch('/api/professionals/');
+        if (!res.ok) return;
+        const data = await res.json();
+        window.prosState = window.prosState || { all: [], filtered: [], page: 1, pageSize: 8, search: '', sort: 'date_desc', verified: '', fromDate: '', toDate: '' };
+        prosState.all = Array.isArray(data) ? data : [];
+        applyProsFilters();
+        renderProsControls();
+        renderProsList();
+        renderProsPagination();
+    }
+
+    function getCookie(name) {
+        let cookieValue = null; if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // Ensure applications -> professionals are synced on load
+    fetch('/api/professionals/sync/', { method: 'POST', headers: { 'X-CSRFToken': getCookie('csrftoken') } })
+        .finally(() => fetchPros());
+    // Applications KPIs (4 widgets like dashboard)
+    async function renderAppsKpis() {
+        const r = await fetch('/api/applications/summary/');
+        if (!r.ok) return; const s = await r.json();
+        const cont = document.getElementById('appsKpis');
+        const defs = [
+            { name: 'Demandes', value: s.total.value, var: s.total.var_pct, color: 'from-pink-300 to-blue-300', icon: 'inbox' },
+            { name: 'En attente', value: s.pending.value, var: s.pending.var_pct, color: 'from-yellow-200 to-amber-300', icon: 'clock' },
+            { name: 'Approuvées', value: s.approved.value, var: s.approved.var_pct, color: 'from-green-300 to-teal-300', icon: 'check-circle' },
+            { name: 'Refusées', value: s.rejected.value, var: s.rejected.var_pct, color: 'from-red-300 to-orange-300', icon: 'x-circle' },
+        ];
+        cont.innerHTML = '';
+        defs.forEach(d => {
+            const up = (d.var || 0) >= 0; const el = document.createElement('div');
+            el.className = 'kpi-glass flex items-center gap-4 p-5';
+            el.innerHTML = `<div class="w-12 h-12 rounded-xl bg-gradient-to-br ${d.color} flex items-center justify-center"><i data-lucide="${d.icon}" class="w-6 h-6 text-white"></i></div>
+                           <div class="flex-1"><div class="text-3xl font-bold">${d.value}</div>
+                           <div class="text-sm text-gray-600">${d.name}</div></div>
+                           <div class="text-sm ${up ? 'text-green-600' : 'text-red-600'}">${up ? '+' : ''}${(d.var || 0).toFixed(1)}%</div>`;
+            cont.appendChild(el);
+        });
+        if (window.lucide) { window.lucide.createIcons(); }
+    }
+    renderAppsKpis();
+    setInterval(renderAppsKpis, 30000);
+
+    // Pros list controls & filters
+    window.prosState = window.prosState || { all: [], filtered: [], page: 1, pageSize: 8, search: '', sort: 'date_desc', verified: '', fromDate: '', toDate: '' };
+
+    function applyProsFilters() {
+        const q = (prosState.search || '').toLowerCase().trim();
+        let arr = [...prosState.all];
+        if (q) {
+            arr = arr.filter(p => (p.user_email || '').toLowerCase().includes(q) || (p.business_name || '').toLowerCase().includes(q));
+        }
+        // status filter
+        if (prosState.verified === 'verified') {
+            arr = arr.filter(p => !!p.is_verified);
+        } else if (prosState.verified === 'unverified') {
+            arr = arr.filter(p => !p.is_verified);
+        }
+        // date range filter
+        if (prosState.fromDate) {
+            const fromTs = new Date(prosState.fromDate + 'T00:00:00').getTime();
+            arr = arr.filter(p => new Date(p.created_at).getTime() >= fromTs);
+        }
+        if (prosState.toDate) {
+            const toTs = new Date(prosState.toDate + 'T23:59:59').getTime();
+            arr = arr.filter(p => new Date(p.created_at).getTime() <= toTs);
+        }
+        if (prosState.sort === 'date_desc') {
+            arr.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        } else if (prosState.sort === 'date_asc') {
+            arr.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+        } else if (prosState.sort === 'name_asc') {
+            arr.sort((a, b) => (a.business_name || '').localeCompare(b.business_name || ''));
+        } else if (prosState.sort === 'name_desc') {
+            arr.sort((a, b) => (b.business_name || '').localeCompare(a.business_name || ''));
+        }
+        prosState.filtered = arr;
+        if (prosState.page < 1) prosState.page = 1;
+        const maxPage = Math.max(1, Math.ceil(arr.length / prosState.pageSize));
+        if (prosState.page > maxPage) prosState.page = maxPage;
+    }
+
+    function renderProsControls() {
+        let bar = document.getElementById('prosControls');
+        if (!bar) {
+            bar = document.createElement('div');
+            bar.id = 'prosControls';
+            bar.className = 'flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between mb-4';
+            const list = document.getElementById('list');
+            list.parentNode.insertBefore(bar, list);
+        }
+        bar.innerHTML = '';
+        const left = document.createElement('div');
+        left.className = 'flex items-center gap-3 flex-1';
+        left.innerHTML = `
+        <input id="prosSearch" type="text" placeholder="Rechercher (email, nom du centre)" class="kpi-glass px-3 py-2 w-full" value="${prosState.search || ''}" />
+      `;
+        const right = document.createElement('div');
+        right.className = 'flex items-center gap-3';
+        right.innerHTML = `
+        <select id="prosVerified" class="kpi-glass px-3 py-2">
+          <option value="">Tous</option>
+          <option value="verified">Vérifiés</option>
+          <option value="unverified">Non vérifiés</option>
+        </select>
+        <input id="fromDate" type="date" class="kpi-glass px-3 py-2" />
+        <input id="toDate" type="date" class="kpi-glass px-3 py-2" />
+        <select id="prosSort" class="kpi-glass px-3 py-2">
+          <option value="date_desc">Plus récent</option>
+          <option value="date_asc">Plus ancien</option>
+          <option value="name_asc">Nom A→Z</option>
+          <option value="name_desc">Nom Z→A</option>
+        </select>
+        <button id="prosExport" class="btn-glass text-sm">Exporter CSV</button>
+      `;
+        bar.appendChild(left); bar.appendChild(right);
+        const sortSel = right.querySelector('#prosSort'); sortSel.value = prosState.sort;
+        right.querySelector('#prosSort').onchange = (e) => { prosState.sort = e.target.value; prosState.page = 1; applyProsFilters(); renderProsList(); renderProsPagination(); };
+        left.querySelector('#prosSearch').oninput = (e) => { prosState.search = e.target.value; prosState.page = 1; applyProsFilters(); renderProsList(); renderProsPagination(); };
+        const verSel = right.querySelector('#prosVerified'); verSel.value = prosState.verified || '';
+        verSel.onchange = (e) => { prosState.verified = e.target.value; prosState.page = 1; applyProsFilters(); renderProsList(); renderProsPagination(); };
+        const from = right.querySelector('#fromDate'); const to = right.querySelector('#toDate');
+        from.value = prosState.fromDate || ''; to.value = prosState.toDate || '';
+        from.onchange = (e) => { prosState.fromDate = e.target.value; prosState.page = 1; applyProsFilters(); renderProsList(); renderProsPagination(); };
+        to.onchange = (e) => { prosState.toDate = e.target.value; prosState.page = 1; applyProsFilters(); renderProsList(); renderProsPagination(); };
+        right.querySelector('#prosExport').onclick = exportProsCsv;
+    }
+
+    function renderProsList() {
+        const list = document.getElementById('list');
+        const empty = document.getElementById('empty');
+        list.innerHTML = '';
+        const start = (prosState.page - 1) * prosState.pageSize;
+        const pageItems = prosState.filtered.slice(start, start + prosState.pageSize);
+        if (prosState.filtered.length === 0) { empty.classList.remove('hidden'); return; }
+        empty.classList.add('hidden');
+        for (const p of pageItems) {
+            const card = document.createElement('div');
+            card.className = 'kpi-glass';
+            card.innerHTML = `
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <div class="text-sm text-gray-500">${new Date(p.created_at).toLocaleDateString()}</div>
+              <div class="font-semibold text-gray-900 mt-1">${p.user_email}</div>
+              <div class="text-gray-700 mt-1">${p.business_name || '—'}</div>
+              <div class="mt-2"><span class="px-2 py-1 text-xs rounded-full ${p.is_verified ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}">${p.is_verified ? 'Vérifié' : 'Non vérifié'}</span></div>
+            </div>
+            <div class="flex flex-col gap-2">
+              <a class="btn-glass text-blue-700" href="/pros/${p.id}/">Ouvrir</a>
+              <button class="btn-secondary-glass text-green-700" data-action="verify" data-id="${p.id}">Vérifier</button>
+              <button class="btn-secondary-glass text-red-600" data-action="delete" data-id="${p.id}">Supprimer</button>
+            </div>
+          </div>
+        `;
+            list.appendChild(card);
+        }
+    }
+
+    function renderProsPagination() {
+        let pager = document.getElementById('prosPager');
+        if (!pager) {
+            pager = document.createElement('div');
+            pager.id = 'prosPager';
+            pager.className = 'flex items-center justify-center gap-2 mt-4';
+            const list = document.getElementById('list');
+            list.after(pager);
+        }
+        const total = prosState.filtered.length;
+        const maxPage = Math.max(1, Math.ceil(total / prosState.pageSize));
+        pager.innerHTML = '';
+        const prev = document.createElement('button'); prev.className = 'btn-secondary-glass'; prev.textContent = 'Précédent'; prev.disabled = prosState.page <= 1;
+        const info = document.createElement('div'); info.className = 'text-sm text-gray-600'; info.textContent = `${prosState.page}/${maxPage} • ${total} éléments`;
+        const next = document.createElement('button'); next.className = 'btn-secondary-glass'; next.textContent = 'Suivant'; next.disabled = prosState.page >= maxPage;
+        prev.onclick = () => { if (prosState.page > 1) { prosState.page--; renderProsList(); renderProsPagination(); } };
+        next.onclick = () => { if (prosState.page < maxPage) { prosState.page++; renderProsList(); renderProsPagination(); } };
+        pager.append(prev, info, next);
+    }
+
+    function exportProsCsv() {
+        const header = ['Créé le', 'Email', 'Nom du centre', 'Vérifié'];
+        const rows = prosState.filtered.map(p => [
+            new Date(p.created_at).toISOString(),
+            p.user_email || '',
+            p.business_name || '',
+            p.is_verified ? 'oui' : 'non'
+        ]);
+        const csv = [header].concat(rows).map(r => r.map(x => '"' + String(x).replace(/"/g, '""') + '"').join(',')).join('\n');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = 'professionnels.csv'; a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    // Listen for refresh signal from pending page
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'pros_refresh') { fetchPros(); }
+    });
+
+    // Toast utility
+    function toast(msg, ok = true) {
+        const el = document.createElement('div');
+        el.className = 'fixed top-4 right-4 z-50 kpi-glass px-4 py-2 ' + (ok ? 'text-green-700' : 'text-red-700');
+        el.textContent = msg;
+        document.body.appendChild(el);
+        setTimeout(() => { el.remove(); }, 2500);
+    }
+
+    // Historique déplacé dans pros_pending.html
+    document.getElementById('syncBtn').addEventListener('click', async () => {
+        const r = await fetch('/api/professionals/sync/', { method: 'POST', headers: { 'X-CSRFToken': getCookie('csrftoken') } });
+        if (r.ok) { fetchPros(); }
+    });
+
+    // CRUD actions for professional cards
+    document.addEventListener('click', async (e) => {
+        const btn = e.target.closest('button[data-action]');
+        if (!btn) return;
+        const id = btn.getAttribute('data-id');
+        const action = btn.getAttribute('data-action');
+        if (action === 'verify') {
+            await fetch(`/api/professionals/${id}/verify/`, { method: 'POST', headers: { 'X-CSRFToken': getCookie('csrftoken') } });
+            fetchPros();
+        } else if (action === 'delete') {
+            if (confirm('Supprimer ce professionnel ?')) {
+                await fetch(`/api/professionals/${id}/delete/`, { method: 'DELETE', headers: { 'X-CSRFToken': getCookie('csrftoken') } });
+                fetchPros();
+            }
+        }
+    });
+</script>
 {% endblock %}

@@ -4,17 +4,332 @@
 
 {% block content %}
 <div class="p-6">
-    <div class="mb-6">
-        <h1 class="text-3xl font-bold text-gray-900">Professionnels en Attente de Validation</h1>
-        <p class="text-gray-600 mt-1">Validez les nouvelles demandes d'inscription</p>
+    <div class="mb-6 flex items-center gap-3">
+        <div
+            class="w-12 h-12 rounded-full bg-gradient-to-br from-pink-400 to-blue-400 flex items-center justify-center text-white">
+            <i data-lucide="clock" class="w-6 h-6"></i>
+        </div>
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Professionnels en Attente de Validation</h1>
+            <p class="text-gray-600 mt-1">Validez les nouvelles demandes d'inscription</p>
+        </div>
+        <div class="ml-auto flex items-center gap-2">
+            <a href="/pros/" class="btn-secondary-glass">Professionnels</a>
+        </div>
     </div>
 
-    <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-        <div class="text-center py-12">
-            <i data-lucide="clock" class="w-16 h-16 text-gray-300 mx-auto mb-4"></i>
-            <h3 class="text-lg font-medium text-gray-900 mb-2">Page en cours de développement</h3>
-            <p class="text-gray-500">Cette fonctionnalité sera bientôt disponible</p>
+    <div id="apps" class="glass p-6">
+        <!-- En-tête des demandes en attente -->
+        <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-2">
+                <h3 class="text-lg font-semibold text-gray-900">Demandes en attente</h3>
+                <span id="pendingCount" class="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-700"></span>
+            </div>
+            <div class="text-xs text-gray-600 hidden md:block">
+                Consultez le détail d'une demande pour l'approuver ou la refuser.
+            </div>
+        </div>
+        <div id="empty" class="text-center py-12 hidden">
+            <i data-lucide="check-circle" class="w-16 h-16 text-gray-300 mx-auto mb-4"></i>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">Aucune demande en attente</h3>
+            <p class="text-gray-500">Les nouvelles demandes apparaîtront ici</p>
+        </div>
+        <div id="list" class="space-y-4"></div>
+
+        <!-- En-tête de l'historique -->
+        <div class="flex items-center justify-between mt-8 mb-3">
+            <div class="flex items-center gap-2">
+                <h3 class="text-lg font-semibold text-gray-900">Historique des demandes</h3>
+                <span id="historyCount" class="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-700"></span>
+            </div>
+            <div class="flex items-center gap-2">
+                <select id="statusFilter" class="btn-secondary-glass text-sm">
+                    <option value="">Tous</option>
+                    <option value="pending">En attente</option>
+                    <option value="approved">Approuvées</option>
+                    <option value="rejected">Refusées</option>
+                </select>
+                <input type="date" id="fromDate" class="btn-secondary-glass text-sm" />
+                <input type="date" id="toDate" class="btn-secondary-glass text-sm" />
+                <input id="searchQ" class="btn-secondary-glass text-sm" placeholder="Recherche..." />
+                <button id="exportCsv" class="btn-glass text-sm">Exporter CSV</button>
+                <button id="exportAuditCsv" class="btn-secondary-glass text-sm">Exporter Audit CSV</button>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-gray-100 mt-6">
+            <table id="history" class="w-full text-sm table-glass">
+                <thead class="bg-gray-50 sticky top-0 z-10">
+                    <tr>
+                        <th class="px-4 py-2 text-left text-gray-600">Nom</th>
+                        <th class="px-4 py-2 text-left text-gray-600">Email</th>
+                        <th class="px-4 py-2 text-left text-gray-600">Statut</th>
+                        <th class="px-4 py-2 text-left text-gray-600">Créée le</th>
+                        <th class="px-4 py-2 text-left text-gray-600">Traitée le</th>
+                        <th class="px-4 py-2 text-right text-gray-600">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="historyBody"></tbody>
+            </table>
+            <div id="historySkeleton" class="p-4 hidden">
+                <div class="animate-pulse space-y-2">
+                    <div class="h-4 bg-gray-100 rounded"></div>
+                    <div class="h-4 bg-gray-100 rounded"></div>
+                    <div class="h-4 bg-gray-100 rounded"></div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
+<script>
+    async function fetchPending() {
+        const res = await fetch('/api/applications/professionals/pending/');
+        if (!res.ok) return;
+        const data = await res.json();
+        const list = document.getElementById('list');
+        const empty = document.getElementById('empty');
+        list.innerHTML = '';
+        if (data.length === 0) {
+            empty.classList.remove('hidden');
+            return;
+        }
+        empty.classList.add('hidden');
+        for (const a of data) {
+            const el = document.createElement('div');
+            el.className = 'kpi-glass';
+            el.innerHTML = `
+      <div class=\"flex items-start justify-between gap-4\">
+        <div class=\"flex-1\">
+          <div class=\"font-semibold text-gray-900\">${a.first_name} ${a.last_name} — ${a.email}</div>
+          <div class=\"text-gray-600 text-sm mt-1\">${a.phone_number}</div>
+          <div class=\"flex flex-wrap items-center gap-2 mt-2\">
+            <span class=\"px-2 py-1 text-xs rounded-full bg-pink-50 text-pink-700 border\">${a.activity_category}</span>
+            <span class=\"px-2 py-1 text-xs rounded-full bg-blue-50 text-blue-700 border\">${a.service_type}</span>
+            ${a.salon_name ? `<span class=\\"px-2 py-1 text-xs rounded-full bg-violet-50 text-violet-700 border\\">${a.salon_name}</span>` : ''}
+          </div>
+          <div class=\"text-gray-600 text-sm mt-2\">${a.address}</div>
+          <div class=\"mt-2 text-xs text-gray-500\">Historique: ${(a.actions || []).map(x => x.action + " (" + (x.actor || '—') + ")").join(' • ')}</div>
+        </div>
+        <div class=\"flex flex-col gap-2 items-end\">
+          <a href="/pros/pending/${a.id}/" class="btn-glass">Voir les détails</a>
+          <button class="btn-secondary-glass text-red-700" data-action="delete" data-id="${a.id}">Supprimer</button>
+        </div>
+      </div>
+    `;
+            list.appendChild(el);
+        }
+        document.getElementById('pendingCount').textContent = `${data.length} items`;
+    }
+
+    // Chargement de l'historique (tous statuts)
+    let page = 1; const pageSize = 10;
+    async function loadHistory() {
+        const status = document.getElementById('statusFilter').value;
+        const q = document.getElementById('searchQ').value;
+        const from = document.getElementById('fromDate').value;
+        const to = document.getElementById('toDate').value;
+        const url = new URL('/api/applications/', window.location.origin);
+        if (status) url.searchParams.set('status', status);
+        if (q) url.searchParams.set('q', q);
+        if (from) url.searchParams.set('date_from', from);
+        if (to) url.searchParams.set('date_to', to);
+        url.searchParams.set('page', page);
+        url.searchParams.set('page_size', pageSize);
+        document.getElementById('historySkeleton').classList.remove('hidden');
+        const resp = await fetch(url);
+        if (!resp.ok) { document.getElementById('historySkeleton').classList.add('hidden'); return; }
+        const data = await resp.json();
+        const body = document.getElementById('historyBody');
+        body.innerHTML = '';
+        (data.results || []).forEach(a => {
+            const statusText = a.status === 'approved' ? 'Approuvée' : a.status === 'rejected' ? 'Refusée' : 'En attente';
+            const badge = a.status === 'approved' ? 'bg-green-100 text-green-700' : a.status === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-800';
+            const tr = document.createElement('tr'); tr.className = 'border-b hover:bg-gray-50';
+            tr.innerHTML = `<td class="px-3 py-2">${a.first_name} ${a.last_name}</td>
+                            <td class="px-3 py-2">${a.email}</td>
+                            <td class="px-3 py-2"><span class="px-2 py-1 text-xs rounded-full ${badge}">${statusText}</span></td>
+                            <td class="px-3 py-2">${new Date(a.created_at).toLocaleString()}</td>
+                            <td class="px-3 py-2">${a.processed_at ? new Date(a.processed_at).toLocaleString() : '—'}</td>
+                            <td class="px-3 py-2 text-right"><a class="btn-secondary-glass text-xs" href="/pros/pending/${a.id}/">Détails</a>
+                                <button class="btn-secondary-glass text-xs text-red-700 ml-2" onclick="openDeleteModal(${a.id}, '${a.email?.replace(/'/g, "\'") || ''}')">Supprimer</button>
+                            </td>`;
+            body.appendChild(tr);
+        });
+        document.getElementById('historyCount').textContent = `${data.count || 0} items`;
+        renderHistoryPager(data.count || 0);
+        document.getElementById('historySkeleton').classList.add('hidden');
+    }
+
+    function renderHistoryPager(total) {
+        let pager = document.getElementById('historyPager');
+        if (!pager) {
+            pager = document.createElement('div');
+            pager.id = 'historyPager';
+            pager.className = 'flex items-center justify-center gap-2 p-3';
+            document.getElementById('apps').appendChild(pager);
+        }
+        const maxPage = Math.max(1, Math.ceil(total / pageSize));
+        pager.innerHTML = '';
+        const prev = document.createElement('button'); prev.className = 'btn-secondary-glass'; prev.textContent = 'Précédent'; prev.disabled = page <= 1;
+        const info = document.createElement('div'); info.className = 'text-sm text-gray-600'; info.textContent = `${page}/${maxPage}`;
+        const next = document.createElement('button'); next.className = 'btn-secondary-glass'; next.textContent = 'Suivant'; next.disabled = page >= maxPage;
+        prev.onclick = () => { if (page > 1) { page--; loadHistory(); } };
+        next.onclick = () => { if (page < maxPage) { page++; loadHistory(); } };
+        pager.append(prev, info, next);
+    }
+
+    document.getElementById('statusFilter').addEventListener('change', () => { page = 1; loadHistory(); });
+    document.getElementById('searchQ').addEventListener('input', () => { page = 1; loadHistory(); });
+    document.getElementById('fromDate').addEventListener('change', () => { page = 1; loadHistory(); });
+    document.getElementById('toDate').addEventListener('change', () => { page = 1; loadHistory(); });
+
+    document.getElementById('exportCsv').addEventListener('click', exportCsvFiltered);
+    document.getElementById('exportAuditCsv').addEventListener('click', exportAuditCsv);
+
+    async function exportCsvFiltered() {
+        const status = document.getElementById('statusFilter').value;
+        const q = document.getElementById('searchQ').value;
+        const from = document.getElementById('fromDate').value;
+        const to = document.getElementById('toDate').value;
+        let cur = 1; const rows = []; let total = 0;
+        while (true) {
+            const url = new URL('/api/applications/', window.location.origin);
+            if (status) url.searchParams.set('status', status);
+            if (q) url.searchParams.set('q', q);
+            if (from) url.searchParams.set('date_from', from);
+            if (to) url.searchParams.set('date_to', to);
+            url.searchParams.set('page', cur);
+            url.searchParams.set('page_size', 100);
+            const r = await fetch(url); if (!r.ok) break;
+            const d = await r.json();
+            total = d.count || 0;
+            (d.results || []).forEach(a => {
+                rows.push([`${a.first_name} ${a.last_name}`, a.email, a.status, a.created_at, a.processed_at || '']);
+            });
+            if (!d.next) break;
+            cur += 1;
+        }
+        const header = ['Nom', 'Email', 'Statut', 'Créée le', 'Traitée le'];
+        const csv = [header].concat(rows).map(r => r.map(x => `"${String(x).replace(/"/g, '""')}"`).join(',')).join('\n');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const urlObj = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = urlObj; a.download = 'historique_demandes.csv'; a.click();
+        URL.revokeObjectURL(urlObj);
+    }
+
+    async function exportAuditCsv() {
+        const status = document.getElementById('statusFilter').value;
+        const q = document.getElementById('searchQ').value;
+        const from = document.getElementById('fromDate').value;
+        const to = document.getElementById('toDate').value;
+        const url = new URL('/api/applications/audit/', window.location.origin);
+        if (status) url.searchParams.set('status', status);
+        if (q) url.searchParams.set('q', q);
+        if (from) url.searchParams.set('date_from', from);
+        if (to) url.searchParams.set('date_to', to);
+        url.searchParams.set('export', 'csv');
+        window.location.href = url.toString();
+    }
+
+    async function act(id, action) {
+        const notes = '';
+        const res = await fetch(`/api/applications/professionals/${id}/${action}/`, {
+            method: 'POST',
+            headers: { 'X-CSRFToken': getCookie('csrftoken'), 'Content-Type': 'application/json' },
+            body: JSON.stringify({ notes })
+        });
+        if (res.ok) {
+            try { localStorage.setItem('pros_refresh', String(Date.now())); } catch (e) { }
+            fetchPending(); loadHistory();
+            // simple glass toast
+            const t = document.createElement('div');
+            t.className = 'fixed top-4 right-4 z-50 kpi-glass px-4 py-2 ' + (action === 'approve' ? 'text-green-700' : action === 'reject' ? 'text-amber-700' : 'text-blue-700');
+            t.textContent = action === 'approve' ? 'Demande approuvée' : action === 'reject' ? 'Demande refusée' : 'Action effectuée';
+            document.body.appendChild(t);
+            setTimeout(() => t.remove(), 2500);
+        }
+    }
+
+    async function approveOpen(id) {
+        await act(id, 'approve');
+        window.location.href = '/pros/';
+    }
+
+    async function delApp(id) {
+        const res = await fetch(`/api/applications/${id}/delete/`, {
+            method: 'DELETE',
+            headers: { 'X-CSRFToken': getCookie('csrftoken') }
+        });
+        if (res.ok) { fetchPending(); loadHistory(); }
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    document.addEventListener('click', (e) => {
+        const btn = e.target.closest('button[data-action]');
+        if (!btn) return;
+        if (btn.dataset.action === 'delete') delApp(btn.dataset.id); else act(btn.dataset.id, btn.dataset.action);
+    });
+
+    fetchPending();
+    loadHistory();
+</script>
+
+<!-- Modal de confirmation de suppression -->
+<div id="deleteModal" class="fixed inset-0 hidden items-center justify-center z-50">
+    <div class="absolute inset-0 bg-black/30"></div>
+    <div class="glass p-6 w-full max-w-md relative z-10">
+        <div class="flex items-start gap-3">
+            <div
+                class="w-10 h-10 rounded-xl bg-gradient-to-br from-red-300 to-orange-300 flex items-center justify-center text-white">
+                <i data-lucide="trash-2" class="w-5 h-5"></i>
+            </div>
+            <div class="flex-1">
+                <h3 class="text-lg font-semibold text-gray-900">Confirmer la suppression</h3>
+                <p class="text-sm text-gray-600 mt-1">Vous êtes sur le point de supprimer cette demande (<span
+                        id="delEmail" class="font-medium"></span>). Cette action est irréversible.</p>
+            </div>
+        </div>
+        <div class="flex items-center justify-end gap-2 mt-4">
+            <button class="btn-secondary-glass" onclick="closeDeleteModal()">Annuler</button>
+            <button class="btn-glass text-red-700" id="confirmDeleteBtn">Supprimer</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let pendingDeleteId = null;
+    function openDeleteModal(id, email) {
+        pendingDeleteId = id;
+        document.getElementById('delEmail').textContent = email || '';
+        document.getElementById('deleteModal').classList.remove('hidden');
+        document.getElementById('deleteModal').classList.add('flex');
+        if (window.lucide) { window.lucide.createIcons(); }
+    }
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').classList.add('hidden');
+        document.getElementById('deleteModal').classList.remove('flex');
+        pendingDeleteId = null;
+    }
+    async function confirmDelete() {
+        if (!pendingDeleteId) return;
+        const res = await fetch(`/api/applications/${pendingDeleteId}/delete/`, { method: 'DELETE', headers: { 'X-CSRFToken': getCookie('csrftoken') } });
+        if (res.ok) { closeDeleteModal(); fetchPending(); loadHistory(); }
+    }
+    document.getElementById('confirmDeleteBtn').addEventListener('click', confirmDelete);
+</script>
 {% endblock %}

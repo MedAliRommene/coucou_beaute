@@ -8,6 +8,9 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest, HttpResponse
 from django.contrib import messages
 from django.contrib.auth import get_user_model
+from users.models import Professional
+from users.models import ProfessionalApplication
+from users.serializers import ProfessionalApplicationSerializer
 
 def entry_point(request: HttpRequest) -> HttpResponse:
     if request.user.is_authenticated:
@@ -57,6 +60,33 @@ def pros_view(request: HttpRequest) -> HttpResponse:
 @login_required
 def pros_pending_view(request: HttpRequest) -> HttpResponse:
     return render(request, 'adminpanel/pros_pending.html')
+
+@login_required
+def pro_application_detail_view(request: HttpRequest, app_id: int) -> HttpResponse:
+    app = ProfessionalApplication.objects.filter(id=app_id).first()
+    if not app:
+        messages.error(request, "Demande introuvable")
+        return redirect('adminpanel:pros_pending')
+    data = ProfessionalApplicationSerializer(app).data
+    return render(request, 'adminpanel/pro_application_detail.html', { 'app': data })
+
+@login_required
+def pro_detail_view(request: HttpRequest, pro_id: int) -> HttpResponse:
+    try:
+        pro = Professional.objects.select_related('user').get(id=pro_id)
+    except Professional.DoesNotExist:
+        messages.error(request, "Professionnel introuvable")
+        return redirect('adminpanel:pros')
+    context = {
+        'pro': {
+            'id': pro.id,
+            'email': pro.user.email,
+            'business_name': pro.business_name,
+            'is_verified': pro.is_verified,
+            'created_at': pro.created_at,
+        }
+    }
+    return render(request, 'adminpanel/pro_detail.html', context)
 
 @login_required
 def appointments_view(request: HttpRequest) -> HttpResponse:

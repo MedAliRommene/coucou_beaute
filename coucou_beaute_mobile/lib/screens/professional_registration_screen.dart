@@ -3,7 +3,10 @@ import 'package:dotted_border/dotted_border.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart' as geo;
 import 'package:url_launcher/url_launcher.dart';
+import 'package:dio/dio.dart';
 import 'dart:async';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 
 class ProfessionalRegistrationScreen extends StatefulWidget {
   const ProfessionalRegistrationScreen({super.key});
@@ -20,10 +23,25 @@ class _ProfessionalRegistrationScreenState
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _telephoneController = TextEditingController();
   final TextEditingController _adresseController = TextEditingController();
+  final TextEditingController _salonNameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
 
   String? _selectedCategory;
   String? _selectedServiceType;
   bool _isSubscriptionActive = false;
+  bool _isSubmitting = false;
+  bool _obscurePassword = true;
+  bool _obscureConfirm = true;
+
+  // Password strength state
+  bool _pwHasMinLen = false;
+  bool _pwHasUpper = false;
+  bool _pwHasLower = false;
+  bool _pwHasDigit = false;
+  bool _pwHasSpecial = false;
+  double _pwStrength = 0.0;
 
   // Etat intelligent pour l'adresse
   Timer? _addressDebounce;
@@ -51,6 +69,9 @@ class _ProfessionalRegistrationScreenState
     'Anglais': false,
   };
 
+  String? _profilePhotoUrl;
+  String? _idDocumentUrl;
+
   @override
   void dispose() {
     _nomController.dispose();
@@ -58,6 +79,9 @@ class _ProfessionalRegistrationScreenState
     _emailController.dispose();
     _telephoneController.dispose();
     _adresseController.dispose();
+    _salonNameController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
@@ -146,6 +170,62 @@ class _ProfessionalRegistrationScreenState
     );
   }
 
+  String get _apiBaseUrl =>
+      Platform.isAndroid ? 'http://10.0.2.2:8000' : 'http://localhost:8000';
+
+  bool _validateEmail(String email) {
+    final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+    return emailRegex.hasMatch(email.trim());
+  }
+
+  bool _validatePhone(String phone) {
+    final digits = phone.replaceAll(RegExp(r'[\s-]'), '');
+    return RegExp(r'^\+?[0-9]{8,15}$').hasMatch(digits);
+  }
+
+  String? _mapCategoryToCode(String? label) {
+    switch (label) {
+      case 'Coiffure':
+        return 'hairdressing';
+      case 'Esthétique':
+      case 'Soins du visage':
+        return 'esthetics';
+      case 'Manucure':
+        return 'manicure';
+      case 'Massage':
+        return 'massage';
+      case 'Autres':
+        return 'other';
+      default:
+        return null;
+    }
+  }
+
+  String? _mapServiceTypeToCode(String? label) {
+    switch (label) {
+      case 'Je me déplace':
+        return 'mobile';
+      case 'Je reçois chez moi':
+        return 'home';
+      case "J'ai un salon":
+        return 'salon';
+      default:
+        return null;
+    }
+  }
+
+  List<String> _selectedLanguagesCodes() {
+    final List<String> result = [];
+    _languages.forEach((k, v) {
+      if (v) {
+        if (k == 'Français') result.add('french');
+        if (k == 'Arabe') result.add('arabic');
+        if (k == 'Anglais') result.add('english');
+      }
+    });
+    return result;
+  }
+
   // 🔝 En-tête en haut
   Widget _buildHeader() {
     return Container(
@@ -175,7 +255,7 @@ class _ProfessionalRegistrationScreenState
             onPressed: () {
               Navigator.pop(context); // Retour à l'onboarding screen
             },
-            icon: Icon(
+            icon: const Icon(
               Icons.arrow_back,
               color: Colors.white,
               size: 24,
@@ -194,9 +274,9 @@ class _ProfessionalRegistrationScreenState
           ),
 
           // Menu Burger (droite) en bleu vif
-          Icon(
+          const Icon(
             Icons.menu,
-            color: const Color(0xFF4A90E2), // Bleu vif exact
+            color: Color(0xFF4A90E2), // Bleu vif exact
             size: 28,
           ),
         ],
@@ -245,7 +325,7 @@ class _ProfessionalRegistrationScreenState
         _buildTextField(
           controller: _emailController,
           hint: 'votre.email@exemple.com',
-          prefixIcon: Icon(Icons.email, color: Colors.pink),
+          prefixIcon: const Icon(Icons.email, color: Colors.pink),
         ),
 
         const SizedBox(height: 12),
@@ -254,7 +334,75 @@ class _ProfessionalRegistrationScreenState
         _buildTextField(
           controller: _telephoneController,
           hint: '+216 XX XXX XXX',
-          prefixIcon: Icon(Icons.phone, color: Colors.pink),
+          prefixIcon: const Icon(Icons.phone, color: Colors.pink),
+        ),
+
+        const SizedBox(height: 12),
+
+        // Mot de passe
+        TextField(
+          controller: _passwordController,
+          obscureText: _obscurePassword,
+          onChanged: _onPasswordChanged,
+          decoration: InputDecoration(
+            hintText: 'Mot de passe',
+            hintStyle: TextStyle(color: Colors.grey[400]),
+            prefixIcon: const Icon(Icons.lock, color: Colors.pink),
+            suffixIcon: IconButton(
+              icon: Icon(
+                  _obscurePassword ? Icons.visibility : Icons.visibility_off),
+              onPressed: () =>
+                  setState(() => _obscurePassword = !_obscurePassword),
+            ),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey[300]!),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Colors.pink, width: 2),
+            ),
+            filled: true,
+            fillColor: Colors.white,
+            contentPadding:
+                const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+          ),
+        ),
+
+        const SizedBox(height: 8),
+        _buildPasswordStrength(),
+
+        const SizedBox(height: 12),
+
+        // Confirmer mot de passe
+        TextField(
+          controller: _confirmPasswordController,
+          obscureText: _obscureConfirm,
+          decoration: InputDecoration(
+            hintText: 'Confirmer le mot de passe',
+            hintStyle: TextStyle(color: Colors.grey[400]),
+            prefixIcon: const Icon(Icons.lock_outline, color: Colors.pink),
+            suffixIcon: IconButton(
+              icon: Icon(
+                  _obscureConfirm ? Icons.visibility : Icons.visibility_off),
+              onPressed: () =>
+                  setState(() => _obscureConfirm = !_obscureConfirm),
+            ),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey[300]!),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Colors.pink, width: 2),
+            ),
+            filled: true,
+            fillColor: Colors.white,
+            contentPadding:
+                const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+          ),
         ),
       ],
     );
@@ -281,7 +429,7 @@ class _ProfessionalRegistrationScreenState
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.pink, width: 2),
+          borderSide: const BorderSide(color: Colors.pink, width: 2),
         ),
         filled: true,
         fillColor: Colors.white,
@@ -315,7 +463,7 @@ class _ProfessionalRegistrationScreenState
                 color: Colors.grey[200],
                 shape: BoxShape.circle,
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.person,
                 color: Colors.pink,
                 size: 40,
@@ -327,9 +475,7 @@ class _ProfessionalRegistrationScreenState
             // Bouton Télécharger style pill
             Expanded(
               child: ElevatedButton(
-                onPressed: () {
-                  // TODO: Implémenter la logique de téléchargement
-                },
+                onPressed: _pickProfilePhoto,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
                   foregroundColor: Colors.black87,
@@ -347,6 +493,11 @@ class _ProfessionalRegistrationScreenState
             ),
           ],
         ),
+        if (_profilePhotoUrl != null) ...[
+          const SizedBox(height: 8),
+          Text('Image sélectionnée',
+              style: TextStyle(color: Colors.green[700], fontSize: 12)),
+        ],
       ],
     );
   }
@@ -382,7 +533,7 @@ class _ProfessionalRegistrationScreenState
             ),
             child: Column(
               children: [
-                Icon(
+                const Icon(
                   Icons.badge_outlined,
                   color: Colors.pink,
                   size: 40,
@@ -398,9 +549,7 @@ class _ProfessionalRegistrationScreenState
                 ),
                 const SizedBox(height: 16),
                 ElevatedButton(
-                  onPressed: () {
-                    // TODO: Implémenter la logique de téléchargement
-                  },
+                  onPressed: _pickIdDocument,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
                     foregroundColor: Colors.black87,
@@ -419,6 +568,11 @@ class _ProfessionalRegistrationScreenState
             ),
           ),
         ),
+        if (_idDocumentUrl != null) ...[
+          const SizedBox(height: 8),
+          Text('Document attaché',
+              style: TextStyle(color: Colors.green[700], fontSize: 12)),
+        ],
       ],
     );
   }
@@ -428,7 +582,7 @@ class _ProfessionalRegistrationScreenState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           'Catégorie d\'activité',
           style: TextStyle(
             color: Colors.black87,
@@ -466,19 +620,18 @@ class _ProfessionalRegistrationScreenState
               ),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-              suffixIcon: Icon(
+              suffixIcon: const Icon(
                 Icons.keyboard_arrow_down,
-                color: const Color(0xFFFFB3D9),
+                color: Color(0xFFFFB3D9),
                 size: 20,
               ),
             ),
-            items: ['Coiffure', 'Esthétique', 'Manucure', 'Massage', 'Autres']
-                .map((String category) {
+            items: [..._categories, 'Autres'].map((String category) {
               return DropdownMenuItem<String>(
                 value: category,
                 child: Text(
                   category,
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Colors.black87,
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
@@ -493,7 +646,7 @@ class _ProfessionalRegistrationScreenState
             },
             dropdownColor: Colors.white,
             icon: const SizedBox.shrink(), // Cache l'icône par défaut
-            style: TextStyle(
+            style: const TextStyle(
               color: Colors.black87,
               fontSize: 14,
               fontWeight: FontWeight.w500,
@@ -534,6 +687,14 @@ class _ProfessionalRegistrationScreenState
             );
           }).toList(),
         ),
+        if (_selectedServiceType == "J'ai un salon") ...[
+          const SizedBox(height: 12),
+          _buildTextField(
+            controller: _salonNameController,
+            hint: 'Nom de votre salon',
+            prefixIcon: const Icon(Icons.business, color: Colors.pink),
+          ),
+        ],
       ],
     );
   }
@@ -543,7 +704,7 @@ class _ProfessionalRegistrationScreenState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           'Adresse professionnelle',
           style: TextStyle(
             color: Colors.black87,
@@ -699,7 +860,7 @@ class _ProfessionalRegistrationScreenState
                             ),
                           ),
                           child: entry.value
-                              ? Icon(
+                              ? const Icon(
                                   Icons.check,
                                   size: 10,
                                   color: Colors.white,
@@ -822,7 +983,7 @@ class _ProfessionalRegistrationScreenState
                   padding:
                       const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 ),
-                child: Text(
+                child: const Text(
                   'Payer',
                   style: TextStyle(
                     fontWeight: FontWeight.w600,
@@ -842,11 +1003,7 @@ class _ProfessionalRegistrationScreenState
       width: double.infinity,
       height: 50,
       child: ElevatedButton(
-        onPressed: _canValidate()
-            ? () {
-                // TODO: Implémenter la validation de l'inscription
-              }
-            : null,
+        onPressed: _canValidate() && !_isSubmitting ? _submitApplication : null,
         style: ElevatedButton.styleFrom(
           backgroundColor: _canValidate()
               ? Colors.pinkAccent
@@ -855,8 +1012,8 @@ class _ProfessionalRegistrationScreenState
           shape: const StadiumBorder(),
         ),
         child: Text(
-          'Valider inscription',
-          style: TextStyle(
+          _isSubmitting ? 'Envoi en cours...' : 'Valider inscription',
+          style: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
@@ -867,13 +1024,188 @@ class _ProfessionalRegistrationScreenState
 
   // Vérifier si le formulaire peut être validé
   bool _canValidate() {
-    return _nomController.text.isNotEmpty &&
-        _prenomController.text.isNotEmpty &&
-        _emailController.text.isNotEmpty &&
-        _telephoneController.text.isNotEmpty &&
-        _adresseController.text.isNotEmpty &&
-        _selectedCategory != null &&
-        _selectedServiceType != null;
+    return _getValidationErrors().isEmpty;
+  }
+
+  List<String> _getValidationErrors() {
+    final List<String> errors = [];
+    if (_prenomController.text.trim().isEmpty) errors.add('Prénom manquant');
+    if (_nomController.text.trim().isEmpty) errors.add('Nom manquant');
+    if (_emailController.text.trim().isEmpty) {
+      errors.add('Email manquant');
+    } else if (!_validateEmail(_emailController.text)) {
+      errors.add('Email invalide');
+    }
+    if (_telephoneController.text.trim().isEmpty) {
+      errors.add('Numéro de téléphone manquant');
+    } else if (!_validatePhone(_telephoneController.text)) {
+      errors.add('Numéro de téléphone invalide');
+    }
+    if (_passwordController.text.isEmpty) {
+      errors.add('Mot de passe manquant');
+    } else if (_passwordController.text.length < 8) {
+      errors.add('Mot de passe trop court (min 8 caractères)');
+    }
+    if (_confirmPasswordController.text.isEmpty) {
+      errors.add('Confirmation du mot de passe manquante');
+    } else if (_passwordController.text != _confirmPasswordController.text) {
+      errors.add('Les mots de passe ne correspondent pas');
+    }
+    if (_selectedCategory == null) errors.add("Catégorie d'activité manquante");
+    if (_selectedServiceType == null) errors.add('Type de prestation manquant');
+    if (_selectedServiceType == "J'ai un salon" &&
+        _salonNameController.text.trim().isEmpty) {
+      errors.add('Nom du salon manquant');
+    }
+    if (_adresseController.text.trim().isEmpty) {
+      errors.add('Adresse professionnelle manquante');
+    }
+    if (_profilePhotoUrl == null) errors.add('Photo de profil manquante');
+    if (_idDocumentUrl == null) errors.add("Pièce d'identité manquante");
+    return errors;
+  }
+
+  Future<void> _submitApplication() async {
+    FocusScope.of(context).unfocus();
+    final scaffold = ScaffoldMessenger.of(context);
+    final errors = _getValidationErrors();
+    if (errors.isNotEmpty) {
+      scaffold.showSnackBar(SnackBar(content: Text(errors.join(' • '))));
+      return;
+    }
+
+    // Assure lat/lng via géocodage si nécessaire
+    if (_lastLat == null || _lastLng == null) {
+      try {
+        final locs =
+            await geo.locationFromAddress(_adresseController.text.trim());
+        if (locs.isNotEmpty) {
+          _lastLat = locs.first.latitude;
+          _lastLng = locs.first.longitude;
+        }
+      } catch (_) {}
+    }
+
+    final categoryCode = _mapCategoryToCode(_selectedCategory);
+    final serviceCode = _mapServiceTypeToCode(_selectedServiceType);
+    final payload = {
+      'first_name': _prenomController.text.trim(),
+      'last_name': _nomController.text.trim(),
+      'email': _emailController.text.trim(),
+      'phone_number': _telephoneController.text.trim(),
+      'activity_category': categoryCode,
+      'service_type': serviceCode,
+      'spoken_languages': _selectedLanguagesCodes(),
+      'address': _adresseController.text.trim(),
+      'latitude': _lastLat,
+      'longitude': _lastLng,
+      'profile_photo': _profilePhotoUrl ?? '',
+      'id_document': _idDocumentUrl ?? '',
+      'subscription_active': _isSubscriptionActive,
+      'salon_name': _salonNameController.text.trim(),
+      'password': _passwordController.text,
+    };
+
+    setState(() => _isSubmitting = true);
+    try {
+      final dio = Dio(BaseOptions(
+          connectTimeout: const Duration(seconds: 10),
+          receiveTimeout: const Duration(seconds: 20)));
+      final res = await dio.post('$_apiBaseUrl/api/applications/professionals/',
+          data: payload);
+      if (res.statusCode == 201) {
+        scaffold.showSnackBar(const SnackBar(
+            content: Text(
+                'Demande envoyée avec succès. Vous serez notifié après validation.')));
+        Navigator.pop(context);
+      } else {
+        scaffold
+            .showSnackBar(SnackBar(content: Text('Erreur: ${res.statusCode}')));
+      }
+    } on DioException catch (e) {
+      String msg = 'Échec de l\'envoi. Vérifiez vos informations.';
+      if (e.response?.data is Map) {
+        final Map data = e.response!.data as Map;
+        final Map<String, String> labels = {
+          'first_name': 'Prénom',
+          'last_name': 'Nom',
+          'email': 'Email',
+          'phone_number': 'Téléphone',
+          'activity_category': "Catégorie d'activité",
+          'service_type': 'Type de prestation',
+          'spoken_languages': 'Langues parlées',
+          'address': 'Adresse professionnelle',
+          'latitude': 'Latitude',
+          'longitude': 'Longitude',
+          'profile_photo': 'Photo de profil',
+          'id_document': "Pièce d'identité",
+          'subscription_active': 'Abonnement',
+          'salon_name': 'Nom du salon',
+          'password': 'Mot de passe',
+        };
+        final parts = <String>[];
+        data.forEach((key, value) {
+          final label = labels[key] ?? key;
+          String firstError;
+          if (value is List && value.isNotEmpty) {
+            firstError = value.first.toString();
+          } else {
+            firstError = value.toString();
+          }
+          parts.add('$label: $firstError');
+        });
+        if (parts.isNotEmpty) {
+          msg = parts.join(' • ');
+        }
+      }
+      scaffold.showSnackBar(SnackBar(content: Text(msg)));
+    } catch (_) {
+      scaffold.showSnackBar(const SnackBar(content: Text('Erreur réseau.')));
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
+
+  Future<void> _pickProfilePhoto() async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(
+        source: ImageSource.gallery, maxWidth: 1600, imageQuality: 85);
+    if (picked == null) return;
+    await _uploadFile(picked,
+        kind: 'profile_photo', onUrl: (u) => _profilePhotoUrl = u);
+  }
+
+  Future<void> _pickIdDocument() async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(
+        source: ImageSource.gallery, maxWidth: 2000, imageQuality: 85);
+    if (picked == null) return;
+    await _uploadFile(picked,
+        kind: 'id_document', onUrl: (u) => _idDocumentUrl = u);
+  }
+
+  Future<void> _uploadFile(XFile file,
+      {required String kind, required void Function(String url) onUrl}) async {
+    final scaffold = ScaffoldMessenger.of(context);
+    try {
+      final dio = Dio();
+      final form = FormData.fromMap({
+        'kind': kind,
+        'file': await MultipartFile.fromFile(file.path, filename: file.name),
+      });
+      final res =
+          await dio.post('$_apiBaseUrl/api/applications/upload/', data: form);
+      final url = res.data['url'] as String?;
+      if (url != null) {
+        setState(() => onUrl(url));
+      } else {
+        scaffold.showSnackBar(
+            const SnackBar(content: Text('Échec du téléversement.')));
+      }
+    } catch (_) {
+      scaffold.showSnackBar(
+          const SnackBar(content: Text('Échec du téléversement.')));
+    }
   }
 
   void _onAddressChangedDebounced(String value) {
@@ -1000,5 +1332,80 @@ class _ProfessionalRegistrationScreenState
         const SnackBar(content: Text('Impossible d\'ouvrir Google Maps.')),
       );
     }
+  }
+
+  // === Password strength helpers ===
+  void _onPasswordChanged(String value) {
+    final hasMinLen = value.length >= 8;
+    final hasUpper = RegExp(r'[A-Z]').hasMatch(value);
+    final hasLower = RegExp(r'[a-z]').hasMatch(value);
+    final hasDigit = RegExp(r'[0-9]').hasMatch(value);
+    final hasSpecial = RegExp(r'[!@#\$%^&*(),.?":{}|<>_\-]').hasMatch(value);
+    final checks = [hasMinLen, hasUpper, hasLower, hasDigit, hasSpecial];
+    final satisfied = checks.where((e) => e).length;
+    // Strength between 0 and 1
+    final strength = (satisfied / checks.length).clamp(0.0, 1.0);
+    setState(() {
+      _pwHasMinLen = hasMinLen;
+      _pwHasUpper = hasUpper;
+      _pwHasLower = hasLower;
+      _pwHasDigit = hasDigit;
+      _pwHasSpecial = hasSpecial;
+      _pwStrength = strength;
+    });
+  }
+
+  Widget _buildPasswordStrength() {
+    Color barColor;
+    if (_pwStrength >= 0.8) {
+      barColor = Colors.green;
+    } else if (_pwStrength >= 0.6) {
+      barColor = Colors.lightGreen;
+    } else if (_pwStrength >= 0.4) {
+      barColor = Colors.orange;
+    } else if (_pwStrength > 0) {
+      barColor = Colors.redAccent;
+    } else {
+      barColor = Colors.grey.shade300;
+    }
+
+    Widget criteriaRow(String text, bool ok) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(ok ? Icons.check_circle : Icons.radio_button_unchecked,
+              size: 16, color: ok ? Colors.green : Colors.grey),
+          const SizedBox(width: 6),
+          Text(text, style: TextStyle(fontSize: 12, color: Colors.grey[700])),
+        ],
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: LinearProgressIndicator(
+            value: _pwStrength == 0 ? null : _pwStrength,
+            minHeight: 6,
+            backgroundColor: Colors.grey[200],
+            color: barColor,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 12,
+          runSpacing: 6,
+          children: [
+            criteriaRow('≥ 8 caractères', _pwHasMinLen),
+            criteriaRow('Majuscule', _pwHasUpper),
+            criteriaRow('Minuscule', _pwHasLower),
+            criteriaRow('Chiffre', _pwHasDigit),
+            criteriaRow('Caractère spécial', _pwHasSpecial),
+          ],
+        )
+      ],
+    );
   }
 }

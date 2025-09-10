@@ -1,0 +1,139 @@
+{% extends 'adminpanel/base.html' %}
+
+{% block title %}Détail de la Demande - Coucou Beauté{% endblock %}
+
+{% block content %}
+<div class="p-6 space-y-6">
+    <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div
+                class="w-12 h-12 rounded-full bg-gradient-to-br from-pink-300 to-rose-400 flex items-center justify-center text-white shadow">
+                <i data-lucide="sparkles" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">Validation d'une inscription</h1>
+                <p class="text-gray-600">Interface claire et accueillante pour centres de beauté</p>
+            </div>
+        </div>
+        <a href="{% url 'adminpanel:pros_pending' %}" class="btn-secondary-glass">Retour</a>
+    </div>
+
+    <div class="grid lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 glass p-6">
+            <div class="flex items-start gap-5">
+                <img src="{{ app.profile_photo|default:'/static/images/placeholder-avatar.png' }}"
+                    class="w-24 h-24 rounded-2xl object-cover ring-1 ring-pink-100" alt="Photo profil" />
+                <div class="flex-1">
+                    <div class="text-2xl font-semibold text-gray-900">{{ app.first_name }} {{ app.last_name }}</div>
+                    <div class="mt-1 text-gray-600 flex items-center gap-4">
+                        <span class="inline-flex items-center gap-1"><i data-lucide="mail" class="w-4 h-4"></i>
+                            {{ app.email }}</span>
+                        <span class="inline-flex items-center gap-1"><i data-lucide="phone" class="w-4 h-4"></i>
+                            {{ app.phone_number }}</span>
+                    </div>
+                    <div class="mt-3 flex flex-wrap gap-2">
+                        <span class="px-2 py-1 text-xs rounded-full bg-pink-50 text-pink-700 border">
+                            {{app.activity_category|title }}</span>
+                        <span class="px-2 py-1 text-xs rounded-full bg-blue-50 text-blue-700 border">
+                            {{ app.service_type|title }}</span>
+                        {% if app.service_type == 'salon' and app.salon_name %}
+                        <span class="px-2 py-1 text-xs rounded-full bg-violet-50 text-violet-700 border">
+                            {{ app.salon_name }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 grid md:grid-cols-2 gap-4">
+                <div class="p-4 rounded-xl border bg-white/60">
+                    <div class="text-xs text-gray-500 inline-flex items-center gap-1"><i data-lucide="map-pin"
+                            class="w-4 h-4"></i>Adresse professionnelle</div>
+                    <div class="text-gray-900 mt-1">{{ app.address }}</div>
+                    {% if app.latitude and app.longitude %}
+                    <a class="text-pink-600 text-sm mt-2 inline-block" target="_blank"
+                        href="https://www.google.com/maps/search/?api=1&query={{ app.latitude }},{{ app.longitude }}">Ouvrir
+                        dans Google Maps</a>
+                    {% endif %}
+                </div>
+                <div class="p-4 rounded-xl border bg-white/60">
+                    <div class="text-xs text-gray-500 inline-flex items-center gap-1"><i data-lucide="globe"
+                            class="w-4 h-4"></i>Langues parlées</div>
+                    <div class="text-gray-900 mt-1">{{ app.spoken_languages|join:', ' }}</div>
+                </div>
+            </div>
+
+            <div class="mt-6">
+                <div class="text-sm font-medium text-gray-700 mb-2">Historique</div>
+                <div class="space-y-2">
+                    {% for a in app.actions %}
+                    <div class="p-3 rounded-xl border bg-white/60 flex items-center justify-between">
+                        <div>
+                            <div class="font-medium text-gray-800">{{ a.action|capfirst }}</div>
+                            <div class="text-xs text-gray-500">{{ a.actor|default:'—' }}</div>
+                        </div>
+                        <div class="text-xs text-gray-500">{{ a.created_at }}</div>
+                    </div>
+                    {% empty %}
+                    <div class="text-gray-500 text-sm">Aucun événement pour l'instant.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="glass p-6">
+            <div>
+                <div class="text-sm text-gray-600 mb-2 inline-flex items-center gap-2"><i data-lucide="badge-check"
+                        class="w-5 h-5"></i>Pièce d'identité</div>
+                <div class="rounded-xl border bg-white/60 p-2">
+                    <img src="{{ app.id_document|default:'/static/images/placeholder-doc.png' }}"
+                        class="w-full max-h-56 object-cover rounded-lg" alt="Pièce d'identité" />
+                </div>
+            </div>
+
+            <div class="mt-6">
+                <label class="block text-sm text-gray-600 mb-2 inline-flex items-center gap-2"><i
+                        data-lucide="sticky-note" class="w-5 h-5"></i>Notes</label>
+                <textarea id="notes" class="w-full border rounded-xl p-3" rows="4"
+                    placeholder="Laisser une note (visible seulement par l'équipe)"></textarea>
+            </div>
+
+            <div class="mt-4 flex gap-2">
+                <button id="approveBtn" class="btn-glass text-green-700">Approuver</button>
+                <button id="rejectBtn" class="btn-secondary-glass text-red-700">Refuser</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    async function decide(action) {
+        const btn = action === 'approve' ? document.getElementById('approveBtn') : document.getElementById('rejectBtn');
+        btn.disabled = true; btn.classList.add('opacity-60');
+        try {
+            const notes = document.getElementById('notes').value || '';
+            const res = await fetch(`/api/applications/professionals/{{ app.id }}/${action}/`, { method: 'POST', headers: { 'X-CSRFToken': getCookie('csrftoken'), 'Content-Type': 'application/json' }, body: JSON.stringify({ notes }) });
+            if (res.ok) {
+                window.location.href = "{% url 'adminpanel:pros_pending' %}";
+            }
+        } finally {
+            btn.disabled = false; btn.classList.remove('opacity-60');
+        }
+    }
+    document.getElementById('approveBtn').addEventListener('click', () => decide('approve'));
+    document.getElementById('rejectBtn').addEventListener('click', () => decide('reject'));
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+{% endblock %}

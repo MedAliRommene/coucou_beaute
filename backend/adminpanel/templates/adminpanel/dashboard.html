@@ -101,6 +101,9 @@
         </div>
     </div>
 
+    <!-- KPI Applications (Demandes) -->
+    <div id="applications-kpis" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6"></div>
+
     <!-- Advanced Filter Panel -->
     <div class="filter-panel rounded-2xl p-6 border border-gray-100 shadow-sm">
         <div class="flex flex-wrap items-center gap-4">
@@ -585,6 +588,34 @@
         document.querySelector('button:contains("Exporter")').addEventListener('click', function () {
             // Implementation for export functionality
             alert('Fonctionnalité d\'exportation en cours de développement');
+        });
+
+        // Dynamic Applications KPIs
+        fetch('/api/applications/summary/').then(r => r.ok ? r.json() : null).then(s => {
+            if (!s) return;
+            const defs = [
+                { key: 'total', name: 'Demandes (30j)', color: 'from-pink-300 to-blue-300' },
+                { key: 'approved', name: 'Approuvées', color: 'from-green-300 to-teal-300' },
+                { key: 'rejected', name: 'Refusées', color: 'from-red-300 to-orange-300' },
+                { key: 'pending', name: 'En attente', color: 'from-gray-300 to-slate-300' },
+            ];
+            const wrap = document.getElementById('applications-kpis');
+            wrap.innerHTML = '';
+            defs.forEach(d => {
+                const v = s[d.key] || { value: 0, var_pct: 0 };
+                const up = v.var_pct >= 0;
+                const card = document.createElement('div');
+                card.className = 'kpi-card bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-xl flex items-center gap-4';
+                card.innerHTML = `
+                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br ${d.color}"></div>
+                    <div class="flex-1">
+                      <div class="text-2xl font-bold text-gray-900">${v.value}</div>
+                      <div class="text-gray-600 text-sm">${d.name}</div>
+                    </div>
+                    <div class="text-sm ${up ? 'text-green-600' : 'text-red-600'}">${up ? '+' : ''}${(v.var_pct || 0).toFixed(1)}%</div>
+                `;
+                wrap.appendChild(card);
+            });
         });
     });
 </script>

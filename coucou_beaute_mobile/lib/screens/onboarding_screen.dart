@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
 import 'professional_registration_screen.dart';
+import 'client_registration_screen.dart';
+import 'pro_dashboard_screen.dart';
+import 'client_dashboard_screen.dart';
+import 'dart:convert';
+import 'dart:io';
+import 'dart:async';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -11,12 +17,13 @@ class OnboardingScreen extends StatefulWidget {
 class _OnboardingScreenState extends State<OnboardingScreen> {
   String? selectedRole;
   final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
     _emailController.dispose();
-    _phoneController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
@@ -25,7 +32,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Column(
             children: [
@@ -147,9 +154,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     return Column(
       children: [
         // Titre "Je suis..."
-        Text(
+        const Text(
           'Je suis...',
-          style: const TextStyle(
+          style: TextStyle(
             color: Colors.black87, // Noir foncé
             fontWeight: FontWeight.bold,
             fontSize: 16,
@@ -325,20 +332,32 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
         const SizedBox(height: 8), // Espacement réduit entre champs
 
-        // Champ Téléphone avec couleur claire et professionnelle
+        // Champ Mot de passe avec visibilité
         TextField(
-          controller: _phoneController,
+          controller: _passwordController,
+          obscureText: _obscurePassword,
           decoration: InputDecoration(
             prefixIcon: Icon(
-              Icons.phone,
+              Icons.lock,
               color: selectedRole != null
-                  ? const Color(
-                      0xFFFFB3D9) // Rose clair quand un rôle est choisi
-                  : Colors.grey[400], // Gris clair par défaut
+                  ? const Color(0xFFFFB3D9)
+                  : Colors.grey[400],
             ),
-            hintText: 'Votre numéro de téléphone',
+            suffixIcon: IconButton(
+              icon: Icon(
+                  _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                  color: selectedRole != null
+                      ? const Color(0xFFFFB3D9)
+                      : Colors.grey[400]),
+              onPressed: () {
+                setState(() {
+                  _obscurePassword = !_obscurePassword;
+                });
+              },
+            ),
+            hintText: 'Mot de passe',
             hintStyle: TextStyle(
-              color: Colors.grey[400], // Gris clair pour le hint
+              color: Colors.grey[400],
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
@@ -347,27 +366,45 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
                 color: selectedRole != null
-                    ? const Color(
-                        0xFFFFB3D9) // Rose clair quand un rôle est choisi
-                    : Colors.grey[300]!, // Gris clair par défaut
+                    ? const Color(0xFFFFB3D9)
+                    : Colors.grey[300]!,
               ),
             ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                  color: Color(0xFFFFB3D9), width: 2), // Rose clair au focus
+            focusedBorder: const OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(12)),
+              borderSide: BorderSide(color: Color(0xFFFFB3D9), width: 2),
             ),
             filled: true,
             fillColor: selectedRole != null
-                ? const Color(0xFFFFB3D9).withOpacity(
-                    0.05) // Fond rose très clair quand un rôle est choisi
-                : Colors.grey[50], // Gris très clair par défaut
+                ? const Color(0xFFFFB3D9).withOpacity(0.05)
+                : Colors.grey[50],
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
-              vertical: 12, // Padding réduit
+              vertical: 12,
             ),
           ),
-          keyboardType: TextInputType.phone,
+        ),
+
+        const SizedBox(height: 12),
+
+        // Bouton Connecter
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: _attemptLogin,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFFB3D9),
+              foregroundColor: Colors.white,
+              shape: const StadiumBorder(),
+              minimumSize: const Size(double.infinity, 48),
+              elevation: 6,
+              shadowColor: const Color(0xFFFFB3D9).withOpacity(0.4),
+            ),
+            child: const Text(
+              'Connecter',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+          ),
         ),
       ],
     );
@@ -399,11 +436,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   ),
                 );
               } else if (selectedRole == 'client') {
-                // TODO: Navigation vers l'inscription client
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Inscription Client - À venir'),
-                    backgroundColor: Colors.blue,
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ClientRegistrationScreen(),
                   ),
                 );
               } else {
@@ -434,5 +470,103 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         ],
       ),
     );
+  }
+
+  bool _isValidEmail(String v) {
+    return RegExp(r"^[^@\s]+@[^@\s]+\.[^@\s]+$").hasMatch(v);
+  }
+
+  void _attemptLogin() {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+    if (email.isEmpty || !_isValidEmail(email)) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text("Veuillez saisir un email valide"),
+        backgroundColor: Colors.redAccent,
+      ));
+      return;
+    }
+    if (password.length < 8) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text("Mot de passe trop court (min 8 caractères)"),
+        backgroundColor: Colors.redAccent,
+      ));
+      return;
+    }
+    _loginToApi(email, password);
+  }
+
+  Future<void> _loginToApi(String email, String password) async {
+    try {
+      String _baseApi() {
+        const env = String.fromEnvironment('API_BASE');
+        if (env.isNotEmpty) return env;
+        if (Platform.isAndroid)
+          return 'http://10.0.2.2:8000'; // Android emulator -> host
+        return 'http://127.0.0.1:8000'; // iOS simulator/desktop
+      }
+
+      final uri = Uri.parse('${_baseApi()}/api/auth/login/');
+      final client = HttpClient();
+      final req = await client.postUrl(uri);
+      final payload = jsonEncode({
+        "email": email,
+        "password": password,
+        "expected_role": selectedRole == 'professional'
+            ? 'professional'
+            : (selectedRole == 'client' ? 'client' : null),
+      });
+      req.headers.set(
+          HttpHeaders.contentTypeHeader, 'application/json; charset=utf-8');
+      req.headers.set(HttpHeaders.acceptHeader, 'application/json');
+      req.contentLength = utf8.encode(payload).length;
+      req.write(payload);
+      final res = await req.close().timeout(const Duration(seconds: 15));
+      final body = await res.transform(const Utf8Decoder()).join();
+      if (res.statusCode == 200) {
+        final data = jsonDecode(body) as Map<String, dynamic>;
+        final role = (data['role'] as String?) ?? 'user';
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Connecté'),
+          backgroundColor: Colors.green,
+        ));
+        if (!context.mounted) return;
+        if (role == 'professional') {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const ProDashboardScreen()),
+          );
+        } else {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const ClientDashboardScreen()),
+          );
+        }
+      } else {
+        String message = 'Échec de connexion';
+        try {
+          final err = jsonDecode(body) as Map<String, dynamic>;
+          message = (err['detail'] as String?) ?? err.values.first.toString();
+        } catch (_) {}
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(message),
+          backgroundColor: Colors.redAccent,
+        ));
+      }
+    } on SocketException catch (_) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text(
+            'Connexion refusée. Assurez-vous que le serveur Django tourne et utilisez une URL accessible (10.0.2.2 pour Android émulateur, IP locale sur appareil).'),
+        backgroundColor: Colors.redAccent,
+      ));
+    } on TimeoutException catch (_) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Délai dépassé. Vérifiez votre connexion réseau.'),
+        backgroundColor: Colors.redAccent,
+      ));
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Erreur réseau: $e'),
+        backgroundColor: Colors.redAccent,
+      ));
+    }
   }
 }
