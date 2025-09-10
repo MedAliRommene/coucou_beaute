@@ -77,6 +77,13 @@ class ProfessionalApplicationSerializer(serializers.ModelSerializer):
             return "pending"
         return "approved" if obj.is_approved else "rejected"
 
+    def validate(self, attrs):
+        service_type = attrs.get("service_type") or getattr(self.instance, "service_type", None)
+        salon_name = attrs.get("salon_name", "")
+        if service_type == "salon" and not str(salon_name or "").strip():
+            raise serializers.ValidationError({"salon_name": "Nom du salon requis pour le type 'J'ai un salon'"})
+        return super().validate(attrs)
+
 
 class ProfessionalListItemSerializer(serializers.ModelSerializer):
     user_email = serializers.CharField(source="user.email")

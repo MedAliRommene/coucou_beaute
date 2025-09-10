@@ -71,8 +71,9 @@ class _ClientRegistrationScreenState extends State<ClientRegistrationScreen> {
   }
 
   String? _validateConfirm(String? v) {
-    if (v != _passwordController.text)
+    if (v != _passwordController.text) {
       return 'Les mots de passe ne correspondent pas';
+    }
     return null;
   }
 

@@ -17,4 +17,8 @@ urlpatterns = [
     # Public/client booking endpoints
     path('public/slots/', views.public_slots, name='public_slots'),
     path('client/book/', views.client_book, name='client_book'),
+    # Web pro booking page helpers
+    path('list/', views.list_for_pro, name='list_for_pro'),
+    path('accept/', views.accept_appointment, name='accept_appointment'),
+    path('reject/', views.reject_appointment, name='reject_appointment'),
 ]

@@ -334,8 +334,8 @@ class _ProDashboardScreenState extends State<ProDashboardScreen> {
 
   Widget _miniLineChart(List<double> values, Color color) {
     return LineChart(LineChartData(
-      gridData: FlGridData(show: false),
-      titlesData: FlTitlesData(show: false),
+      gridData: const FlGridData(show: false),
+      titlesData: const FlTitlesData(show: false),
       borderData: FlBorderData(show: false),
       lineBarsData: [
         LineChartBarData(
@@ -355,8 +355,8 @@ class _ProDashboardScreenState extends State<ProDashboardScreen> {
 
   Widget _miniBarChart(List<double> values, Color color) {
     return BarChart(BarChartData(
-      gridData: FlGridData(show: false),
-      titlesData: FlTitlesData(show: false),
+      gridData: const FlGridData(show: false),
+      titlesData: const FlTitlesData(show: false),
       borderData: FlBorderData(show: false),
       barGroups: [
         for (int i = 0; i < values.length; i++)
@@ -435,9 +435,9 @@ class _ProDashboardScreenState extends State<ProDashboardScreen> {
               ? 1
               : (values.reduce((a, b) => a > b ? a : b) / 3 + 1).clamp(1, 5)),
           getDrawingHorizontalLine: (v) =>
-              FlLine(color: const Color(0xFFF1F1F1), strokeWidth: 1),
+              const FlLine(color: Color(0xFFF1F1F1), strokeWidth: 1),
         ),
-        titlesData: FlTitlesData(show: false),
+        titlesData: const FlTitlesData(show: false),
         borderData: FlBorderData(show: false),
         lineBarsData: [
           LineChartBarData(
@@ -793,11 +793,13 @@ class _ProDashboardScreenState extends State<ProDashboardScreen> {
       final notRes = await http.get(
           Uri.parse('$base/api/appointments/notifications/'),
           headers: headers);
-      if (kpiRes.statusCode == 200)
+      if (kpiRes.statusCode == 200) {
         _kpis = jsonDecode(kpiRes.body) as Map<String, dynamic>;
-      if (agendaRes.statusCode == 200)
+      }
+      if (agendaRes.statusCode == 200) {
         _agenda =
             (jsonDecode(agendaRes.body)['results'] as List).cast<dynamic>();
+      }
       if (notRes.statusCode == 200) {
         _notifications =
             (jsonDecode(notRes.body)['results'] as List).cast<dynamic>();

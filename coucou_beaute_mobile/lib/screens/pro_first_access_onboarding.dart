@@ -629,22 +629,28 @@ class _ProFirstAccessOnboardingState extends State<ProFirstAccessOnboarding> {
 
   Future<void> _submit() async {
     final errors = <String>[];
-    if (_fullNameController.text.trim().isEmpty)
+    if (_fullNameController.text.trim().isEmpty) {
       errors.add('Nom complet requis');
-    if (_specialtyController.text.trim().isEmpty)
+    }
+    if (_specialtyController.text.trim().isEmpty) {
       errors.add('Spécialité requise');
+    }
     if (_cityController.text.trim().isEmpty) errors.add('Ville requise');
-    if (_selectedDays.isEmpty)
+    if (_selectedDays.isEmpty) {
       errors.add('Choisissez au moins un jour de travail');
+    }
     final hasService = _services.any(
         (s) => s.name.text.trim().isNotEmpty && s.price.text.trim().isNotEmpty);
     if (!hasService) errors.add('Ajoutez au moins un service avec un prix');
-    if (!_isValidUrl(_instagramController.text))
+    if (!_isValidUrl(_instagramController.text)) {
       errors.add('Lien Instagram invalide');
-    if (!_isValidUrl(_facebookController.text))
+    }
+    if (!_isValidUrl(_facebookController.text)) {
       errors.add('Lien Facebook invalide');
-    if (!_isValidUrl(_tiktokController.text))
+    }
+    if (!_isValidUrl(_tiktokController.text)) {
       errors.add('Lien TikTok invalide');
+    }
 
     if (errors.isNotEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -659,7 +665,7 @@ class _ProFirstAccessOnboardingState extends State<ProFirstAccessOnboarding> {
     for (final f in _galleryFiles) {
       final bytes = await f.readAsBytes();
       final b64 = base64Encode(bytes);
-      final mime = 'image/jpeg';
+      const mime = 'image/jpeg';
       galleryBase64.add('data:$mime;base64,$b64');
     }
 

@@ -44,7 +44,7 @@ class _ClientDashboardScreenState extends State<ClientDashboardScreen> {
 
   // Categories loaded dynamically from backend
   List<String> _tabs = ['Tous'];
-  Map<String, String> _labelToCode = {}; // 'Coiffure' -> 'hairdressing'
+  final Map<String, String> _labelToCode = {}; // 'Coiffure' -> 'hairdressing'
   double _globalPriceMin = 0;
   double _globalPriceMax = 300;
   // kept for potential future behavior tuning (currently unused)
@@ -303,7 +303,7 @@ class _ClientDashboardScreenState extends State<ClientDashboardScreen> {
               icon: const Icon(Icons.logout),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
-                foregroundColor: Color(0xFFE91E63),
+                foregroundColor: const Color(0xFFE91E63),
                 side: const BorderSide(color: Color(0xFFE91E63)),
                 shape: const StadiumBorder(),
               ),
@@ -460,13 +460,12 @@ class _ClientDashboardScreenState extends State<ClientDashboardScreen> {
           setState(() {});
           _persistFilters();
         },
-        decoration: InputDecoration(
+        decoration: const InputDecoration(
           hintText: 'Rechercher un service…',
-          hintStyle: const TextStyle(color: Color(0xFF9E9E9E)),
-          prefixIcon: const Icon(Icons.search, color: Colors.grey),
+          hintStyle: TextStyle(color: Color(0xFF9E9E9E)),
+          prefixIcon: Icon(Icons.search, color: Colors.grey),
           border: InputBorder.none,
-          contentPadding:
-              const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+          contentPadding: EdgeInsets.symmetric(vertical: 14, horizontal: 16),
         ),
       ),
     );
@@ -474,9 +473,9 @@ class _ClientDashboardScreenState extends State<ClientDashboardScreen> {
 
   // Booking state used previously (now removed)
   // Kept minimal placeholders to avoid refactor cost in helper functions
-  DateTime _focusedDay = DateTime.now();
+  final DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
-  Map<DateTime, List<Map<String, dynamic>>> _dayToSlots = {};
+  final Map<DateTime, List<Map<String, dynamic>>> _dayToSlots = {};
   // bool _loadingSlots = false; // not used after moving booking UI
 
   Future<void> _fetchSlotsForDay(DateTime day) async {
@@ -1150,7 +1149,7 @@ class _ProfessionalDetailScreen extends StatelessWidget {
                           ],
                         ),
                       ),
-                      Text('${price} DT',
+                      Text('$price DT',
                           style: const TextStyle(
                               fontWeight: FontWeight.w800, fontSize: 14)),
                     ],

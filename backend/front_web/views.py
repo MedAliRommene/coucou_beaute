@@ -202,7 +202,8 @@ def pro_dashboard(request: HttpRequest) -> HttpResponse:
             _ = pro.extra
         except ProfessionalProfileExtra.DoesNotExist:
             return redirect('front_web:pro_onboarding')
-        return render(request, 'front_web/pro_dashboard.html', { 'pro_id': pro.id })
+        # Pass full pro object for template parity with admin view
+        return render(request, 'front_web/pro_dashboard.html', { 'pro': pro, 'pro_id': pro.id })
     except Exception:
         return redirect('front_web:home')
 
@@ -252,6 +253,7 @@ def pro_onboarding(request: HttpRequest) -> HttpResponse:
                 'first_name': app.first_name,
                 'last_name': app.last_name,
                 'activity_category': app.activity_category,
+                'service_type': app.service_type,
                 'address': app.address,
                 'latitude': app.latitude,
                 'longitude': app.longitude,
@@ -350,6 +352,13 @@ def save_professional_extras_web(request: HttpRequest) -> HttpResponse:
     return HttpResponse(status=204)
 
 
+@login_required
 def booking_page(request: HttpRequest) -> HttpResponse:
-    return render(request, 'front_web/booking.html')
+    try:
+        pro = getattr(request.user, 'professional_profile', None)
+        if not pro:
+            return redirect('front_web:home')
+        return render(request, 'front_web/booking.html', { 'pro': pro, 'pro_id': pro.id })
+    except Exception:
+        return redirect('front_web:home')
 

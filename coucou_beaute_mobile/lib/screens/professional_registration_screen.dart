@@ -846,16 +846,14 @@ class _ProfessionalRegistrationScreenState
                       userAgentPackageName: 'coucou_beaute_mobile',
                     ),
                     MarkerLayer(markers: [
-                      if ((_lastLat ?? _nabeulCenter.latitude) != null)
-                        Marker(
-                          point: latlng.LatLng(
-                              _lastLat ?? _nabeulCenter.latitude,
-                              _lastLng ?? _nabeulCenter.longitude),
-                          width: 40,
-                          height: 40,
-                          child: const Icon(Icons.location_on,
-                              color: Color(0xFFE91E63), size: 36),
-                        ),
+                      Marker(
+                        point: latlng.LatLng(_lastLat ?? _nabeulCenter.latitude,
+                            _lastLng ?? _nabeulCenter.longitude),
+                        width: 40,
+                        height: 40,
+                        child: const Icon(Icons.location_on,
+                            color: Color(0xFFE91E63), size: 36),
+                      ),
                     ]),
                   ],
                 ),

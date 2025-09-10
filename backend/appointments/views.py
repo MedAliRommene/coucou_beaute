@@ -626,3 +626,102 @@ def client_book(request):
         return Response({"id": appt.id, "status": appt.status}, status=status.HTTP_201_CREATED)
     except Exception as e:
         return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+# ------------------ Web Pro booking helpers used by booking.html ------------------
+@api_view(["GET"])  # /api/appointments/list/?pro_id=
+@permission_classes([IsAuthenticated])
+@authentication_classes([JWTAuthentication, SessionAuthentication])
+def list_for_pro(request):
+    """Return pending and confirmed appointments for a professional.
+
+    If user is a professional, pro_id is inferred; otherwise requires ?pro_id=.
+    """
+    pro = _get_professional_from_user(request.user)
+    pro_id = request.query_params.get("pro_id") or (pro.id if pro else None)
+    if not pro_id:
+        return Response({"detail": "pro_id requis"}, status=status.HTTP_400_BAD_REQUEST)
+
+    pending = []
+    confirmed = []
+    for a in Appointment.objects.filter(professional_id=int(pro_id)).order_by("-start")[:200]:
+        row = {
+            "id": a.id,
+            "service_name": a.service_name,
+            "price": float(a.price),
+            "start": a.start.isoformat(),
+            "end": a.end.isoformat(),
+            "status": a.status,
+            "client_name": (getattr(getattr(a.client, "user", None), "get_full_name", lambda: "")() or getattr(getattr(a.client, "user", None), "email", "")),
+        }
+        if a.status == "confirmed":
+            confirmed.append(row)
+        elif a.status == "pending":
+            pending.append(row)
+    return Response({"pending": pending, "confirmed": confirmed})
+
+
+@api_view(["POST"])  # body: {appointment_id}
+@permission_classes([IsAuthenticated])
+@authentication_classes([JWTAuthentication, SessionAuthentication])
+def accept_appointment(request):
+    pro = _get_professional_from_user(request.user)
+    if not pro:
+        return Response({"detail": "Profil professionnel requis"}, status=status.HTTP_403_FORBIDDEN)
+    appt_id = request.data.get("appointment_id")
+    if not appt_id:
+        return Response({"detail": "appointment_id requis"}, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        appt = Appointment.objects.get(id=int(appt_id), professional=pro)
+    except Appointment.DoesNotExist:
+        return Response({"detail": "Rendez-vous introuvable"}, status=status.HTTP_404_NOT_FOUND)
+    old_status = appt.status
+    appt.status = "confirmed"
+    appt.save(update_fields=["status"])
+    # Notify client
+    try:
+        if appt.client and appt.client.user and appt.client.user.email and old_status != "confirmed":
+            subject = "Votre rendez-vous est confirmé"
+            message = (
+                f"Bonjour {appt.client.user.first_name or ''},\n\n"
+                f"Votre rendez-vous '{appt.service_name}' du {appt.start.strftime('%d/%m/%Y %H:%M')} a été confirmé par le centre.\n\n"
+                "Merci d'utiliser COUCOU BEAUTÉ."
+            )
+            from_addr = getattr(settings, 'DEFAULT_FROM_EMAIL', 'no-reply@coucou-beaute.local')
+            threading.Thread(target=send_mail, args=(subject, message, from_addr, [appt.client.user.email]), kwargs={"fail_silently": True}).start()
+    except Exception:
+        pass
+    return Response({"ok": True})
+
+
+@api_view(["POST"])  # body: {appointment_id}
+@permission_classes([IsAuthenticated])
+@authentication_classes([JWTAuthentication, SessionAuthentication])
+def reject_appointment(request):
+    pro = _get_professional_from_user(request.user)
+    if not pro:
+        return Response({"detail": "Profil professionnel requis"}, status=status.HTTP_403_FORBIDDEN)
+    appt_id = request.data.get("appointment_id")
+    if not appt_id:
+        return Response({"detail": "appointment_id requis"}, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        appt = Appointment.objects.get(id=int(appt_id), professional=pro)
+    except Appointment.DoesNotExist:
+        return Response({"detail": "Rendez-vous introuvable"}, status=status.HTTP_404_NOT_FOUND)
+    old_status = appt.status
+    appt.status = "cancelled"
+    appt.save(update_fields=["status"])
+    # Notify client
+    try:
+        if appt.client and appt.client.user and appt.client.user.email and old_status != "cancelled":
+            subject = "Votre rendez-vous est annulé"
+            message = (
+                f"Bonjour {appt.client.user.first_name or ''},\n\n"
+                f"Votre rendez-vous '{appt.service_name}' du {appt.start.strftime('%d/%m/%Y %H:%M')} a été annulé par le centre.\n\n"
+                "Merci d'utiliser COUCOU BEAUTÉ."
+            )
+            from_addr = getattr(settings, 'DEFAULT_FROM_EMAIL', 'no-reply@coucou-beaute.local')
+            threading.Thread(target=send_mail, args=(subject, message, from_addr, [appt.client.user.email]), kwargs={"fail_silently": True}).start()
+    except Exception:
+        pass
+    return Response({"ok": True})

@@ -1,70 +1,495 @@
-{% extends 'base.html' %}
-{% load static %}
+{% extends 'front_web/base_prof.html' %}
 
-{% block title %}Professionnel - Coucou Beauté{% endblock %}
-
-{% block extra_head %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-{% endblock %}
+{% block title %}Détail du Professionnel - Coucou Beauté{% endblock %}
 
 {% block content %}
 <div class="p-6 space-y-6">
-    <div class="flex items-center justify-between">
-        <h1 class="text-2xl font-bold">Tableau de bord Pro</h1>
-        <a href="/logout/" class="text-sm px-3 py-2 rounded-lg bg-gray-200">Déconnexion</a>
+    <div class="flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+            <div
+                class="w-12 h-12 rounded-full bg-gradient-to-br from-pink-400 to-blue-400 flex items-center justify-center text-white">
+                <i data-lucide="factory" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">Centre professionnel</h1>
+                <p class="text-gray-600 mt-1">Vue analytique et informations clés</p>
+            </div>
+        </div>
+
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div class="bg-white rounded-xl border p-4">
-            <div class="text-sm text-gray-600">Chiffre d'affaires</div>
-            <div id="kpiRevenue" class="text-2xl font-semibold">—</div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="kpi-glass flex items-center gap-4 p-5">
+            <div
+                class="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-300 to-blue-300 flex items-center justify-center text-white">
+                <i data-lucide="building-2" class="w-6 h-6"></i>
+            </div>
+            <div class="flex-1">
+                <div class="text-sm text-gray-600">Nom du centre</div>
+                <div class="text-xl font-semibold">{{ pro.business_name|default:'—' }}</div>
+            </div>
         </div>
-        <div class="bg-white rounded-xl border p-4">
-            <div class="text-sm text-gray-600">Rendez-vous</div>
-            <div id="kpiAppts" class="text-2xl font-semibold">—</div>
+        <div class="kpi-glass flex items-center gap-4 p-5">
+            <div
+                class="w-12 h-12 rounded-xl bg-gradient-to-br from-green-300 to-teal-300 flex items-center justify-center text-white">
+                <i data-lucide="badge-check" class="w-6 h-6"></i>
+            </div>
+            <div class="flex-1">
+                <div class="text-sm text-gray-600">Vérifié</div>
+                <div class="text-xl font-semibold">{{ pro.is_verified|yesno:'Oui,Non' }}</div>
+            </div>
         </div>
-        <div class="bg-white rounded-xl border p-4">
-            <div class="text-sm text-gray-600">Fidélisation</div>
-            <div id="kpiRet" class="text-2xl font-semibold">—</div>
+        <div class="kpi-glass flex items-center gap-4 p-5">
+            <div
+                class="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-200 to-amber-300 flex items-center justify-center text-white">
+                <i data-lucide="calendar-days" class="w-6 h-6"></i>
+            </div>
+            <div class="flex-1">
+                <div class="text-sm text-gray-600">Créé le</div>
+                <div class="text-xl font-semibold">{{ pro.created_at }}</div>
+            </div>
         </div>
-        <div class="bg-white rounded-xl border p-4">
-            <div class="text-sm text-gray-600">Marge</div>
-            <div id="kpiMargin" class="text-2xl font-semibold">—</div>
+        <div class="kpi-glass flex items-center gap-4 p-5">
+            <div
+                class="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-300 to-pink-300 flex items-center justify-center text-white">
+                <i data-lucide="mail" class="w-6 h-6"></i>
+            </div>
+            <div class="flex-1">
+                <div class="text-sm text-gray-600">Email</div>
+                <div class="text-xl font-semibold">{{ pro.user.email }}</div>
+            </div>
         </div>
     </div>
 
-    <div class="bg-white rounded-xl border p-4">
-        <h3 class="text-sm font-medium text-gray-700 mb-2">Revenus</h3>
-        <canvas id="revChart" height="120"></canvas>
+    <div class="glass p-6">
+        <div class="flex items-center justify-between mb-3">
+            <h2 class="text-xl font-semibold text-gray-900">Analytique</h2>
+            <div class="flex items-center gap-2 text-sm">
+                <input id="anFrom" type="date" class="border rounded-lg px-2 py-1" />
+                <span>→</span>
+                <input id="anTo" type="date" class="border rounded-lg px-2 py-1" />
+                <button class="btn-secondary-glass" onclick="reloadAnalytics()">Appliquer</button>
+            </div>
+        </div>
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <div class="bg-white/40 rounded-xl border p-4 xl:col-span-2">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-sm font-medium text-gray-700">Tendance quotidienne</h3>
+                    <div class="text-xs text-gray-500">Réservations par jour</div>
+                </div>
+                <canvas id="chartTrend" height="120"></canvas>
+            </div>
+            <div class="bg-white/40 rounded-xl border p-4">
+                <h3 class="text-sm font-medium text-gray-700 mb-2">Répartition des services</h3>
+                <canvas id="chartServices" height="120"></canvas>
+            </div>
+        </div>
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mt-6">
+            <div class="bg-white/40 rounded-xl border p-4">
+                <h3 class="text-sm font-medium text-gray-700 mb-2">Par heure de la journée</h3>
+                <canvas id="chartHourly" height="120"></canvas>
+            </div>
+            <div class="bg-white/40 rounded-xl border p-4">
+                <h3 class="text-sm font-medium text-gray-700 mb-2">Réservations par semaine</h3>
+                <canvas id="chartReservations" height="120"></canvas>
+            </div>
+            <div class="bg-white/40 rounded-xl border p-4">
+                <h3 class="text-sm font-medium text-gray-700 mb-2">Chiffre d'affaires</h3>
+                <canvas id="chartRevenue" height="120"></canvas>
+            </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
+            <div class="kpi-glass p-4">
+                <div class="text-xs text-gray-500">En attente</div>
+                <div id="kpiPending" class="text-2xl font-semibold">—</div>
+            </div>
+            <div class="kpi-glass p-4">
+                <div class="text-xs text-gray-500">Confirmés</div>
+                <div id="kpiConfirmed" class="text-2xl font-semibold">—</div>
+            </div>
+            <div class="kpi-glass p-4">
+                <div class="text-xs text-gray-500">Annulés</div>
+                <div id="kpiCancelled" class="text-2xl font-semibold">—</div>
+            </div>
+            <div class="kpi-glass p-4">
+                <div class="text-xs text-gray-500">Terminés</div>
+                <div id="kpiCompleted" class="text-2xl font-semibold">—</div>
+            </div>
+        </div>
+    </div>
+    <div class="glass p-6">
+        <div class="flex items-center justify-between mb-3">
+            <h2 class="text-xl font-semibold text-gray-900">Agenda du jour</h2>
+            <div class="flex items-center gap-2">
+                <input id="dayPicker" type="date" class="border rounded-lg px-2 py-1" />
+                <button class="btn-secondary-glass" onclick="reloadAgenda()">Charger</button>
+            </div>
+        </div>
+        <div id="timeline" class="relative">
+            <!-- timeline rendered here -->
+        </div>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="glass p-6 lg:col-span-2">
+            <h2 class="text-xl font-semibold text-gray-900 mb-3">Informations du centre</h2>
+            <div class="grid md:grid-cols-2 gap-4">
+                <div class="p-4 rounded-xl border bg-white/50">
+                    <div class="text-xs text-gray-500 flex items-center gap-2"><i data-lucide="map-pin"
+                            class="w-4 h-4"></i> Adresse</div>
+                    <div class="text-gray-900 mt-1">{{ pro.extra.city|default:'—' }}</div>
+                </div>
+                <div class="p-4 rounded-xl border bg-white/50">
+                    <div class="text-xs text-gray-500 flex items-center gap-2"><i data-lucide="phone"
+                            class="w-4 h-4"></i> Téléphone</div>
+                    <div class="text-gray-900 mt-1">{{ pro.user.phone|default:'—' }}</div>
+                </div>
+                <div class="p-4 rounded-xl border bg-white/50">
+                    <div class="text-xs text-gray-500 flex items-center gap-2"><i data-lucide="mail"
+                            class="w-4 h-4"></i> Email</div>
+                    <div class="text-gray-900 mt-1">{{ pro.user.email }}</div>
+                </div>
+                <div class="p-4 rounded-xl border bg-white/50">
+                    <div class="text-xs text-gray-500 flex items-center gap-2"><i data-lucide="calendar"
+                            class="w-4 h-4"></i> Créé le</div>
+                    <div class="text-gray-900 mt-1">{{ pro.created_at }}</div>
+                </div>
+                {% if pro.extra %}
+                <div class="md:col-span-2 p-4 rounded-xl border bg-white/50">
+                    <div class="flex items-center justify-between">
+                        <div class="text-xs text-gray-500 flex items-center gap-2"><i data-lucide="user-round"
+                                class="w-4 h-4"></i> Biographie</div>
+                        <button class="btn-secondary-glass" onclick="openModal('modalBio')">Modifier</button>
+                    </div>
+                    <div id="bioText" class="text-gray-900 mt-1">{{ pro.extra.bio|default:'—' }}</div>
+                </div>
+                <div class="p-4 rounded-xl border bg-white/50">
+                    <div class="text-xs text-gray-500 flex items-center gap-2"><i data-lucide="calendar-check"
+                            class="w-4 h-4"></i> Jours de travail</div>
+                    <div class="text-gray-900 mt-2 flex flex-wrap gap-2">
+                        {% for d in pro.extra.working_days %}
+                        <span class="px-2 py-1 rounded-full text-xs bg-pink-50 text-pink-700 border border-pink-200">
+                            {{ d|upper }}</span>
+                        {% empty %}
+                        <span class="text-gray-500">—</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="p-4 rounded-xl border bg-white/50">
+                    <div class="flex items-center justify-between">
+                        <div class="text-xs text-gray-500 flex items-center gap-2"><i data-lucide="clock-8"
+                                class="w-4 h-4"></i> Horaires</div>
+                        <button class="btn-secondary-glass" onclick="openModal('modalHours')">Modifier</button>
+                    </div>
+                    <div id="hoursText" class="text-gray-900 mt-1">{{ pro.extra.working_hours.start }} - {{
+                        pro.extra.working_hours.end }}</div>
+
+
+                </div>
+                <div class="md:col-span-2 p-4 rounded-xl border bg-white/50">
+                    <div class="flex items-center justify-between">
+                        <div class="text-xs text-gray-500 flex items-center gap-2"><i data-lucide="share-2"
+                                class="w-4 h-4"></i> Réseaux sociaux</div>
+                        <button class="btn-secondary-glass" onclick="openModal('modalSocials')">Modifier</button>
+                    </div>
+                    <div class="text-gray-900 mt-1 space-y-1">
+                        <div class="flex items-center gap-2"><i data-lucide="instagram"
+                                class="w-4 h-4 text-pink-600"></i> Instagram : <a class="text-blue-600"
+                                href="{{ pro.extra.social_instagram }}" target="_blank">
+                                {{ pro.extra.social_instagram|default:'—' }}</a></div>
+                        <div class="flex items-center gap-2"><i data-lucide="facebook"
+                                class="w-4 h-4 text-blue-600"></i> Facebook : <a class="text-blue-600"
+                                href="{{ pro.extra.social_facebook }}" target="_blank">
+                                {{ pro.extra.social_facebook|default:'—' }}</a></div>
+                        <div class="flex items-center gap-2"><i data-lucide="music-2" class="w-4 h-4 text-gray-700"></i>
+                            TikTok : <a class="text-blue-600" href="{{ pro.extra.social_tiktok }}" target="_blank">
+                                {{pro.extra.social_tiktok|default:'—' }}</a></div>
+                    </div>
+                </div>
+                <div class="md:col-span-2 p-4 rounded-xl border bg-white/50">
+                    <div class="flex items-center justify-between">
+                        <div class="text-xs text-gray-500 flex items-center gap-2"><i data-lucide="sparkles"
+                                class="w-4 h-4"></i> Services proposés</div>
+                        <button class="btn-secondary-glass" onclick="openModal('modalServices')">Modifier</button>
+                    </div>
+                    <div class="mt-2 grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {% for s in pro.extra.services %}
+                        <div class="p-3 rounded-lg border bg-white/60 flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <i data-lucide="scissors" class="w-4 h-4 text-pink-600"></i>
+                                <div>
+                                    <div class="font-medium">{{ s.name }}</div>
+                                    <div class="text-xs text-gray-500">Durée : {{ s.duration_min }} min</div>
+                                </div>
+                            </div>
+                            <div class="text-pink-600 font-semibold">{{ s.price }} DT</div>
+                        </div>
+                        {% empty %}
+                        <div class="text-gray-500">—</div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="md:col-span-2 p-4 rounded-xl border bg-white/50">
+                    <div class="flex items-center justify-between">
+                        <div class="text-xs text-gray-500 flex items-center gap-2"><i data-lucide="images"
+                                class="w-4 h-4"></i> Galerie</div>
+                        <button class="btn-secondary-glass" onclick="openModal('modalGallery')">Ajouter</button>
+                    </div>
+                    <div class="mt-2 flex flex-wrap gap-3">
+                        {% for g in pro.extra.gallery %}
+                        <img src="{{ g }}" class="w-24 h-24 object-cover rounded-lg border" />
+                        {% empty %}
+                        <div class="text-gray-500">—</div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="glass p-6">
+            <h2 class="text-xl font-semibold text-gray-900 mb-3">Actions rapides</h2>
+            <div class="flex flex-col gap-2">
+                <button class="btn-glass">Envoyer une invitation</button>
+                <button class="btn-secondary-glass">Désactiver le profil</button>
+                <button class="btn-secondary-glass text-red-700">Supprimer</button>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- Modals -->
+    <div id="modalBio" class="hidden fixed inset-0 bg-black/40 z-50 items-center justify-center">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-lg">
+            <h3 class="text-lg font-semibold mb-3">Modifier la biographie</h3>
+            <textarea id="inputBio" rows="5" class="w-full border rounded-xl p-3" placeholder="Biographie"></textarea>
+            <div class="mt-4 flex justify-end gap-2">
+                <button class="btn-secondary-glass" onclick="closeModal('modalBio')">Annuler</button>
+                <button class="btn-glass"
+                    onclick="saveExtras({bio: document.getElementById('inputBio').value})">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+    <div id="modalHours" class="hidden fixed inset-0 bg-black/40 z-50 items-center justify-center">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-lg">
+            <h3 class="text-lg font-semibold mb-3">Modifier les horaires</h3>
+            <div class="grid grid-cols-2 gap-3">
+                <input id="inputStart" class="border rounded-xl p-3" placeholder="Début (HH:MM)" />
+                <input id="inputEnd" class="border rounded-xl p-3" placeholder="Fin (HH:MM)" />
+            </div>
+            <div class="mt-4 flex justify-end gap-2">
+                <button class="btn-secondary-glass" onclick="closeModal('modalHours')">Annuler</button>
+                <button class="btn-glass"
+                    onclick="saveExtras({working_hours: {start: document.getElementById('inputStart').value, end: document.getElementById('inputEnd').value}})">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+    <div id="modalSocials" class="hidden fixed inset-0 bg-black/40 z-50 items-center justify-center">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-lg">
+            <h3 class="text-lg font-semibold mb-3">Modifier les réseaux sociaux</h3>
+            <input id="inputIG" class="border rounded-xl p-3 mb-2 w-full" placeholder="Instagram (https://...)" />
+            <input id="inputFB" class="border rounded-xl p-3 mb-2 w-full" placeholder="Facebook (https://...)" />
+            <input id="inputTT" class="border rounded-xl p-3 mb-2 w-full" placeholder="TikTok (https://...)" />
+            <div class="mt-2 flex justify-end gap-2">
+                <button class="btn-secondary-glass" onclick="closeModal('modalSocials')">Annuler</button>
+                <button class="btn-glass"
+                    onclick="saveExtras({social_instagram: document.getElementById('inputIG').value, social_facebook: document.getElementById('inputFB').value, social_tiktok: document.getElementById('inputTT').value})">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+    <div id="modalServices" class="hidden fixed inset-0 bg-black/40 z-50 items-center justify-center">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-2xl">
+            <h3 class="text-lg font-semibold mb-3">Modifier les services</h3>
+            <textarea id="inputServices" rows="6" class="w-full border rounded-xl p-3"
+                placeholder="JSON ex: [{&quot;name&quot;:&quot;Soin&quot;,&quot;duration_min&quot;:45,&quot;price&quot;:80}]"></textarea>
+            <div class="mt-2 flex justify-end gap-2">
+                <button class="btn-secondary-glass" onclick="closeModal('modalServices')">Annuler</button>
+                <button class="btn-glass" onclick="saveServices()">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+    <div id="modalGallery" class="hidden fixed inset-0 bg-black/40 z-50 items-center justify-center">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-lg">
+            <h3 class="text-lg font-semibold mb-3">Ajouter à la galerie</h3>
+            <input id="inputGallery" type="file" multiple accept="image/*" class="block w-full text-sm" />
+            <div class="mt-2 flex justify-end gap-2">
+                <button class="btn-secondary-glass" onclick="closeModal('modalGallery')">Annuler</button>
+                <button class="btn-glass" onclick="saveGallery()">Enregistrer</button>
+            </div>
+        </div>
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', async function () {
-        const proId = '{{ pro_id|default:"" }}';
-        if (!proId) return;
-        const today = new Date();
-        const to = today.toISOString().slice(0, 10);
-        const fromDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 6);
-        const from = fromDate.toISOString().slice(0, 10);
-        const q = new URLSearchParams({ pro_id: proId, from, to });
-        const r = await fetch('/api/appointments/analytics/overview/?' + q.toString(), { headers: { 'Accept': 'application/json' }, credentials: 'same-origin' });
-        if (!r.ok) return;
-        const data = await r.json();
-        const sum = data.summary || {};
-        const fmtMoney = (v) => new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(v || 0);
-        document.getElementById('kpiRevenue').textContent = fmtMoney(sum.revenue_total || 0);
-        document.getElementById('kpiAppts').textContent = String(sum.reservations_total || 0);
-        document.getElementById('kpiRet').textContent = Math.round((sum.retention_rate || 0) * 100) + '%';
-        document.getElementById('kpiMargin').textContent = (sum.margin_pct || 0) + '%';
+    let chartReservations, chartServices, chartTrend, chartHourly, chartRevenue;
 
-        const ctx = document.getElementById('revChart').getContext('2d');
-        const series = data.revenue_daily || [];
-        new Chart(ctx, {
+    function fmt(d) {
+        return d.toISOString().slice(0, 10);
+    }
+
+    async function reloadAnalytics() {
+        const f = document.getElementById('anFrom').value;
+        const t = document.getElementById('anTo').value;
+        const params = new URLSearchParams();
+        params.set('pro_id', '{{ pro.id }}');
+        if (f) params.set('from', f);
+        if (t) params.set('to', t);
+        const res = await fetch(`/api/appointments/analytics/overview/?${params.toString()}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const labels = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+        const week = data.reservations_by_weekday || [0, 0, 0, 0, 0, 0, 0];
+        const dist = data.services_distribution || [];
+
+        // Trend chart
+        const tLabels = (data.trend_daily || []).map(x => x.date);
+        const tValues = (data.trend_daily || []).map(x => x.count);
+        const ctxT = document.getElementById('chartTrend').getContext('2d');
+        if (chartTrend) chartTrend.destroy();
+        chartTrend = new Chart(ctxT, {
             type: 'line',
-            data: { labels: series.map(x => x.date), datasets: [{ data: series.map(x => x.value), borderColor: 'rgb(236,72,153)', backgroundColor: 'rgba(236,72,153,0.12)', tension: 0.35, fill: true }] },
+            data: { labels: tLabels, datasets: [{ data: tValues, borderColor: 'rgb(236,72,153)', backgroundColor: 'rgba(236,72,153,0.12)', tension: 0.35, fill: true }] },
+            options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { beginAtZero: true } } }
+        });
+
+        // Services chart
+        const ctx2 = document.getElementById('chartServices').getContext('2d');
+        if (chartServices) chartServices.destroy();
+        chartServices = new Chart(ctx2, {
+            type: 'doughnut',
+            data: {
+                labels: dist.map(x => x.label), datasets: [{
+                    data: dist.map(x => x.value), backgroundColor: [
+                        'rgba(236,72,153,0.8)', 'rgba(108,169,224,0.8)', 'rgba(34,197,94,0.8)', 'rgba(251,146,60,0.8)', 'rgba(168,85,247,0.8)', 'rgba(14,165,233,0.8)', 'rgba(234,88,12,0.8)', 'rgba(34,197,94,0.5)'], borderWidth: 2
+                }]
+            },
+            options: { plugins: { legend: { position: 'bottom' } } }
+        });
+
+        // Hourly distribution
+        const ctxH = document.getElementById('chartHourly').getContext('2d');
+        if (chartHourly) chartHourly.destroy();
+        chartHourly = new Chart(ctxH, {
+            type: 'bar',
+            data: { labels: Array.from({ length: 24 }, (_, i) => (i < 10 ? ('0' + i) : i) + ':00'), datasets: [{ data: data.hourly_distribution || [], backgroundColor: 'rgba(108,169,224,0.6)' }] },
             options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
         });
-    });
+
+        // Weekday reservations
+        const ctx1 = document.getElementById('chartReservations').getContext('2d');
+        if (chartReservations) chartReservations.destroy();
+        chartReservations = new Chart(ctx1, {
+            type: 'bar',
+            data: { labels, datasets: [{ data: week, backgroundColor: 'rgba(236,72,153,0.6)' }] },
+            options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+        });
+
+        // Revenue daily
+        const rLabels = (data.revenue_daily || []).map(x => x.date);
+        const rValues = (data.revenue_daily || []).map(x => x.value);
+        const ctxR = document.getElementById('chartRevenue').getContext('2d');
+        if (chartRevenue) chartRevenue.destroy();
+        chartRevenue = new Chart(ctxR, {
+            type: 'line',
+            data: { labels: rLabels, datasets: [{ data: rValues, borderColor: 'rgb(34,197,94)', backgroundColor: 'rgba(34,197,94,0.12)', tension: 0.35, fill: true }] },
+            options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+        });
+
+        // KPIs
+        const sb = data.status_breakdown || {};
+        document.getElementById('kpiPending').textContent = sb.pending ?? 0;
+        document.getElementById('kpiConfirmed').textContent = sb.confirmed ?? 0;
+        document.getElementById('kpiCancelled').textContent = sb.cancelled ?? 0;
+        document.getElementById('kpiCompleted').textContent = sb.completed ?? 0;
+    }
+
+    function hourLabel(h) { return (h < 10 ? '0' + h : '' + h) + ':00'; }
+    function statusColor(s) { if (s === 'confirmed') return 'bg-red-500'; if (s === 'pending') return 'bg-amber-400'; return 'bg-emerald-500'; }
+
+    function renderTimeline(items) {
+        const container = document.getElementById('timeline');
+        container.innerHTML = '';
+        const grid = document.createElement('div');
+        grid.className = 'grid grid-cols-12 gap-2';
+        // Left hours column
+        const left = document.createElement('div');
+        left.className = 'col-span-2 space-y-2';
+        for (let h = 8; h <= 20; h++) {
+            const row = document.createElement('div');
+            row.className = 'text-xs text-gray-500 h-10 flex items-start';
+            row.textContent = hourLabel(h);
+            left.appendChild(row);
+        }
+        grid.appendChild(left);
+
+        // Right timeline column
+        const right = document.createElement('div');
+        right.className = 'col-span-10 relative border rounded-lg bg-white/50';
+        // hour rows
+        for (let h = 8; h <= 20; h++) {
+            const line = document.createElement('div');
+            line.className = 'border-b last:border-b-0 h-10';
+            right.appendChild(line);
+        }
+        // events
+        const startMinute = 8 * 60; const endMinute = 20 * 60; const total = endMinute - startMinute;
+        for (const it of items) {
+            const s = new Date(it.start); const e = new Date(it.end);
+            const sm = s.getHours() * 60 + s.getMinutes();
+            const em = e.getHours() * 60 + e.getMinutes();
+            const top = ((sm - startMinute) / total) * (13 * 40); // 13 rows * 40px
+            const height = Math.max(28, ((em - sm) / total) * (13 * 40));
+            const block = document.createElement('div');
+            block.className = `absolute left-2 right-2 ${statusColor(it.status)}/80 text-white rounded-md shadow px-2 py-1`;
+            block.style.top = `${top}px`; block.style.height = `${height}px`;
+            block.innerHTML = `<div class='text-xs font-semibold truncate'>${it.service_name}</div><div class='text-[11px] opacity-90 truncate'>${it.client_name || ''}</div>`;
+            right.appendChild(block);
+        }
+        grid.appendChild(right);
+        container.appendChild(grid);
+    }
+
+    async function reloadAgenda() {
+        const d = document.getElementById('dayPicker').value || fmt(new Date());
+        const res = await fetch(`/api/appointments/agenda/day/?pro_id={{ pro.id }}&date=${d}`);
+        if (!res.ok) return; const data = await res.json();
+        renderTimeline(data.results || []);
+    }
+
+    // Init defaults on load
+    (function init() {
+        const today = fmt(new Date());
+        document.getElementById('dayPicker').value = today;
+        const from = new Date(); from.setDate(from.getDate() - 6);
+        document.getElementById('anFrom').value = fmt(from);
+        document.getElementById('anTo').value = today;
+        reloadAnalytics();
+        reloadAgenda();
+    })();
+
+    function getCsrf() {
+        const name = 'csrftoken=';
+        const parts = document.cookie.split(';');
+        for (let p of parts) { p = p.trim(); if (p.startsWith(name)) return p.substring(name.length); }
+        return '';
+    }
+    function openModal(id) { const m = document.getElementById(id); m.classList.remove('hidden'); m.classList.add('flex'); }
+    function closeModal(id) { const m = document.getElementById(id); m.classList.add('hidden'); m.classList.remove('flex'); }
+    async function saveExtras(payload) {
+        const res = await fetch("{% url 'front_web:pro_onboarding_save' %}", {
+            method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrf() }, body: JSON.stringify(payload)
+        });
+        if (res.ok) { location.reload(); }
+    }
+    function saveServices() {
+        try { const data = JSON.parse(document.getElementById('inputServices').value || '[]'); saveExtras({ services: data }); } catch (e) { alert('JSON invalide'); }
+    }
+    async function saveGallery() {
+        const input = document.getElementById('inputGallery');
+        const files = input.files; const list = [];
+        for (const f of files) { const b64 = await toBase64(f); list.push(b64); }
+        await saveExtras({ gallery: list });
+    }
+    function toBase64(file) { return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(file); }); }
 </script>
 {% endblock %}

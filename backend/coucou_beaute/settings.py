@@ -107,6 +107,7 @@ LOGOUT_REDIRECT_URL = '/login/'
 REST_FRAMEWORK = {
 	'DEFAULT_AUTHENTICATION_CLASSES': (
 		'rest_framework_simplejwt.authentication.JWTAuthentication',
+		'rest_framework.authentication.SessionAuthentication',
 	),
 	'DEFAULT_PERMISSION_CLASSES': (
 		'rest_framework.permissions.IsAuthenticated',
@@ -116,6 +117,7 @@ REST_FRAMEWORK = {
 		'django_filters.rest_framework.DjangoFilterBackend',
 	)
 }
+
 
 SPECTACULAR_SETTINGS = {
 	'TITLE': 'Coucou Beauté API',
@@ -131,14 +133,17 @@ SIMPLE_JWT = {
 CORS_ALLOWED_ORIGINS = [u for u in os.getenv('DJANGO_CORS_ORIGINS', '').split(',') if u]
 CORS_ALLOW_ALL_ORIGINS = not CORS_ALLOWED_ORIGINS
 
-# --- Email settings (Gmail SMTP defaults; overridable via env) ---
-EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
-EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
+# --- Email settings (ENV‑driven; console backend by default in DEBUG) ---
+if DEBUG:
+	EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
+else:
+	EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
+EMAIL_HOST = os.getenv('EMAIL_HOST')
 EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
 EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', 'dalyrommen@gmail.com')
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', 'nrcboduwsrpkqeki')
-DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'dalyrommen@gmail.com')
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', 'dalyrommene@gmail.com')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', os.getenv('EMAIL_HOST_USER', 'dalyrommene@gmail.com'))
 SERVER_EMAIL = os.getenv('SERVER_EMAIL', DEFAULT_FROM_EMAIL)
 
 if os.getenv('AWS_STORAGE_BUCKET_NAME'):
@@ -147,3 +152,16 @@ if os.getenv('AWS_STORAGE_BUCKET_NAME'):
 	AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')
 	AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
 	AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+
+# --- Security headers & cookies in production ---
+if not DEBUG:
+	CSRF_COOKIE_SECURE = True
+	SESSION_COOKIE_SECURE = True
+	SECURE_HSTS_SECONDS = int(os.getenv('SECURE_HSTS_SECONDS', '31536000'))
+	SECURE_HSTS_INCLUDE_SUBDOMAINS = os.getenv('SECURE_HSTS_INCLUDE_SUBDOMAINS', 'True') == 'True'
+	SECURE_HSTS_PRELOAD = os.getenv('SECURE_HSTS_PRELOAD', 'True') == 'True'
+	SECURE_REFERRER_POLICY = os.getenv('SECURE_REFERRER_POLICY', 'strict-origin-when-cross-origin')
+	SECURE_CONTENT_TYPE_NOSNIFF = True
+	SECURE_BROWSER_XSS_FILTER = True
+	SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', 'False') == 'True'
+	CSRF_TRUSTED_ORIGINS = [u for u in os.getenv('CSRF_TRUSTED_ORIGINS','').split(',') if u]
