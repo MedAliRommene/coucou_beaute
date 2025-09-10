@@ -1,40 +1,163 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Coucou BeautÈ{% endblock %}</title>
-    
+    {% load static %}
+    <title>{% block title %}Coucou Beaut√©{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Poppins', 'ui-sans-serif', 'system-ui'], serif: ['Playfair Display', 'ui-serif'] },
+                    colors: { pinkBeauty: '#EC4899', blueBeauty: '#86C5FF', goldBeauty: '#C9A227' }
+                }
+            }
+        }
+    </script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@500;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css" />
+    <script src="https://unpkg.com/lucide@latest"></script>
+
     <!-- Styles globaux -->
     <link rel="stylesheet" href="{% static 'css/global.css' %}">
     {% block extra_css %}{% endblock %}
+    <style>
+        .btn-grad {
+            background: linear-gradient(90deg, #F28BB2 0%, #6CA9E0 100%)
+        }
+
+        .btn-shine {
+            position: relative;
+            overflow: hidden
+        }
+
+        .btn-shine::after {
+            content: '';
+            position: absolute;
+            inset: -50% -30%;
+            background: linear-gradient(120deg, transparent, rgba(255, 255, 255, .45), transparent);
+            transform: translateX(-120%) rotate(12deg)
+        }
+
+        .btn-shine:hover::after {
+            transition: transform .8s ease;
+            transform: translateX(120%) rotate(12deg)
+        }
+
+        .gradient-border {
+            position: relative
+        }
+
+        .gradient-border::before {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            border-radius: 1rem;
+            padding: 1px;
+            background: linear-gradient(135deg, #F28BB2, #6CA9E0, #C9A227);
+            -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude
+        }
+
+        .float-slow {
+            animation: float-slow 8s ease-in-out infinite
+        }
+
+        @keyframes float-slow {
+
+            0%,
+            100% {
+                transform: translateY(0)
+            }
+
+            50% {
+                transform: translateY(-10px)
+            }
+        }
+    </style>
 </head>
+
 <body>
     <!-- Header -->
-    <header class="main-header">
+    <header class="sticky top-0 z-40 backdrop-blur bg-white/70 border-b">
         {% block header %}
-        <nav class="main-nav">
-            <!-- Navigation principale -->
+        <nav class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+            <a href="/" class="flex items-center gap-2">
+                <img src="{{ MEDIA_URL }}logo coucou beaute.png" class="h-10 md:h-12" alt="Coucou Beaut√©" />
+                <span
+                    class="hidden sm:inline-block font-extrabold text-lg md:text-xl tracking-tight bg-gradient-to-r from-pinkBeauty to-blueBeauty bg-clip-text text-transparent">
+                    Coucou Beaut√©
+                </span>
+            </a>
+            <div class="hidden md:flex items-center gap-3 text-sm">
+                <a href="/#services"
+                    class="px-3 py-2 rounded-full text-gray-600 hover:text-pinkBeauty hover:bg-gray-100 transition">
+                    Services
+                </a>
+                <a href="/#professionals"
+                    class="px-3 py-2 rounded-full text-gray-600 hover:text-pinkBeauty hover:bg-gray-100 transition">
+                    Professionnels
+                </a>
+                <a href="/#testimonials"
+                    class="px-3 py-2 rounded-full text-gray-600 hover:text-pinkBeauty hover:bg-gray-100 transition">
+                    Avis
+                </a>
+                <a href="/#contact"
+                    class="px-3 py-2 rounded-full text-gray-600 hover:text-pinkBeauty hover:bg-gray-100 transition">
+                    Contact
+                </a>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="/login/" class="px-4 py-2 rounded-xl bg-pink-500 text-white hover:bg-pink-600 shadow-sm">Se
+                    connecter</a>
+                <a href="/signup/"
+                    class="px-4 py-2 rounded-xl bg-blueBeauty text-white hover:brightness-95 shadow-sm">S'inscrire</a>
+            </div>
         </nav>
         {% endblock %}
     </header>
-    
+
     <!-- Contenu principal -->
     <main class="main-content">
         {% block content %}
-        <!-- Le contenu sera dÈfini dans les templates enfants -->
+        <!-- Le contenu sera d√©fini dans les templates enfants -->
         {% endblock %}
     </main>
-    
+
     <!-- Footer -->
     <footer class="main-footer">
         {% block footer %}
-        <p>&copy; 2025 Coucou BeautÈ. Tous droits rÈservÈs.</p>
+        <p>&copy; 2025 Coucou Beaut√©. Tous droits r√©serv√©s.</p>
         {% endblock %}
     </footer>
-    
+
     <!-- Scripts globaux -->
+    <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+    <script>AOS.init({ once: true, duration: 700 });</script>
+    <script>
+        (function () {
+            // Theme toggle hidden on public templates; keep light by default and respect stored choice
+            function setTheme(mode) { document.documentElement.classList.toggle('dark', mode === 'dark'); localStorage.setItem('theme', mode); }
+            const saved = localStorage.getItem('theme') || 'light';
+            setTheme(saved);
+            try { window.lucide && window.lucide.createIcons(); } catch (e) { }
+            const tilts = document.querySelectorAll('.tilt');
+            tilts.forEach(el => {
+                el.addEventListener('mousemove', (e) => { const r = el.getBoundingClientRect(); const x = (e.clientX - r.left) / r.width; const y = (e.clientY - r.top) / r.height; el.style.transform = `rotateX(${(0.5 - y) * 6}deg) rotateY(${(x - 0.5) * 6}deg)` });
+                el.addEventListener('mouseleave', () => { el.style.transform = '' });
+            });
+            // premium cursor disabled per user request
+        })();
+    </script>
     <script src="{% static 'js/global.js' %}"></script>
     {% block extra_js %}{% endblock %}
 </body>
+
 </html>

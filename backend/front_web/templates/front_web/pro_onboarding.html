@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Compléter mon profil - Coucou Beauté{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto p-6">
+    <div class="flex items-center justify-between mb-4">
+        <h1 class="text-2xl font-bold">Compléter mon profil</h1>
+        <div class="text-xs text-gray-500">Vos informations seront visibles par les clients</div>
+    </div>
+    <div class="mb-6 rounded-2xl border bg-white/70 p-4 flex items-center gap-3">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-100 to-blue-100 flex items-center justify-center">
+            <i data-lucide="sparkles" class="w-6 h-6 text-pink-500"></i>
+        </div>
+        <div class="text-sm text-gray-600">Ajoutez une bio, vos réseaux, des photos et vos services pour attirer plus de
+            clients.</div>
+    </div>
+
+    <div id="app" class="space-y-4" data-prefill='{{ prefill|default:"{}"|safe }}'>
+        <div>
+            <label class="block text-sm text-gray-600 mb-1">Ville</label>
+            <input id="city" class="w-full border rounded-xl px-3 py-2" placeholder="Votre ville" />
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+                <label class="block text-sm text-gray-600 mb-1">Nom du centre</label>
+                <input id="business" class="w-full border rounded-xl px-3 py-2"
+                    placeholder="Nom de votre salon/centre" />
+            </div>
+            <div>
+                <label class="block text-sm text-gray-600 mb-1">Téléphone</label>
+                <input id="phone" class="w-full border rounded-xl px-3 py-2" placeholder="Téléphone" />
+            </div>
+        </div>
+        <div>
+            <label class="block text-sm text-gray-600 mb-1">Bio</label>
+            <textarea id="bio" class="w-full border rounded-xl px-3 py-2" rows="4"
+                placeholder="Parlez de vous"></textarea>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div class="flex items-center gap-2 border rounded-xl px-3 py-2 bg-white/70">
+                <i data-lucide="instagram" class="w-4 h-4 text-pink-500"></i>
+                <input id="ig" class="w-full outline-none" placeholder="Lien Instagram (https://...)" />
+            </div>
+            <div class="flex items-center gap-2 border rounded-xl px-3 py-2 bg-white/70">
+                <i data-lucide="facebook" class="w-4 h-4 text-blue-600"></i>
+                <input id="fb" class="w-full outline-none" placeholder="Lien Facebook (https://...)" />
+            </div>
+            <div class="flex items-center gap-2 border rounded-xl px-3 py-2 bg-white/70">
+                <i data-lucide="music-2" class="w-4 h-4 text-gray-700"></i>
+                <input id="tt" class="w-full outline-none" placeholder="Lien TikTok (https://...)" />
+            </div>
+        </div>
+
+        <div class="border rounded-xl p-3">
+            <div class="font-medium mb-2">Jours de travail</div>
+            <!-- Hidden raw checkboxes for data source -->
+            <div class="hidden" id="days">
+                <label class="inline-flex items-center gap-1"><input type="checkbox" value="mon" /> Lun</label>
+                <label class="inline-flex items-center gap-1"><input type="checkbox" value="tue" /> Mar</label>
+                <label class="inline-flex items-center gap-1"><input type="checkbox" value="wed" /> Mer</label>
+                <label class="inline-flex items-center gap-1"><input type="checkbox" value="thu" /> Jeu</label>
+                <label class="inline-flex items-center gap-1"><input type="checkbox" value="fri" /> Ven</label>
+                <label class="inline-flex items-center gap-1"><input type="checkbox" value="sat" /> Sam</label>
+                <label class="inline-flex items-center gap-1"><input type="checkbox" value="sun" /> Dim</label>
+            </div>
+            <!-- Modern pills -->
+            <div id="daysPills" class="flex flex-wrap gap-2"></div>
+            <div class="mt-3 grid grid-cols-2 gap-2">
+                <select id="startSel" class="border rounded-xl px-3 py-2"></select>
+                <select id="endSel" class="border rounded-xl px-3 py-2"></select>
+            </div>
+        </div>
+
+        <div class="border rounded-xl p-3">
+            <div class="font-medium mb-2">Galerie (photos de réalisations)</div>
+            <div id="gallery" class="flex flex-wrap gap-3 mb-3"></div>
+            <div id="dropGallery"
+                class="w-full rounded-xl border-2 border-dashed p-4 text-center text-sm text-gray-600 bg-white/60 cursor-pointer">
+                Glissez-déposez des images ici ou <span class="text-blue-600">cliquez pour choisir</span>
+                <input id="galleryInput" type="file" accept="image/*" class="hidden" multiple />
+            </div>
+        </div>
+
+        <div class="border rounded-xl p-3">
+            <div class="font-medium mb-2">Services & tarifs</div>
+            <div id="services" class="space-y-2"></div>
+            <button id="addService" class="mt-2 px-3 py-1 rounded-lg border">Ajouter un service</button>
+        </div>
+
+        <div>
+            <button id="save" class="px-4 py-2 rounded-xl bg-pink-500 text-white">Enregistrer</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function serviceRow(name = '', duration = '', price = '') {
+        const wrap = document.createElement('div');
+        wrap.className = 'grid grid-cols-3 gap-2';
+        wrap.innerHTML = `<input class="border rounded-xl px-3 py-2" placeholder="Service" value="${name}">
+                      <input class="border rounded-xl px-3 py-2" placeholder="Durée (min)" value="${duration}">
+                      <input class="border rounded-xl px-3 py-2" placeholder="Prix (DT)" value="${price}">`;
+        return wrap;
+    }
+    document.getElementById('addService').addEventListener('click', () => {
+        document.getElementById('services').appendChild(serviceRow());
+    });
+    document.getElementById('services').appendChild(serviceRow());
+
+    function getCookie(name) { const m = document.cookie.match('(^|;)\\s*' + name + '=\\s*([^;]+)'); return m ? m.pop() : ''; }
+    // Prefill from server hints & render existing gallery
+    (function () {
+        try {
+            const root = document.getElementById('app');
+            const data = JSON.parse(root.getAttribute('data-prefill') || '{}');
+            const extra = data.extra || {};
+            if (extra.city) document.getElementById('city').value = extra.city;
+            if (extra.bio) document.getElementById('bio').value = extra.bio;
+            if (extra.business_name) document.getElementById('business').value = extra.business_name;
+            if (extra.social_instagram) document.getElementById('ig').value = extra.social_instagram;
+            if (extra.social_facebook) document.getElementById('fb').value = extra.social_facebook;
+            if (extra.social_tiktok) document.getElementById('tt').value = extra.social_tiktok;
+            (extra.working_days || []).forEach(d => { const el = document.querySelector('#days input[value="' + d + '"]').checked = true; });
+            buildDayPills();
+            buildTimeSelects();
+            const wh = extra.working_hours || {}; if (wh.start) document.getElementById('startSel').value = wh.start; if (wh.end) document.getElementById('endSel').value = wh.end;
+            const services = extra.services || []; if (services.length) { const cont = document.getElementById('services'); cont.innerHTML = ''; services.forEach(s => cont.appendChild(serviceRow(s.name || '', s.duration_min || '', s.price || ''))); }
+            const gallery = extra.gallery || []; if (gallery.length) { gallery.forEach(url => addThumb(url)); galleryData = gallery.slice(0); }
+            const app = (data.application_hint || {});
+            if (!document.getElementById('city').value && app.address) document.getElementById('city').value = app.address;
+            if (app.salon_name) document.getElementById('business').value = app.salon_name;
+            if (app.phone_number) document.getElementById('phone').value = app.phone_number;
+        } catch (e) { }
+    })();
+
+    // Gallery management
+    let galleryData = [];
+    const gInput = document.getElementById('galleryInput');
+    const drop = document.getElementById('dropGallery');
+    drop.addEventListener('click', () => gInput.click());
+    drop.addEventListener('dragover', (e) => { e.preventDefault(); drop.classList.add('bg-blue-50'); });
+    drop.addEventListener('dragleave', () => drop.classList.remove('bg-blue-50'));
+    drop.addEventListener('drop', (e) => { e.preventDefault(); drop.classList.remove('bg-blue-50'); if (e.dataTransfer.files?.length) { handleFiles(e.dataTransfer.files); } });
+    gInput.addEventListener('change', (e) => { if (e.target.files?.length) { handleFiles(e.target.files); } });
+    function handleFiles(fileList) {
+        [...fileList].slice(0, 20).forEach(f => toBase64(f).then(b64 => { galleryData.push(b64); addThumb(b64); }));
+    }
+    function addThumb(src) {
+        const box = document.createElement('div'); box.className = 'relative';
+        box.innerHTML = `<img src="${src}" class="w-24 h-24 object-cover rounded-lg border"/>
+                         <button type="button" class="absolute -right-2 -top-2 bg-black/70 text-white rounded-full w-6 h-6">×</button>`;
+        box.querySelector('button').addEventListener('click', () => { box.remove(); galleryData = galleryData.filter(x => x !== src); });
+        document.getElementById('gallery').appendChild(box);
+    }
+    function toBase64(file) { return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(file); }); }
+
+    document.getElementById('save').addEventListener('click', async () => {
+        const city = document.getElementById('city').value.trim();
+        const bio = document.getElementById('bio').value.trim();
+        const social_instagram = document.getElementById('ig').value.trim();
+        const social_facebook = document.getElementById('fb').value.trim();
+        const social_tiktok = document.getElementById('tt').value.trim();
+        const days = getSelectedDays();
+        const start = document.getElementById('startSel').value || '09:00';
+        const end = document.getElementById('endSel').value || '18:00';
+        const services = [...document.querySelectorAll('#services .grid')].map(row => {
+            const [n, d, p] = row.querySelectorAll('input');
+            if (!n.value.trim()) return null;
+            return { name: n.value.trim(), duration_min: parseInt(d.value || '0'), price: parseFloat(p.value || '0') };
+        }).filter(Boolean);
+        const payload = { bio, city, social_instagram, social_facebook, social_tiktok, services, working_days: days, working_hours: { start, end }, gallery: galleryData };
+        const res = await fetch('/pro/onboarding/save/', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') }, body: JSON.stringify(payload) });
+        if (res.ok) { window.location.href = '/pro/'; }
+        else { alert('Échec de l\'enregistrement'); }
+    });
+
+    // Modern pills + predefined time selects
+    const dayMap = [
+        { code: 'mon', label: 'Lun' }, { code: 'tue', label: 'Mar' }, { code: 'wed', label: 'Mer' },
+        { code: 'thu', label: 'Jeu' }, { code: 'fri', label: 'Ven' }, { code: 'sat', label: 'Sam' }, { code: 'sun', label: 'Dim' }
+    ];
+    function buildDayPills() {
+        const container = document.getElementById('daysPills'); if (!container) return; container.innerHTML = '';
+        const current = new Set([...document.querySelectorAll('#days input:checked')].map(x => x.value));
+        dayMap.forEach(d => {
+            const pill = document.createElement('button'); pill.type = 'button'; pill.dataset.code = d.code;
+            pill.className = 'px-3 py-1 rounded-full text-sm border ' + (current.has(d.code) ? 'bg-pink-500 text-white border-pink-500' : 'bg-white text-gray-700');
+            pill.textContent = d.label; pill.addEventListener('click', () => { pill.classList.toggle('bg-pink-500'); pill.classList.toggle('text-white'); pill.classList.toggle('border-pink-500'); });
+            container.appendChild(pill);
+        });
+    }
+    function getSelectedDays() {
+        const sel = []; document.querySelectorAll('#daysPills button').forEach(b => { if (b.classList.contains('bg-pink-500')) sel.push(b.dataset.code); }); return sel;
+    }
+    function buildTimeSelects() {
+        const s = document.getElementById('startSel'); const e = document.getElementById('endSel'); if (!s || !e) return;
+        const options = []; for (let h = 6; h <= 22; h++) { for (let m of [0, 30]) { const hh = String(h).padStart(2, '0'); const mm = m === 0 ? '00' : '30'; options.push(`${hh}:${mm}`); } }
+        s.innerHTML = ''; e.innerHTML = ''; options.forEach(v => { const o = document.createElement('option'); o.value = v; o.textContent = v; s.appendChild(o.cloneNode(true)); e.appendChild(o); });
+    }
+</script>
+{% endblock %}

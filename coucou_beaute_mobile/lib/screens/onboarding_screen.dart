@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'professional_registration_screen.dart';
 import 'client_registration_screen.dart';
 import 'pro_dashboard_screen.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
 import 'client_dashboard_screen.dart';
-import 'dart:convert';
-import 'dart:io';
+// removed unused imports after switching to Provider-based auth
 import 'dart:async';
 
 class OnboardingScreen extends StatefulWidget {
@@ -63,7 +64,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
-  // 🔝 En-tête (Header)
+  // 🔝 En-tête (Header) — même barre de logo visuelle
   Widget _buildHeader() {
     return Column(
       children: [
@@ -428,20 +429,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             onPressed: () {
               // Navigation vers l'inscription selon le rôle choisi
               if (selectedRole == 'professional') {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        const ProfessionalRegistrationScreen(),
-                  ),
-                );
+                Navigator.of(context)
+                    .push(_slide(const ProfessionalRegistrationScreen()));
               } else if (selectedRole == 'client') {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ClientRegistrationScreen(),
-                  ),
-                );
+                Navigator.of(context)
+                    .push(_slide(const ClientRegistrationScreen()));
               } else {
                 // Aucun rôle sélectionné
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -498,75 +490,61 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   Future<void> _loginToApi(String email, String password) async {
     try {
-      String _baseApi() {
-        const env = String.fromEnvironment('API_BASE');
-        if (env.isNotEmpty) return env;
-        if (Platform.isAndroid)
-          return 'http://10.0.2.2:8000'; // Android emulator -> host
-        return 'http://127.0.0.1:8000'; // iOS simulator/desktop
-      }
-
-      final uri = Uri.parse('${_baseApi()}/api/auth/login/');
-      final client = HttpClient();
-      final req = await client.postUrl(uri);
-      final payload = jsonEncode({
-        "email": email,
-        "password": password,
-        "expected_role": selectedRole == 'professional'
+      final auth = Provider.of<AuthProvider>(context, listen: false);
+      final ok = await auth.login(
+        email: email,
+        password: password,
+        expectedRole: selectedRole == 'professional'
             ? 'professional'
             : (selectedRole == 'client' ? 'client' : null),
-      });
-      req.headers.set(
-          HttpHeaders.contentTypeHeader, 'application/json; charset=utf-8');
-      req.headers.set(HttpHeaders.acceptHeader, 'application/json');
-      req.contentLength = utf8.encode(payload).length;
-      req.write(payload);
-      final res = await req.close().timeout(const Duration(seconds: 15));
-      final body = await res.transform(const Utf8Decoder()).join();
-      if (res.statusCode == 200) {
-        final data = jsonDecode(body) as Map<String, dynamic>;
-        final role = (data['role'] as String?) ?? 'user';
+      );
+      if (!ok) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Connecté'),
-          backgroundColor: Colors.green,
-        ));
-        if (!context.mounted) return;
-        if (role == 'professional') {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => const ProDashboardScreen()),
-          );
-        } else {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => const ClientDashboardScreen()),
-          );
-        }
-      } else {
-        String message = 'Échec de connexion';
-        try {
-          final err = jsonDecode(body) as Map<String, dynamic>;
-          message = (err['detail'] as String?) ?? err.values.first.toString();
-        } catch (_) {}
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(message),
+          content: Text('Échec de connexion'),
           backgroundColor: Colors.redAccent,
         ));
+        return;
       }
-    } on SocketException catch (_) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text(
-            'Connexion refusée. Assurez-vous que le serveur Django tourne et utilisez une URL accessible (10.0.2.2 pour Android émulateur, IP locale sur appareil).'),
-        backgroundColor: Colors.redAccent,
-      ));
-    } on TimeoutException catch (_) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Délai dépassé. Vérifiez votre connexion réseau.'),
-        backgroundColor: Colors.redAccent,
-      ));
+      final role = auth.role;
+      if (!context.mounted) return;
+      if (role == 'professional') {
+        Navigator.of(context)
+            .pushReplacement(_fade(const ProDashboardScreen()));
+      } else {
+        Navigator.of(context)
+            .pushReplacement(_fade(const ClientDashboardScreen()));
+      }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('Erreur réseau: $e'),
+        content: Text('Erreur: $e'),
         backgroundColor: Colors.redAccent,
       ));
     }
   }
+}
+
+PageRouteBuilder _slide(Widget page) {
+  return PageRouteBuilder(
+    pageBuilder: (_, __, ___) => page,
+    transitionsBuilder: (_, animation, __, child) {
+      final offset =
+          Tween<Offset>(begin: const Offset(0, 0.06), end: Offset.zero).animate(
+              CurvedAnimation(parent: animation, curve: Curves.easeOutCubic));
+      return FadeTransition(
+        opacity: animation,
+        child: SlideTransition(position: offset, child: child),
+      );
+    },
+  );
+}
+
+PageRouteBuilder _fade(Widget page) {
+  return PageRouteBuilder(
+    pageBuilder: (_, __, ___) => page,
+    transitionsBuilder: (_, animation, __, child) => FadeTransition(
+      opacity: animation,
+      child: child,
+    ),
+    transitionDuration: const Duration(milliseconds: 250),
+  );
 }

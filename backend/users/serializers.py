@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import ProfessionalApplication, ProfessionalApplicationAction, Professional, User
+from .models import ProfessionalApplication, ProfessionalApplicationAction, Professional, User, Client
 import re
 
 
@@ -108,4 +108,66 @@ class ProfessionalListItemSerializer(serializers.ModelSerializer):
         if service_type == "salon" and not salon_name.strip():
             raise serializers.ValidationError({"salon_name": "Nom du salon requis pour le type 'J'ai un salon'"})
         return super().validate(attrs)
+
+
+class ClientRegistrationSerializer(serializers.Serializer):
+    first_name = serializers.CharField(max_length=150)
+    last_name = serializers.CharField(max_length=150)
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True, min_length=6)
+    phone_number = serializers.CharField(max_length=32, required=False, allow_blank=True)
+    address = serializers.CharField(required=False, allow_blank=True)
+    city = serializers.CharField(required=False, allow_blank=True)
+    latitude = serializers.FloatField(required=False)
+    longitude = serializers.FloatField(required=False)
+
+    def validate_email(self, value):
+        if User.objects.filter(email__iexact=value).exists():
+            raise serializers.ValidationError("Cet e-mail est déjà utilisé")
+        return value
+
+    def validate_phone_number(self, value: str):
+        if not value:
+            return value
+        phone = re.sub(r"[\s-]", "", value)
+        pattern = re.compile(r"^\+?[0-9]{8,15}$")
+        if not pattern.match(phone):
+            raise serializers.ValidationError(
+                "Numéro de téléphone invalide. Utilisez un format international (ex: +216XXXXXXXX)."
+            )
+        return phone
+
+    def create(self, validated_data):
+        phone = validated_data.get("phone_number") or ""
+        base_username = (validated_data["email"].split('@')[0] or "client").replace(" ", "_")[:150]
+        username = base_username
+        i = 1
+        from django.contrib.auth import get_user_model
+        UserModel = get_user_model()
+        while UserModel.objects.filter(username=username).exists():
+            suffix = f"_{i}"
+            username = (base_username[: (150 - len(suffix))] + suffix)
+            i += 1
+        user = UserModel.objects.create_user(
+            username=username,
+            email=validated_data["email"].strip().lower(),
+            password=validated_data["password"],
+            phone=phone,
+            role="client",
+            language="fr",
+        )
+        user.first_name = validated_data.get("first_name", "")
+        user.last_name = validated_data.get("last_name", "")
+        user.is_active = True
+        user.save()
+
+        Client.objects.create(
+            user=user,
+            phone_number=phone,
+            address=validated_data.get("address", ""),
+            city=validated_data.get("city", ""),
+            latitude=validated_data.get("latitude"),
+            longitude=validated_data.get("longitude"),
+        )
+        return user
 

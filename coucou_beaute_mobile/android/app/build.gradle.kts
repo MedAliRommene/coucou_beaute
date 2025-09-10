@@ -29,6 +29,8 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        val mapsKey = providers.gradleProperty("MAPS_API_KEY").orNull ?: System.getenv("MAPS_API_KEY") ?: "AIzaSyBns8XUca4S9YWq_3GpGP5jzXP1eupGC9g"
+        manifestPlaceholders["MAPS_API_KEY"] = mapsKey
     }
 
     buildTypes {

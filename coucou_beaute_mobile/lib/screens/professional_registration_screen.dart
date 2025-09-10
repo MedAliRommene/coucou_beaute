@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart' as geo;
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart' as latlng;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:dio/dio.dart';
 import 'dart:async';
@@ -49,6 +51,10 @@ class _ProfessionalRegistrationScreenState
   geo.Placemark? _resolvedPlacemark;
   double? _lastLat;
   double? _lastLng;
+  // Map state (OSM)
+  final MapController _mapController = MapController();
+  double _mapZoom = 13;
+  static const latlng.LatLng _nabeulCenter = latlng.LatLng(36.4515, 10.7353);
 
   final List<String> _categories = [
     'Coiffure',
@@ -170,6 +176,19 @@ class _ProfessionalRegistrationScreenState
     );
   }
 
+  Widget _zoomBtn(IconData icon, VoidCallback onTap) {
+    return Material(
+      color: Colors.white,
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(10),
+        child: SizedBox(width: 36, height: 36, child: Icon(icon, size: 18)),
+      ),
+    );
+  }
+
   String get _apiBaseUrl =>
       Platform.isAndroid ? 'http://10.0.2.2:8000' : 'http://localhost:8000';
 
@@ -232,9 +251,7 @@ class _ProfessionalRegistrationScreenState
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       decoration: BoxDecoration(
-        color:
-            const Color(0xFFFFB3D9), // Rose clair synchronisé avec onboarding
-        // Suppression des coins arrondis pour un look rectangulaire
+        color: const Color(0xFFFFB3D9),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.08),
@@ -248,36 +265,32 @@ class _ProfessionalRegistrationScreenState
           width: 1,
         ),
       ),
-      child: Row(
+      child: Stack(
+        alignment: Alignment.center,
         children: [
-          // Flèche de retour à gauche
-          IconButton(
-            onPressed: () {
-              Navigator.pop(context); // Retour à l'onboarding screen
-            },
-            icon: const Icon(
-              Icons.arrow_back,
-              color: Colors.white,
-              size: 24,
+          Align(
+            alignment: Alignment.centerLeft,
+            child: IconButton(
+              onPressed: () => Navigator.pop(context),
+              icon: const Icon(Icons.arrow_back, color: Colors.white, size: 24),
             ),
           ),
-
-          // Logo centré indépendamment des icônes gauche/droite
-          Expanded(
-            child: Center(
-              child: Image.asset(
-                'assets/images/logo2.png',
-                height: 50, // Taille optimale : claire mais pas trop grande
-                fit: BoxFit.contain,
+          SizedBox(
+            height: 50,
+            child: Image.asset('assets/images/logo2.png', fit: BoxFit.contain),
+          ),
+          Align(
+            alignment: Alignment.centerRight,
+            child: Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+              ),
+              child: IconButton(
+                icon: const Icon(Icons.menu, color: Color(0xFF4A90E2)),
+                onPressed: () {},
               ),
             ),
-          ),
-
-          // Menu Burger (droite) en bleu vif
-          const Icon(
-            Icons.menu,
-            color: Color(0xFF4A90E2), // Bleu vif exact
-            size: 28,
           ),
         ],
       ),
@@ -783,6 +796,89 @@ class _ProfessionalRegistrationScreenState
               ),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 12),
+        // Carte OSM (tap pour choisir, déplacement via tap)
+        SizedBox(
+          height: 220,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Stack(
+              children: [
+                FlutterMap(
+                  mapController: _mapController,
+                  options: MapOptions(
+                    initialCenter: latlng.LatLng(
+                        _lastLat ?? _nabeulCenter.latitude,
+                        _lastLng ?? _nabeulCenter.longitude),
+                    initialZoom: _mapZoom,
+                    onTap: (tap, point) async {
+                      _lastLat = point.latitude;
+                      _lastLng = point.longitude;
+                      try {
+                        final placemarks = await geo.placemarkFromCoordinates(
+                            _lastLat!, _lastLng!);
+                        if (placemarks.isNotEmpty) {
+                          final p = placemarks.first;
+                          final composed = [
+                            if ((p.street ?? '').isNotEmpty) p.street,
+                            if ((p.postalCode ?? '').isNotEmpty) p.postalCode,
+                            if ((p.locality ?? '').isNotEmpty) p.locality,
+                            if ((p.country ?? '').isNotEmpty) p.country,
+                          ].whereType<String>().join(', ');
+                          _adresseController.text = composed;
+                          _addressStatus =
+                              'Adresse mise à jour depuis la carte';
+                        }
+                      } catch (_) {}
+                      setState(() {});
+                    },
+                    onMapEvent: (e) => _mapZoom = _mapController.camera.zoom,
+                  ),
+                  children: [
+                    TileLayer(
+                      urlTemplate:
+                          'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                      subdomains: const ['a', 'b', 'c'],
+                      userAgentPackageName: 'coucou_beaute_mobile',
+                    ),
+                    MarkerLayer(markers: [
+                      if ((_lastLat ?? _nabeulCenter.latitude) != null)
+                        Marker(
+                          point: latlng.LatLng(
+                              _lastLat ?? _nabeulCenter.latitude,
+                              _lastLng ?? _nabeulCenter.longitude),
+                          width: 40,
+                          height: 40,
+                          child: const Icon(Icons.location_on,
+                              color: Color(0xFFE91E63), size: 36),
+                        ),
+                    ]),
+                  ],
+                ),
+                Positioned(
+                  right: 8,
+                  bottom: 8,
+                  child: Column(children: [
+                    _zoomBtn(Icons.add, () {
+                      final next =
+                          (_mapController.camera.zoom + 1).clamp(2.0, 19.0);
+                      _mapController.move(_mapController.camera.center, next);
+                      setState(() => _mapZoom = next);
+                    }),
+                    const SizedBox(height: 6),
+                    _zoomBtn(Icons.remove, () {
+                      final next =
+                          (_mapController.camera.zoom - 1).clamp(2.0, 19.0);
+                      _mapController.move(_mapController.camera.center, next);
+                      setState(() => _mapZoom = next);
+                    }),
+                  ]),
+                )
+              ],
             ),
           ),
         ),

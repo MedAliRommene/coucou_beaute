@@ -296,6 +296,11 @@ def _ensure_synced_from_approved() -> int:
 @permission_classes([IsAdminUser])
 @authentication_classes([SessionAuthentication])
 def list_professionals(request):
+    # Ensure Professionals are synced from approved applications so the list is never empty after approvals
+    try:
+        _ensure_synced_from_approved()
+    except Exception:
+        pass
     qs = Professional.objects.select_related("user").order_by("-created_at")
     return Response(ProfessionalListItemSerializer(qs, many=True).data)
 
@@ -321,7 +326,38 @@ def delete_professional(request, pro_id: int):
         pro = Professional.objects.get(id=pro_id)
     except Professional.DoesNotExist:
         return Response({"detail": "Professionnel introuvable"}, status=status.HTTP_404_NOT_FOUND)
+    # Capture email before deletion for linkage
+    email = getattr(pro.user, 'email', None)
+    user_obj = pro.user
+    # Delete the Professional entry
     pro.delete()
+    # Optionally deactivate the underlying user to prevent re-login
+    try:
+        if user_obj and user_obj.is_active:
+            user_obj.is_active = False
+            user_obj.save(update_fields=["is_active"])
+    except Exception:
+        pass
+    # Prevent re-création par la synchronisation: marquer la demande comme refusée
+    try:
+        if email:
+            apps = ProfessionalApplication.objects.filter(email__iexact=email, is_processed=True, is_approved=True)
+            updated = False
+            for app in apps:
+                app.is_approved = False
+                app.save(update_fields=["is_approved"])
+                try:
+                    ProfessionalApplicationAction.objects.create(
+                        application=app, action="rejected", actor=request.user, notes="Suppression du professionnel côté admin — application marquée refusée"
+                    )
+                except Exception:
+                    pass
+                updated = True
+            # Fallback: if there is a pending application, ensure it remains processed
+            if not updated:
+                pass
+    except Exception:
+        pass
     return Response(status=status.HTTP_204_NO_CONTENT)
 
 

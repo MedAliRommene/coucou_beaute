@@ -14,7 +14,7 @@
             <p class="text-gray-600 mt-1">Validez les nouvelles demandes d'inscription</p>
         </div>
         <div class="ml-auto flex items-center gap-2">
-            <a href="/pros/" class="btn-secondary-glass">Professionnels</a>
+            <a href="{% url 'adminpanel:pros' %}" class="btn-secondary-glass">Professionnels</a>
         </div>
     </div>
 
@@ -112,7 +112,7 @@
           <div class=\"mt-2 text-xs text-gray-500\">Historique: ${(a.actions || []).map(x => x.action + " (" + (x.actor || '—') + ")").join(' • ')}</div>
         </div>
         <div class=\"flex flex-col gap-2 items-end\">
-          <a href="/pros/pending/${a.id}/" class="btn-glass">Voir les détails</a>
+          <a href="/dashboard/pros/pending/${a.id}/" class="btn-glass">Voir les détails</a>
           <button class="btn-secondary-glass text-red-700" data-action="delete" data-id="${a.id}">Supprimer</button>
         </div>
       </div>
@@ -151,7 +151,7 @@
                             <td class="px-3 py-2"><span class="px-2 py-1 text-xs rounded-full ${badge}">${statusText}</span></td>
                             <td class="px-3 py-2">${new Date(a.created_at).toLocaleString()}</td>
                             <td class="px-3 py-2">${a.processed_at ? new Date(a.processed_at).toLocaleString() : '—'}</td>
-                            <td class="px-3 py-2 text-right"><a class="btn-secondary-glass text-xs" href="/pros/pending/${a.id}/">Détails</a>
+                            <td class="px-3 py-2 text-right"><a class="btn-secondary-glass text-xs" href="/dashboard/pros/pending/${a.id}/">Détails</a>
                                 <button class="btn-secondary-glass text-xs text-red-700 ml-2" onclick="openDeleteModal(${a.id}, '${a.email?.replace(/'/g, "\'") || ''}')">Supprimer</button>
                             </td>`;
             body.appendChild(tr);

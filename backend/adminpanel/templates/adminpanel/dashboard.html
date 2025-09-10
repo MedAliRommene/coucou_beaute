@@ -115,7 +115,8 @@
             <!-- Date Range Selector -->
             <div class="flex items-center gap-2">
                 <label class="text-sm text-gray-600">Période:</label>
-                <select class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-pink-200">
+                <select id="filterPeriod"
+                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-pink-200">
                     <option>Aujourd'hui</option>
                     <option>Cette semaine</option>
                     <option>Ce mois</option>
@@ -128,12 +129,9 @@
             <!-- Professional Filter -->
             <div class="flex items-center gap-2">
                 <label class="text-sm text-gray-600">Professionnel:</label>
-                <select class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-pink-200">
-                    <option>Tous</option>
-                    <option>Coiffure</option>
-                    <option>Esthétique</option>
-                    <option>Manucure</option>
-                    <option>Massage</option>
+                <select id="filterPro"
+                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-pink-200">
+                    <option value="">Sélectionner…</option>
                 </select>
             </div>
 
@@ -174,7 +172,7 @@
                 </div>
                 <span class="text-green-500 text-sm font-medium">+12.5%</span>
             </div>
-            <h3 class="text-2xl font-bold text-gray-900 mb-1">€24,580</h3>
+            <h3 id="kpiRevenueValue" class="text-2xl font-bold text-gray-900 mb-1">€0</h3>
             <p class="text-gray-600 text-sm">Chiffre d'affaires</p>
             <div class="mt-4 flex items-center text-sm">
                 <span class="text-green-500">↗</span>
@@ -190,7 +188,7 @@
                 </div>
                 <span class="text-blue-500 text-sm font-medium">+8.2%</span>
             </div>
-            <h3 class="text-2xl font-bold text-gray-900 mb-1">156</h3>
+            <h3 id="kpiAppointmentsValue" class="text-2xl font-bold text-gray-900 mb-1">0</h3>
             <p class="text-gray-600 text-sm">Rendez-vous</p>
             <div class="mt-4 flex items-center text-sm">
                 <span class="text-blue-500">↗</span>
@@ -206,7 +204,7 @@
                 </div>
                 <span class="text-green-500 text-sm font-medium">+5.7%</span>
             </div>
-            <h3 class="text-2xl font-bold text-gray-900 mb-1">89%</h3>
+            <h3 id="kpiRetentionValue" class="text-2xl font-bold text-gray-900 mb-1">0%</h3>
             <p class="text-gray-600 text-sm">Fidélisation clients</p>
             <div class="mt-4 flex items-center text-sm">
                 <span class="text-green-500">↗</span>
@@ -222,7 +220,7 @@
                 </div>
                 <span class="text-green-500 text-sm font-medium">+2.1%</span>
             </div>
-            <h3 class="text-2xl font-bold text-gray-900 mb-1">34.2%</h3>
+            <h3 id="kpiMarginValue" class="text-2xl font-bold text-gray-900 mb-1">0%</h3>
             <p class="text-gray-600 text-sm">Marge bénéficiaire</p>
             <div class="mt-4 flex items-center text-sm">
                 <span class="text-green-500">↗</span>
@@ -424,143 +422,94 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Revenue Trend Chart
+        let revenueChart, serviceChart, geoChart;
         const revenueCtx = document.getElementById('revenueChart').getContext('2d');
-        const revenueChart = new Chart(revenueCtx, {
-            type: 'line',
-            data: {
-                labels: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
-                datasets: [{
-                    label: 'Revenus (€)',
-                    data: [3200, 4100, 3800, 5200, 4800, 6100, 5800],
-                    borderColor: 'rgb(236, 72, 153)',
-                    backgroundColor: 'rgba(236, 72, 153, 0.1)',
-                    borderWidth: 3,
-                    fill: true,
-                    tension: 0.4,
-                    pointBackgroundColor: 'rgb(236, 72, 153)',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2,
-                    pointRadius: 6
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                        titleColor: '#fff',
-                        bodyColor: '#fff',
-                        borderColor: 'rgba(236, 72, 153, 0.5)',
-                        borderWidth: 1
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: { color: 'rgba(0, 0, 0, 0.05)' },
-                        ticks: { color: '#6B7280' }
-                    },
-                    x: {
-                        grid: { color: 'rgba(0, 0, 0, 0.05)' },
-                        ticks: { color: '#6B7280' }
-                    }
-                },
-                interaction: {
-                    intersect: false,
-                    mode: 'index'
-                }
-            }
-        });
-
-        // Service Distribution Chart
         const serviceCtx = document.getElementById('serviceChart').getContext('2d');
-        const serviceChart = new Chart(serviceCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Coiffure', 'Esthétique', 'Manucure', 'Massage', 'Autres'],
-                datasets: [{
-                    data: [35, 25, 20, 15, 5],
-                    backgroundColor: [
-                        'rgba(236, 72, 153, 0.8)',
-                        'rgba(108, 169, 224, 0.8)',
-                        'rgba(34, 197, 94, 0.8)',
-                        'rgba(251, 146, 60, 0.8)',
-                        'rgba(168, 85, 247, 0.8)'
-                    ],
-                    borderColor: '#fff',
-                    borderWidth: 3,
-                    hoverOffset: 10
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            padding: 20,
-                            usePointStyle: true,
-                            font: { size: 12 }
-                        }
-                    },
-                    tooltip: {
-                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                        titleColor: '#fff',
-                        bodyColor: '#fff'
-                    }
-                }
-            }
-        });
-
-        // Geographic Heatmap Chart
         const geoCtx = document.getElementById('geoChart').getContext('2d');
-        const geoChart = new Chart(geoCtx, {
-            type: 'bar',
-            data: {
-                labels: ['Paris', 'Lyon', 'Marseille', 'Toulouse', 'Nice', 'Bordeaux'],
-                datasets: [{
-                    label: 'Clients actifs',
-                    data: [120, 85, 65, 45, 38, 32],
-                    backgroundColor: [
-                        'rgba(34, 197, 94, 0.8)',
-                        'rgba(34, 197, 94, 0.6)',
-                        'rgba(251, 146, 60, 0.8)',
-                        'rgba(251, 146, 60, 0.6)',
-                        'rgba(239, 68, 68, 0.8)',
-                        'rgba(239, 68, 68, 0.6)'
-                    ],
-                    borderColor: '#fff',
-                    borderWidth: 2,
-                    borderRadius: 8
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                        titleColor: '#fff',
-                        bodyColor: '#fff'
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: { color: 'rgba(0, 0, 0, 0.05)' },
-                        ticks: { color: '#6B7280' }
-                    },
-                    x: {
-                        grid: { color: 'rgba(0, 0, 0, 0.05)' },
-                        ticks: { color: '#6B7280' }
-                    }
-                }
+
+        function parsePeriod(value) {
+            const today = new Date();
+            const to = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+            let from = new Date(to);
+            if (value === "Aujourd'hui") {
+                // same day
+            } else if (value === 'Cette semaine') {
+                const day = to.getDay(); // 0..6 (Sun..Sat)
+                const diff = (day === 0 ? 6 : day - 1); // Monday start
+                from.setDate(to.getDate() - diff);
+            } else if (value === 'Ce mois') {
+                from = new Date(to.getFullYear(), to.getMonth(), 1);
+            } else if (value === 'Ce trimestre') {
+                const q = Math.floor(to.getMonth() / 3);
+                from = new Date(to.getFullYear(), q * 3, 1);
+            } else if (value === 'Cette année') {
+                from = new Date(to.getFullYear(), 0, 1);
+            } else {
+                from.setDate(to.getDate() - 6);
             }
+            const fmt = d => d.toISOString().slice(0, 10);
+            return { from: fmt(from), to: fmt(to) };
+        }
+
+        function ensureCharts() {
+            if (!revenueChart) revenueChart = new Chart(revenueCtx, { type: 'line', data: { labels: [], datasets: [{ label: 'Revenus (€)', data: [], borderColor: 'rgb(236, 72, 153)', backgroundColor: 'rgba(236,72,153,0.12)', borderWidth: 2, fill: true, tension: 0.35 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } } });
+            if (!serviceChart) serviceChart = new Chart(serviceCtx, { type: 'doughnut', data: { labels: [], datasets: [{ data: [], backgroundColor: ['rgba(236,72,153,0.8)', 'rgba(108,169,224,0.8)', 'rgba(34,197,94,0.8)', 'rgba(251,146,60,0.8)', 'rgba(168,85,247,0.8)', 'rgba(14,165,233,0.8)'], borderWidth: 2 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } } });
+            if (!geoChart) geoChart = new Chart(geoCtx, { type: 'bar', data: { labels: [], datasets: [{ label: 'Clients actifs', data: [], backgroundColor: 'rgba(108,169,224,0.6)', borderRadius: 8 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } } });
+        }
+
+        async function loadProfessionals() {
+            const sel = document.getElementById('filterPro');
+            sel.innerHTML = '<option value="">Sélectionner…</option>';
+            try {
+                const r = await fetch('/api/professionals/', { headers: { 'Accept': 'application/json' }, credentials: 'same-origin' });
+                if (!r.ok) return;
+                const items = await r.json();
+                items.forEach(p => {
+                    const opt = document.createElement('option');
+                    opt.value = p.id;
+                    opt.textContent = p.business_name || p.email || ('Pro #' + p.id);
+                    sel.appendChild(opt);
+                });
+            } catch { }
+        }
+
+        async function refreshAnalytics() {
+            ensureCharts();
+            const period = document.getElementById('filterPeriod').value || 'Cette semaine';
+            const { from, to } = parsePeriod(period);
+            const proId = document.getElementById('filterPro').value;
+            if (!proId) return; // wait for selection
+            const q = new URLSearchParams({ pro_id: proId, from, to });
+            const r = await fetch('/api/appointments/analytics/overview/?' + q.toString(), { headers: { 'Accept': 'application/json' }, credentials: 'same-origin' });
+            if (!r.ok) return;
+            const data = await r.json();
+
+            // Revenue
+            const rev = data.revenue_daily || [];
+            revenueChart.data.labels = rev.map(x => x.date);
+            revenueChart.data.datasets[0].data = rev.map(x => x.value);
+            revenueChart.update();
+
+            // Services
+            const dist = data.services_distribution || [];
+            serviceChart.data.labels = dist.map(x => x.label);
+            serviceChart.data.datasets[0].data = dist.map(x => x.value);
+            serviceChart.update();
+
+            // Geo placeholder: use city counts from professionals search (admin may not have geodata here). For now map weekday counts as bars.
+            const weekdays = data.reservations_by_weekday || [];
+            geoChart.data.labels = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+            geoChart.data.datasets[0].data = weekdays;
+            geoChart.update();
+        }
+
+        document.getElementById('filterPeriod').addEventListener('change', refreshAnalytics);
+        document.getElementById('filterPro').addEventListener('change', refreshAnalytics);
+
+        loadProfessionals().then(() => {
+            const sel = document.getElementById('filterPro');
+            if (sel.options.length > 1) sel.selectedIndex = 1;
+            refreshAnalytics();
         });
 
         // Add hover effects to KPI cards
@@ -590,7 +539,7 @@
             alert('Fonctionnalité d\'exportation en cours de développement');
         });
 
-        // Dynamic Applications KPIs
+        // Dynamic Applications KPIs (existing)
         fetch('/api/applications/summary/').then(r => r.ok ? r.json() : null).then(s => {
             if (!s) return;
             const defs = [
@@ -617,6 +566,56 @@
                 wrap.appendChild(card);
             });
         });
+
+        // Populate KPI cards (Revenue, Appointments, Retention, Margin) from analytics_overview
+        function formatMoney(v) { try { return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(v || 0); } catch { return `${Math.round(v || 0)} €`; } }
+        function setKpiById(id, value, suffix = '') {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.textContent = suffix ? `${value}${suffix}` : value;
+        }
+
+        async function updateDashboardKpisFromAnalytics(data) {
+            const sum = (data.summary || {});
+            setKpiById('kpiRevenueValue', formatMoney(sum.revenue_total || 0));
+            setKpiById('kpiAppointmentsValue', String(sum.reservations_total || 0));
+            const retention = Math.round(((sum.retention_rate || 0) * 100));
+            setKpiById('kpiRetentionValue', `${retention}%`);
+            setKpiById('kpiMarginValue', `${sum.margin_pct || 0}%`);
+        }
+
+        // Patch refreshAnalytics to also fill KPI cards and geo with real city counts
+        const originalRefresh = refreshAnalytics;
+        refreshAnalytics = async function () {
+            ensureCharts();
+            const period = document.getElementById('filterPeriod').value || 'Cette semaine';
+            const { from, to } = parsePeriod(period);
+            const proId = document.getElementById('filterPro').value;
+            if (!proId) return; // wait for selection
+            const q = new URLSearchParams({ pro_id: proId, from, to });
+            const r = await fetch('/api/appointments/analytics/overview/?' + q.toString(), { headers: { 'Accept': 'application/json' }, credentials: 'same-origin' });
+            if (!r.ok) return;
+            const data = await r.json();
+
+            // Update existing charts
+            const rev = data.revenue_daily || [];
+            revenueChart.data.labels = rev.map(x => x.date);
+            revenueChart.data.datasets[0].data = rev.map(x => x.value);
+            revenueChart.update();
+            const dist = data.services_distribution || [];
+            serviceChart.data.labels = dist.map(x => x.label);
+            serviceChart.data.datasets[0].data = dist.map(x => x.value);
+            serviceChart.update();
+
+            // Geo chart from city counts
+            const city = data.geo_city_counts || [];
+            geoChart.data.labels = city.map(x => x.label || 'Inconnu');
+            geoChart.data.datasets[0].data = city.map(x => x.value || 0);
+            geoChart.update();
+
+            // KPI cards values
+            updateDashboardKpisFromAnalytics(data);
+        }
     });
 </script>
 {% endblock %}

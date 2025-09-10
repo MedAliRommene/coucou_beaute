@@ -1,0 +1,519 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Créer un compte - Coucou Beauté{% endblock %}
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    body {
+        font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial;
+    }
+
+    .grad-btn {
+        background: linear-gradient(90deg, #F28BB2 0%, #6CA9E0 100%);
+    }
+
+    .glass {
+        backdrop-filter: blur(12px);
+        background: rgba(255, 255, 255, 0.75);
+        box-shadow: 0 10px 30px rgba(108, 169, 224, 0.15);
+    }
+
+    .logo-enhanced {
+        filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+    }
+
+    .text-rosePastel {
+        color: #F28BB2;
+    }
+
+    .text-blueLight {
+        color: #6CA9E0;
+    }
+
+    .btn-elevated {
+        box-shadow: 0 10px 30px rgba(108, 169, 224, 0.20);
+    }
+
+    .btn-elevated:hover {
+        box-shadow: 0 10px 30px rgba(242, 139, 178, 0.40);
+    }
+
+    #three-bg {
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+    }
+
+    /* Map modal */
+    .modal {
+        position: fixed;
+        inset: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, .45);
+        backdrop-filter: blur(8px);
+        z-index: 60;
+    }
+
+    .modal.open {
+        display: flex;
+    }
+
+    /* Password hints */
+    .hint-item {
+        display: inline-flex;
+        align-items: center;
+        gap: .5rem;
+        color: #94a3b8;
+    }
+
+    .hint-item .indicator {
+        width: .75rem;
+        height: .75rem;
+        border-radius: 9999px;
+        border: 1px solid #CBD5E1;
+        background: transparent;
+        display: inline-block;
+    }
+
+    .hint-item.hint-ok {
+        color: #16a34a;
+    }
+
+    .hint-item.hint-ok .indicator {
+        background: #16a34a;
+        border-color: #16a34a;
+    }
+
+    /* Modern uploads */
+    .dropzone {
+        border: 1.5px dashed #E5E7EB;
+        background: rgba(255, 255, 255, 0.6);
+        border-radius: 0.75rem;
+        transition: all .2s ease
+    }
+
+    .dropzone:hover {
+        background: rgba(255, 255, 255, 0.8)
+    }
+
+    .dropzone.dragover {
+        border-color: #6CA9E0;
+        background: rgba(108, 169, 224, 0.08)
+    }
+</style>
+<!-- Leaflet CSS for the map selector -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+{% endblock %}
+{% block content %}
+<div id="three-bg"></div>
+<div class="min-h-screen flex items-center justify-center px-6 py-12">
+    <div class="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-12 items-center justify-items-center">
+        <div class="glass rounded-3xl p-8 border border-white/60 w-[620px] md:w-[660px]">
+            <div class="flex items-center justify-center mb-8">
+                <img src="{{ MEDIA_URL }}logo coucou beaute.png" alt="Coucou Beauté"
+                    class="h-24 w-auto object-contain logo-enhanced" />
+            </div>
+            {% if messages %}
+            <ul class="mb-4 text-rosePastel">{% for m in messages %}<li>{{ m }}</li>{% endfor %}</ul>
+            {% endif %}
+            <form method="post" id="signupForm" class="space-y-4">
+                {% csrf_token %}
+                <div class="flex gap-4 text-sm">
+                    <label class="flex items-center gap-2"><input type="radio" name="role" value="client" checked>
+                        Client</label>
+                    <label class="flex items-center gap-2"><input type="radio" name="role" value="professional">
+                        Professionnel</label>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm text-textMuted mb-1">Prénom</label>
+                        <input name="first_name" class="w-full border rounded-xl px-3 py-2 bg-white/60" />
+                    </div>
+                    <div>
+                        <label class="block text-sm text-textMuted mb-1">Nom</label>
+                        <input name="last_name" class="w-full border rounded-xl px-3 py-2 bg-white/60" />
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm text-textMuted mb-1">Email</label>
+                    <div class="flex items-center gap-2 border rounded-xl px-3 py-3 bg-white/60">
+                        <i data-lucide="mail" class="w-5 h-5 text-rosePastel"></i>
+                        <input name="email" type="email" required class="w-full border-0 focus:ring-0 bg-transparent"
+                            placeholder="vous@exemple.com" />
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm text-textMuted mb-1">Mot de passe</label>
+                    <div class="flex items-center gap-2 border rounded-xl px-3 py-3 bg-white/60">
+                        <i data-lucide="lock" class="w-5 h-5 text-blueLight"></i>
+                        <input id="passwordField" name="password" type="password" required
+                            pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$"
+                            title="8+ caractères, majuscule, minuscule, chiffre et caractère spécial"
+                            class="w-full border-0 focus:ring-0 bg-transparent" placeholder="••••••••" />
+                        <button type="button" id="togglePwd" class="text-sm text-gray-500">👁️</button>
+                    </div>
+                    <div class="mt-2 flex flex-wrap gap-4 text-xs">
+                        <div class="hint-item" data-check="len"><span class="indicator"></span>≥ 8 caractères</div>
+                        <div class="hint-item" data-check="upper"><span class="indicator"></span>Majuscule</div>
+                        <div class="hint-item" data-check="lower"><span class="indicator"></span>Minuscule</div>
+                        <div class="hint-item" data-check="digit"><span class="indicator"></span>Chiffre</div>
+                        <div class="hint-item" data-check="special"><span class="indicator"></span>Caractère spécial
+                        </div>
+                    </div>
+                </div>
+                <div id="clientFields" class="space-y-3">
+                    <div>
+                        <label class="block text-sm text-textMuted mb-1">Téléphone</label>
+                        <input name="phone" type="tel" inputmode="numeric" pattern="^\+?[0-9]{8,15}$"
+                            title="Entre 8 et 15 chiffres" class="w-full border rounded-xl px-3 py-2 bg-white/60" />
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-sm text-textMuted mb-1">Adresse</label>
+                            <input name="address" class="w-full border rounded-xl px-3 py-2 bg-white/60" />
+                        </div>
+                        <div>
+                            <label class="block text-sm text-textMuted mb-1">Ville</label>
+                            <input name="city" class="w-full border rounded-xl px-3 py-2 bg-white/60" />
+                        </div>
+                    </div>
+                </div>
+                <div id="proFields" class="space-y-3 hidden">
+                    <div>
+                        <label class="block text-sm text-textMuted mb-1">Téléphone</label>
+                        <input name="phone" type="tel" inputmode="numeric" pattern="^\+?[0-9]{8,15}$"
+                            title="Entre 8 et 15 chiffres" class="w-full border rounded-xl px-3 py-2 bg-white/60" />
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-sm text-textMuted mb-1">Photo de profil</label>
+                            <div id="dropProfile" class="dropzone p-3 flex items-center gap-3">
+                                <div
+                                    class="w-14 h-14 rounded-xl bg-gradient-to-br from-pink-100 to-blue-100 flex items-center justify-center overflow-hidden ring-1 ring-white/60">
+                                    <img id="profilePreview" src="" alt="Aperçu"
+                                        class="w-full h-full object-cover hidden" />
+                                    <i id="profileIcon" data-lucide="image" class="w-5 h-5 text-blueBeauty"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="text-sm text-gray-800">Glissez-déposez ou <span
+                                            class="text-blueBeauty">choisissez</span></div>
+                                    <div class="text-xs text-textMuted">Formats image, max ~5MB</div>
+                                </div>
+                                <input id="profileFile" type="file" accept="image/*" class="hidden" required />
+                            </div>
+                            <input type="hidden" name="profile_photo" id="profileUrl" />
+                        </div>
+                        <div>
+                            <label class="block text-sm text-textMuted mb-1">Pièce d'identité</label>
+                            <div id="dropId" class="dropzone p-3 flex items-center gap-3">
+                                <div
+                                    class="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-100 to-pink-100 flex items-center justify-center overflow-hidden ring-1 ring-white/60">
+                                    <img id="idDocPreview" src="" alt="Aperçu"
+                                        class="w-full h-full object-cover hidden" />
+                                    <i id="idIcon" data-lucide="badge-check" class="w-5 h-5 text-pinkBeauty"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="text-sm text-gray-800">Glissez-déposez ou <span
+                                            class="text-blueBeauty">choisissez</span></div>
+                                    <div class="text-xs text-textMuted">Image ou PDF, max ~5MB</div>
+                                </div>
+                                <input id="idDocFile" type="file" accept="image/*,application/pdf" class="hidden"
+                                    required />
+                            </div>
+                            <input type="hidden" name="id_document" id="idDocUrl" />
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-sm text-textMuted mb-1">Catégorie</label>
+                            <select name="activity_category" class="w-full border rounded-xl px-3 py-2 bg-white/60">
+                                <option value="hairdressing">Coiffure</option>
+                                <option value="makeup">Maquillage</option>
+                                <option value="manicure">Manucure</option>
+                                <option value="esthetics">Esthétique</option>
+                                <option value="massage">Massage</option>
+                                <option value="other">Autre</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm text-textMuted mb-1">Type de service</label>
+                            <select name="service_type" id="serviceType"
+                                class="w-full border rounded-xl px-3 py-2 bg-white/60">
+                                <option value="mobile">Je me déplace</option>
+                                <option value="home">Je reçois chez moi</option>
+                                <option value="salon">J'ai un salon</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-sm text-textMuted mb-1">Adresse</label>
+                            <div class="flex gap-2">
+                                <input id="proAddress" name="address"
+                                    class="w-full border rounded-xl px-3 py-2 bg-white/60" readonly />
+                                <button type="button" id="openMap" class="px-3 py-2 rounded-xl border">Choisir</button>
+                            </div>
+                        </div>
+                        <div>
+                            <label id="salonLabel" class="block text-sm text-textMuted mb-1">Salon (optionnel)</label>
+                            <input id="salonName" name="salon_name"
+                                class="w-full border rounded-xl px-3 py-2 bg-white/60" />
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <input id="lat" name="latitude" placeholder="Latitude"
+                            class="border rounded-xl px-3 py-2 bg-white/60" />
+                        <input id="lng" name="longitude" placeholder="Longitude"
+                            class="border rounded-xl px-3 py-2 bg-white/60" />
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-sm text-textMuted mb-1">Ville</label>
+                            <input id="proCity" name="city" class="w-full border rounded-xl px-3 py-2 bg-white/60" />
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-sm text-textMuted mb-1">Langues parlées</label>
+                        <div class="flex flex-wrap gap-3 text-sm">
+                            <label class="inline-flex items-center gap-2"><input type="checkbox" name="spoken_languages"
+                                    value="french"> Français</label>
+                            <label class="inline-flex items-center gap-2"><input type="checkbox" name="spoken_languages"
+                                    value="arabic"> Arabe</label>
+                            <label class="inline-flex items-center gap-2"><input type="checkbox" name="spoken_languages"
+                                    value="english"> Anglais</label>
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-sm text-textMuted mb-1">Abonnement professionnel (30 DT/mois)</label>
+                        <label class="inline-flex items-center gap-2 text-sm"><input id="subscriptionActive"
+                                type="checkbox" name="subscription_active"> Activer l'abonnement</label>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between text-sm">
+                    <span class="text-textMuted">En créant un compte, vous acceptez nos conditions.</span>
+                    <a href="/login/" class="text-blueLight">Se connecter</a>
+                </div>
+                <button class="grad-btn text-white w-full py-3 rounded-xl font-semibold btn-elevated transition">Créer
+                    mon compte</button>
+            </form>
+            <div class="mt-6 text-center text-textMuted text-sm">© 2025 Coucou Beauté – Tous droits réservés.</div>
+        </div>
+        <div class="hidden md:block">
+            <div
+                class="rounded-3xl overflow-hidden shadow-[0_15px_50px_rgba(108,169,224,0.25)] ring-1 ring-white/60 w-[460px] md:w-[520px]">
+                <img src="{{ MEDIA_URL }}image.png" alt="Beauté & bien-être — simple et élégant"
+                    class="w-full h-auto object-cover" />
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Map selection modal -->
+<div id="mapModal" class="modal">
+    <div class="bg-white rounded-2xl border shadow-2xl w-[95%] max-w-3xl p-4">
+        <div id="signupMap" style="height: 420px; border-radius: 0.75rem; overflow: hidden;"></div>
+        <div class="mt-3 flex justify-end gap-2">
+            <button type="button" id="closeMap" class="px-4 py-2 rounded-xl border">Annuler</button>
+            <button type="button" id="confirmMap" class="px-4 py-2 rounded-xl bg-pink-500 text-white">Confirmer</button>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    (function () {
+        const client = document.getElementById('clientFields');
+        const pro = document.getElementById('proFields');
+        function sync() {
+            const role = document.querySelector('input[name="role"]:checked')?.value || 'client';
+            if (role === 'professional') { pro.classList.remove('hidden'); client.classList.add('hidden'); }
+            else { client.classList.remove('hidden'); pro.classList.add('hidden'); }
+        }
+        document.querySelectorAll('input[name="role"]').forEach(r => r.addEventListener('change', sync));
+        sync();
+    })();
+</script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>window.lucide && window.lucide.createIcons();</script>
+<!-- three.js background identical to admin login -->
+<script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    (function () {
+        const container = document.getElementById('three-bg'); if (!container) return;
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 100);
+        camera.position.z = 7;
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.8));
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        container.appendChild(renderer.domElement);
+        scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+        function makeAccessoryTexture(kind, size = 192) {
+            const c = document.createElement('canvas'); c.width = c.height = size; const ctx = c.getContext('2d');
+            ctx.clearRect(0, 0, size, size); ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+            const grad = ctx.createLinearGradient(0, 0, size, size); grad.addColorStop(0, '#F28BB2'); grad.addColorStop(1, '#6CA9E0');
+            ctx.fillStyle = grad; ctx.strokeStyle = grad; ctx.lineWidth = size * 0.07; ctx.shadowColor = 'rgba(0,0,0,0.15)'; ctx.shadowBlur = size * 0.06; ctx.shadowOffsetY = size * 0.02;
+            if (kind === 'lipstick') { ctx.fillRect(size * 0.42, size * 0.48, size * 0.16, size * 0.28); ctx.fillRect(size * 0.40, size * 0.30, size * 0.20, size * 0.18); ctx.beginPath(); ctx.moveTo(size * 0.40, size * 0.30); ctx.lineTo(size * 0.60, size * 0.30); ctx.lineTo(size * 0.50, size * 0.15); ctx.closePath(); ctx.fill(); }
+            else if (kind === 'comb') { ctx.fillRect(size * 0.22, size * 0.56, size * 0.56, size * 0.12); for (let i = 0; i < 12; i++) { ctx.fillRect(size * (0.24 + i * 0.045), size * 0.38, size * 0.02, size * 0.18); } }
+            else if (kind === 'scissors') { ctx.lineWidth = size * 0.05; ctx.beginPath(); ctx.moveTo(size * 0.28, size * 0.66); ctx.lineTo(size * 0.74, size * 0.34); ctx.stroke(); ctx.beginPath(); ctx.moveTo(size * 0.28, size * 0.34); ctx.lineTo(size * 0.74, size * 0.66); ctx.stroke(); ctx.lineWidth = size * 0.06; ctx.beginPath(); ctx.arc(size * 0.28, size * 0.34, size * 0.10, 0, Math.PI * 2); ctx.stroke(); ctx.beginPath(); ctx.arc(size * 0.28, size * 0.66, size * 0.10, 0, Math.PI * 2); ctx.stroke(); }
+            else if (kind === 'nail') { ctx.fillRect(size * 0.36, size * 0.44, size * 0.28, size * 0.26); ctx.fillRect(size * 0.44, size * 0.22, size * 0.12, size * 0.20); ctx.beginPath(); ctx.moveTo(size * 0.44, size * 0.22); ctx.lineTo(size * 0.56, size * 0.22); ctx.lineTo(size * 0.50, size * 0.12); ctx.closePath(); ctx.fill(); }
+            else if (kind === 'dryer') { if (!ctx.roundRect) { ctx.roundRect = function (x, y, w, h, r) { this.beginPath(); this.moveTo(x + r, y); this.arcTo(x + w, y, x + w, y + h, r); this.arcTo(x + w, y + h, x, y + h, r); this.arcTo(x, y + h, x, y, r); this.arcTo(x, y, x + w, y, r); this.closePath(); }; } ctx.beginPath(); ctx.roundRect(size * 0.30, size * 0.30, size * 0.40, size * 0.22, size * 0.10); ctx.fill(); ctx.fillRect(size * 0.70, size * 0.36, size * 0.16, size * 0.10); ctx.beginPath(); ctx.roundRect(size * 0.36, size * 0.50, size * 0.12, size * 0.20, size * 0.06); ctx.fill(); }
+            return new THREE.CanvasTexture(c);
+        }
+        const kinds = ['lipstick', 'comb', 'scissors', 'nail', 'dryer'];
+        const accessories = new THREE.Group(); scene.add(accessories);
+        for (let i = 0; i < 26; i++) { const k = kinds[i % kinds.length]; const tex = makeAccessoryTexture(k); const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, opacity: 0.38 }); const sp = new THREE.Sprite(mat); sp.position.set((Math.random() - 0.5) * 20, (Math.random() - 0.3) * 10, -1.5 - Math.random()); const s = 0.9 + Math.random() * 1.7; sp.scale.set(s, s, 1); sp.userData = { vy: 0.003 + Math.random() * 0.004, vx: (Math.random() - 0.5) * 0.003, vr: (Math.random() - 0.5) * 0.006 }; accessories.add(sp); }
+        let targetX = 0, targetY = 0; window.addEventListener('mousemove', (e) => { const nx = (e.clientX / window.innerWidth) * 2 - 1; const ny = (e.clientY / window.innerHeight) * 2 - 1; targetX = nx; targetY = ny; });
+        function animate() { requestAnimationFrame(animate); for (const a of accessories.children) { a.position.x += a.userData.vx; a.position.y += a.userData.vy; a.rotation.z += a.userData.vr; if (a.position.y > 6) { a.position.y = -4 - Math.random() * 2; a.position.x = (Math.random() - 0.5) * 20; } } scene.position.x += (targetX * 0.35 - scene.position.x) * 0.02; scene.position.y += (-targetY * 0.25 - scene.position.y) * 0.02; renderer.render(scene, camera); }
+        animate();
+        function onResize() { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); }
+        window.addEventListener('resize', onResize);
+    })();
+</script>
+<script>
+    // Upload helper to /api/applications/upload/
+    (function () {
+        function getCsrf() {
+            const m = document.cookie.match(/csrftoken=([^;]+)/); return m ? m[1] : '';
+        }
+        async function uploadFile(file, kind) {
+            const fd = new FormData(); fd.append('file', file); fd.append('kind', kind);
+            const res = await fetch('/api/applications/upload/', { method: 'POST', body: fd, headers: { 'X-CSRFToken': getCsrf() } });
+            if (!res.ok) throw new Error('upload failed'); const data = await res.json(); return data.url;
+        }
+        const prof = document.getElementById('profileFile');
+        const idf = document.getElementById('idDocFile');
+        const pPrev = document.getElementById('profilePreview');
+        const iPrev = document.getElementById('idDocPreview');
+        const pUrl = document.getElementById('profileUrl');
+        const iUrl = document.getElementById('idDocUrl');
+        const dropP = document.getElementById('dropProfile');
+        const dropI = document.getElementById('dropId');
+        const pIcon = document.getElementById('profileIcon');
+        const iIcon = document.getElementById('idIcon');
+        function bindDrop(zone, input) {
+            if (!zone || !input) return; zone.addEventListener('click', () => input.click());
+            zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('dragover'); });
+            zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+            zone.addEventListener('drop', (e) => { e.preventDefault(); zone.classList.remove('dragover'); if (e.dataTransfer.files?.length) { input.files = e.dataTransfer.files; input.dispatchEvent(new Event('change')); } });
+        }
+        bindDrop(dropP, prof); bindDrop(dropI, idf);
+        prof?.addEventListener('change', async (e) => {
+            const file = e.target.files?.[0]; if (!file) return;
+            try { const url = await uploadFile(file, 'profile_photo'); pUrl.value = url; if (pPrev) { pPrev.src = url; pPrev.classList.remove('hidden'); } if (pIcon) pIcon.classList.add('hidden'); }
+            catch (_) { alert('Échec du téléversement de la photo de profil'); }
+        });
+        idf?.addEventListener('change', async (e) => {
+            const file = e.target.files?.[0]; if (!file) return;
+            try { const url = await uploadFile(file, 'id_document'); iUrl.value = url; if (iPrev) { iPrev.src = url; iPrev.classList.remove('hidden'); } if (iIcon) iIcon.classList.add('hidden'); }
+            catch (_) { alert("Échec du téléversement de la pièce d'identité"); }
+        });
+    })();
+</script>
+<script>
+    // Professional-specific UX: salon required, map picker, reverse geocoding
+    (function () {
+        const serviceType = document.getElementById('serviceType');
+        const salonName = document.getElementById('salonName');
+        const salonLabel = document.getElementById('salonLabel');
+        function syncSalonRequired() {
+            const isSalon = serviceType?.value === 'salon';
+            if (!salonName) return;
+            salonName.required = !!isSalon;
+            if (salonLabel) salonLabel.textContent = isSalon ? 'Salon (obligatoire)' : 'Salon (optionnel)';
+        }
+        serviceType?.addEventListener('change', syncSalonRequired);
+        syncSalonRequired();
+
+        // Map picker
+        const openBtn = document.getElementById('openMap');
+        const modal = document.getElementById('mapModal');
+        const closeBtn = document.getElementById('closeMap');
+        const confirmBtn = document.getElementById('confirmMap');
+        const addressInput = document.getElementById('proAddress');
+        const cityInput = document.getElementById('proCity');
+        const latInput = document.getElementById('lat');
+        const lngInput = document.getElementById('lng');
+        let map, marker, chosenLatLng;
+        function reverse(lat, lng) {
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&accept-language=fr&lat=${lat}&lon=${lng}`)
+                .then(r => r.json()).then(d => {
+                    const addr = d?.display_name || '';
+                    const city = d?.address?.city || d?.address?.town || d?.address?.village || d?.address?.county || '';
+                    if (addressInput) addressInput.value = addr;
+                    if (cityInput && city) cityInput.value = city;
+                }).catch(() => { });
+        }
+        function open() {
+            modal?.classList.add('open');
+            if (!map && window.L) {
+                map = L.map('signupMap').setView([36.8065, 10.1815], 12);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+                map.on('click', (e) => setPoint(e.latlng));
+            }
+            setTimeout(() => { map?.invalidateSize(); }, 50);
+        }
+        function close() { modal?.classList.remove('open'); }
+        function setPoint(latlng) {
+            chosenLatLng = latlng;
+            if (marker) marker.setLatLng(latlng); else marker = L.marker(latlng, { draggable: true }).addTo(map);
+            marker.off('dragend');
+            marker.on('dragend', () => setPoint(marker.getLatLng()));
+            if (latInput) latInput.value = latlng.lat.toFixed(6);
+            if (lngInput) lngInput.value = latlng.lng.toFixed(6);
+            reverse(latlng.lat, latlng.lng);
+        }
+        function confirm() { close(); }
+        openBtn?.addEventListener('click', open);
+        closeBtn?.addEventListener('click', close);
+        confirmBtn?.addEventListener('click', confirm);
+        // Prevent submit if uploads not yet completed for professional
+        const form = document.getElementById('signupForm');
+        form?.addEventListener('submit', (e) => {
+            const role = document.querySelector('input[name="role"]:checked')?.value || 'client';
+            if (role !== 'professional') return;
+            const hasProfile = (document.getElementById('profileUrl')?.value || '').length > 0;
+            const hasId = (document.getElementById('idDocUrl')?.value || '').length > 0;
+            if (!hasProfile || !hasId) {
+                e.preventDefault();
+                alert('Veuillez téléverser la photo de profil et la pièce d\'identité avant de continuer.');
+            }
+        });
+    })();
+</script>
+<script>
+    // Password live checks and eye toggle
+    (function () {
+        const field = document.getElementById('passwordField');
+        const toggle = document.getElementById('togglePwd');
+        const checks = {
+            len: (v) => v.length >= 8,
+            upper: (v) => /[A-Z]/.test(v),
+            lower: (v) => /[a-z]/.test(v),
+            digit: (v) => /\d/.test(v),
+            special: (v) => /[^A-Za-z0-9]/.test(v)
+        };
+        function sync() {
+            const v = field?.value || '';
+            Object.entries(checks).forEach(([k, fn]) => {
+                document.querySelectorAll(`.hint-item[data-check="${k}"]`).forEach(el => {
+                    el.classList.toggle('hint-ok', fn(v));
+                });
+            });
+        }
+        field?.addEventListener('input', sync); sync();
+        toggle?.addEventListener('click', () => {
+            if (!field) return; const t = field.getAttribute('type') === 'password' ? 'text' : 'password';
+            field.setAttribute('type', t); toggle.textContent = t === 'password' ? '👁️' : '🙈';
+        });
+    })();
+</script>
+{% endblock %}

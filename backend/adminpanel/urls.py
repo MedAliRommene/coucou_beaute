@@ -13,6 +13,8 @@ urlpatterns = [
     path('pros/pending/', views.pros_pending_view, name='pros_pending'),
     path('pros/<int:pro_id>/', views.pro_detail_view, name='pro_detail'),
     path('pros/pending/<int:app_id>/', views.pro_application_detail_view, name='pro_application_detail'),
+    # Admin API
+    path('api/pros/<int:pro_id>/extras/save/', views.api_save_pro_extras, name='api_save_pro_extras'),
     path('appointments/', views.appointments_view, name='appointments'),
     path('reviews/', views.reviews_view, name='reviews'),
     path('subscriptions/', views.subscriptions_view, name='subscriptions'),

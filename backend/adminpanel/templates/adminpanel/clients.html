@@ -3,18 +3,139 @@
 {% block title %}Clients - Coucou Beauté{% endblock %}
 
 {% block content %}
-<div class="p-6">
-    <div class="mb-6">
-        <h1 class="text-3xl font-bold text-gray-900">Gestion des Clients</h1>
-        <p class="text-gray-600 mt-1">Gérez votre base de données clients</p>
+<div class="p-6 space-y-6">
+    <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div
+                class="w-12 h-12 rounded-full bg-gradient-to-br from-pink-400 to-blue-400 flex items-center justify-center text-white">
+                <i data-lucide="users" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">Gestion des Clients</h1>
+                <p class="text-gray-600 mt-1">Gérez votre base de données clients</p>
+            </div>
+        </div>
     </div>
 
-    <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-        <div class="text-center py-12">
-            <i data-lucide="users" class="w-16 h-16 text-gray-300 mx-auto mb-4"></i>
-            <h3 class="text-lg font-medium text-gray-900 mb-2">Page en cours de développement</h3>
-            <p class="text-gray-500">Cette fonctionnalité sera bientôt disponible</p>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="kpi-glass p-5 flex items-center gap-4">
+            <div
+                class="w-10 h-10 rounded-xl bg-gradient-to-br from-pink-300 to-pink-500 text-white flex items-center justify-center">
+                <i data-lucide="users" class="w-5 h-5"></i>
+            </div>
+            <div>
+                <div class="text-sm text-gray-600">Total</div>
+                <div class="text-2xl font-semibold">{{ kpis.total }}</div>
+            </div>
+        </div>
+        <div class="kpi-glass p-5 flex items-center gap-4">
+            <div
+                class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-300 to-emerald-500 text-white flex items-center justify-center">
+                <i data-lucide="calendar-plus" class="w-5 h-5"></i>
+            </div>
+            <div>
+                <div class="text-sm text-gray-600">Nouveaux aujourd'hui</div>
+                <div class="text-2xl font-semibold">{{ kpis.new_today }}</div>
+            </div>
+        </div>
+        <div class="kpi-glass p-5 flex items-center gap-4">
+            <div
+                class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-300 to-indigo-500 text-white flex items-center justify-center">
+                <i data-lucide="calendar" class="w-5 h-5"></i>
+            </div>
+            <div>
+                <div class="text-sm text-gray-600">Nouveaux ce mois</div>
+                <div class="text-2xl font-semibold">{{ kpis.new_month }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="glass p-6">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
+            <h2 class="text-xl font-semibold text-gray-900 flex items-center gap-2"><i data-lucide="list"
+                    class="w-5 h-5"></i> Liste des clients</h2>
+            <div class="flex flex-wrap items-center gap-2">
+                <div class="relative">
+                    <i data-lucide="search" class="w-4 h-4 text-gray-500 absolute left-3 top-2.5"></i>
+                    <input id="clientSearch" placeholder="Rechercher nom/email/téléphone"
+                        class="pl-9 pr-3 py-2 rounded-lg border" />
+                </div>
+                <select id="cityFilter" class="px-3 py-2 rounded-lg border">
+                    <option value="">Toutes les villes</option>
+                    {% for city in cities %}
+                    <option value="{{ city|lower }}">{{ city }}</option>
+                    {% endfor %}
+                </select>
+                <input id="dateFrom" type="date" class="px-3 py-2 rounded-lg border" />
+                <input id="dateTo" type="date" class="px-3 py-2 rounded-lg border" />
+                <button id="resetFilters" class="btn-secondary-glass">Réinitialiser</button>
+            </div>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="table-glass w-full text-sm">
+                <thead>
+                    <tr>
+                        <th class="text-left">Nom</th>
+                        <th class="text-left">Email</th>
+                        <th class="text-left">Téléphone</th>
+                        <th class="text-left">Ville</th>
+                        <th class="text-left">Adresse</th>
+                        <th class="text-left">Créé le</th>
+                    </tr>
+                </thead>
+                <tbody id="clientRows">
+                    {% for c in clients %}
+                    <tr class="hover:bg-gray-50/70">
+                        <td class="py-2">{{ c.name }}</td>
+                        <td class="py-2">{{ c.email }}</td>
+                        <td class="py-2">{{ c.phone|default:'—' }}</td>
+                        <td class="py-2">{{ c.city|default:'—' }}</td>
+                        <td class="py-2">{{ c.address|default:'—' }}</td>
+                        <td class="py-2">{{ c.created_at }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center text-gray-500 py-6">Aucun client pour le moment</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
+
+<script>
+    const search = document.getElementById('clientSearch');
+    const city = document.getElementById('cityFilter');
+    const from = document.getElementById('dateFrom');
+    const to = document.getElementById('dateTo');
+    const reset = document.getElementById('resetFilters');
+    const rows = Array.from(document.querySelectorAll('#clientRows tr'));
+
+    function applyFilters() {
+        const q = (search.value || '').toLowerCase();
+        const c = (city.value || '').toLowerCase();
+        const df = from.value ? new Date(from.value) : null;
+        const dt = to.value ? new Date(to.value) : null;
+
+        rows.forEach(r => {
+            let text = r.innerText.toLowerCase();
+            let ok = true;
+            if (q) ok = ok && text.includes(q);
+            if (c) ok = ok && text.includes(c);
+            if (df || dt) {
+                const tds = r.querySelectorAll('td');
+                const dateTxt = tds[5]?.innerText?.trim();
+                if (dateTxt) {
+                    const d = new Date(dateTxt);
+                    if (df && d < df) ok = false;
+                    if (dt && d > dt) ok = false;
+                }
+            }
+            r.style.display = ok ? '' : 'none';
+        });
+    }
+    [search, city, from, to].forEach(el => el?.addEventListener('input', applyFilters));
+    reset?.addEventListener('click', () => { search.value = ''; city.value = ''; from.value = ''; to.value = ''; applyFilters(); });
+</script>
 {% endblock %}

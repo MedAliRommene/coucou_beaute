@@ -45,5 +45,13 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<!-- Google Maps API Key (set via Runner.xcconfig as GMS_API_KEY) -->
+	<key>GMSApiKey</key>
+	<string>$(GMS_API_KEY)</string>
+	<!-- Location usage descriptions -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Votre position est utilisée pour choisir votre adresse.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Votre position est utilisée pour choisir votre adresse.</string>
 </dict>
 </plist>

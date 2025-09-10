@@ -27,6 +27,10 @@ class Client(models.Model):
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="client_profile")
     phone_number = models.CharField(max_length=32, blank=True)
+    address = models.TextField(blank=True)
+    city = models.CharField(max_length=128, blank=True)
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
@@ -43,6 +47,28 @@ class Professional(models.Model):
 
     def __str__(self) -> str:
         return f"Pro: {self.user.username}"
+
+
+class ProfessionalProfileExtra(models.Model):
+    """Informations complémentaires configurées lors du premier accès.
+
+    Conserve des données non critiques pour l'approbation mais utiles côté mobile.
+    """
+
+    professional = models.OneToOneField(Professional, on_delete=models.CASCADE, related_name="extra")
+    bio = models.TextField(blank=True)
+    city = models.CharField(max_length=128, blank=True)
+    social_instagram = models.CharField(max_length=255, blank=True)
+    social_facebook = models.CharField(max_length=255, blank=True)
+    social_tiktok = models.CharField(max_length=255, blank=True)
+    services = models.JSONField(default=list, help_text="Liste d'objets {name, duration_min, price}")
+    working_days = models.JSONField(default=list, help_text="Jours de travail")
+    working_hours = models.JSONField(default=dict, help_text="Ex: {start:'09:00', end:'18:00'}")
+    gallery = models.JSONField(default=list)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self) -> str:
+        return f"Extras for {self.professional_id}"
 
 
 class ProfessionalApplication(models.Model):

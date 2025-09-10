@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Connexion - Coucou Beauté{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Match admin login styles */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    body {
+        font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial;
+    }
+
+    .grad-btn {
+        background: linear-gradient(90deg, #F28BB2 0%, #6CA9E0 100%);
+    }
+
+    .glass {
+        backdrop-filter: blur(12px);
+        background: rgba(255, 255, 255, 0.75);
+        box-shadow: 0 10px 30px rgba(108, 169, 224, 0.15);
+    }
+
+    .logo-enhanced {
+        filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+    }
+
+    .text-rosePastel {
+        color: #F28BB2;
+    }
+
+    .text-blueLight {
+        color: #6CA9E0;
+    }
+
+    .btn-elevated {
+        box-shadow: 0 10px 30px rgba(108, 169, 224, 0.20);
+    }
+
+    .btn-elevated:hover {
+        box-shadow: 0 10px 30px rgba(242, 139, 178, 0.40);
+    }
+
+    #three-bg {
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="three-bg"></div>
+<div class="min-h-screen flex items-center justify-center px-6 py-12">
+    <div class="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-12 items-center justify-items-center">
+        <div class="glass rounded-3xl p-8 border border-white/60 w-[620px] md:w-[660px]">
+            <div class="flex items-center justify-center mb-8">
+                <img src="{{ MEDIA_URL }}logo coucou beaute.png" alt="Coucou Beauté"
+                    class="h-24 w-auto object-contain logo-enhanced" />
+            </div>
+            {% if messages %}
+            <ul class="mb-4 text-rosePastel">{% for m in messages %}<li>{{ m }}</li>{% endfor %}</ul>
+            {% endif %}
+            <form method="post" class="space-y-4">
+                {% csrf_token %}
+                <div>
+                    <label class="block text-sm text-textMuted mb-1">Email</label>
+                    <div class="flex items-center gap-2 border rounded-xl px-3 py-3 bg-white/60">
+                        <i data-lucide="mail" class="w-5 h-5 text-rosePastel"></i>
+                        <input name="email" type="email" required class="w-full border-0 focus:ring-0 bg-transparent"
+                            placeholder="vous@exemple.com" />
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm text-textMuted mb-1">Mot de passe</label>
+                    <div class="flex items-center gap-2 border rounded-xl px-3 py-3 bg-white/60">
+                        <i data-lucide="lock" class="w-5 h-5 text-blueLight"></i>
+                        <input id="loginPwd" name="password" type="password" required
+                            class="w-full border-0 focus:ring-0 bg-transparent" placeholder="••••••••" />
+                        <button type="button" id="toggleLoginPwd" class="text-sm text-gray-500">👁️</button>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between">
+                    <label class="inline-flex items-center gap-2 text-sm text-textMuted"><input type="checkbox"
+                            class="rounded"> Se souvenir de moi</label>
+                    <a href="/signup/" class="text-blueLight text-sm">Créer un compte</a>
+                </div>
+                <button class="grad-btn text-white w-full py-3 rounded-xl font-semibold btn-elevated transition">Se
+                    connecter</button>
+            </form>
+            <div class="mt-6 text-center text-textMuted text-sm">© 2025 Coucou Beauté – Tous droits réservés.</div>
+        </div>
+        <div class="hidden md:block">
+            <div
+                class="rounded-3xl overflow-hidden shadow-[0_15px_50px_rgba(108,169,224,0.25)] ring-1 ring-white/60 w-[460px] md:w-[520px]">
+                <img src="{{ MEDIA_URL }}image.png" alt="Beauté & bien-être — simple et élégant"
+                    class="w-full h-auto object-cover" />
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>lucide.createIcons();</script>
+<!-- three.js background identical to admin login -->
+<script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
+<script>
+    (function () {
+        const container = document.getElementById('three-bg'); if (!container) return;
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 100);
+        camera.position.z = 7;
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.8));
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        container.appendChild(renderer.domElement);
+
+        scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+
+        function makeAccessoryTexture(kind, size = 192) {
+            const c = document.createElement('canvas'); c.width = c.height = size; const ctx = c.getContext('2d');
+            ctx.clearRect(0, 0, size, size); ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+            const grad = ctx.createLinearGradient(0, 0, size, size); grad.addColorStop(0, '#F28BB2'); grad.addColorStop(1, '#6CA9E0');
+            ctx.fillStyle = grad; ctx.strokeStyle = grad; ctx.lineWidth = size * 0.07;
+            ctx.shadowColor = 'rgba(0,0,0,0.15)'; ctx.shadowBlur = size * 0.06; ctx.shadowOffsetY = size * 0.02;
+            if (kind === 'lipstick') { ctx.fillRect(size * 0.42, size * 0.48, size * 0.16, size * 0.28); ctx.fillRect(size * 0.40, size * 0.30, size * 0.20, size * 0.18); ctx.beginPath(); ctx.moveTo(size * 0.40, size * 0.30); ctx.lineTo(size * 0.60, size * 0.30); ctx.lineTo(size * 0.50, size * 0.15); ctx.closePath(); ctx.fill(); }
+            else if (kind === 'comb') { ctx.fillRect(size * 0.22, size * 0.56, size * 0.56, size * 0.12); for (let i = 0; i < 12; i++) { ctx.fillRect(size * (0.24 + i * 0.045), size * 0.38, size * 0.02, size * 0.18); } }
+            else if (kind === 'scissors') { ctx.lineWidth = size * 0.05; ctx.beginPath(); ctx.moveTo(size * 0.28, size * 0.66); ctx.lineTo(size * 0.74, size * 0.34); ctx.stroke(); ctx.beginPath(); ctx.moveTo(size * 0.28, size * 0.34); ctx.lineTo(size * 0.74, size * 0.66); ctx.stroke(); ctx.lineWidth = size * 0.06; ctx.beginPath(); ctx.arc(size * 0.28, size * 0.34, size * 0.10, 0, Math.PI * 2); ctx.stroke(); ctx.beginPath(); ctx.arc(size * 0.28, size * 0.66, size * 0.10, 0, Math.PI * 2); ctx.stroke(); }
+            else if (kind === 'nail') { ctx.fillRect(size * 0.36, size * 0.44, size * 0.28, size * 0.26); ctx.fillRect(size * 0.44, size * 0.22, size * 0.12, size * 0.20); ctx.beginPath(); ctx.moveTo(size * 0.44, size * 0.22); ctx.lineTo(size * 0.56, size * 0.22); ctx.lineTo(size * 0.50, size * 0.12); ctx.closePath(); ctx.fill(); }
+            else if (kind === 'dryer') { if (!ctx.roundRect) { ctx.roundRect = function (x, y, w, h, r) { this.beginPath(); this.moveTo(x + r, y); this.arcTo(x + w, y, x + w, y + h, r); this.arcTo(x + w, y + h, x, y + h, r); this.arcTo(x, y + h, x, y, r); this.arcTo(x, y, x + w, y, r); this.closePath(); }; } ctx.beginPath(); ctx.roundRect(size * 0.30, size * 0.30, size * 0.40, size * 0.22, size * 0.10); ctx.fill(); ctx.fillRect(size * 0.70, size * 0.36, size * 0.16, size * 0.10); ctx.beginPath(); ctx.roundRect(size * 0.36, size * 0.50, size * 0.12, size * 0.20, size * 0.06); ctx.fill(); }
+            return new THREE.CanvasTexture(c);
+        }
+
+        const kinds = ['lipstick', 'comb', 'scissors', 'nail', 'dryer'];
+        const accessories = new THREE.Group(); scene.add(accessories);
+        for (let i = 0; i < 26; i++) {
+            const k = kinds[i % kinds.length]; const tex = makeAccessoryTexture(k);
+            const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, opacity: 0.38 });
+            const sp = new THREE.Sprite(mat);
+            sp.position.set((Math.random() - 0.5) * 20, (Math.random() - 0.3) * 10, -1.5 - Math.random());
+            const s = 0.9 + Math.random() * 1.7; sp.scale.set(s, s, 1);
+            sp.userData = { vy: 0.003 + Math.random() * 0.004, vx: (Math.random() - 0.5) * 0.003, vr: (Math.random() - 0.5) * 0.006 };
+            accessories.add(sp);
+        }
+
+        let targetX = 0, targetY = 0;
+        window.addEventListener('mousemove', (e) => {
+            const nx = (e.clientX / window.innerWidth) * 2 - 1;
+            const ny = (e.clientY / window.innerHeight) * 2 - 1;
+            targetX = nx; targetY = ny;
+        });
+
+        function animate() {
+            requestAnimationFrame(animate);
+            for (const a of accessories.children) {
+                a.position.x += a.userData.vx; a.position.y += a.userData.vy; a.rotation.z += a.userData.vr;
+                if (a.position.y > 6) { a.position.y = -4 - Math.random() * 2; a.position.x = (Math.random() - 0.5) * 20; }
+            }
+            scene.position.x += (targetX * 0.35 - scene.position.x) * 0.02;
+            scene.position.y += (-targetY * 0.25 - scene.position.y) * 0.02;
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        function onResize() { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); }
+        window.addEventListener('resize', onResize);
+    })();
+</script>
+<script>
+    // Eye toggle on login password
+    (function () {
+        const field = document.getElementById('loginPwd');
+        const toggle = document.getElementById('toggleLoginPwd');
+        toggle?.addEventListener('click', () => {
+            if (!field) return; const t = field.getAttribute('type') === 'password' ? 'text' : 'password';
+            field.setAttribute('type', t); toggle.textContent = t === 'password' ? '👁️' : '🙈';
+        });
+    })();
+</script>
+{% endblock %}

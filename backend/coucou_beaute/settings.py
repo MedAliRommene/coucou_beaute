@@ -29,6 +29,7 @@ INSTALLED_APPS = [
 	'reviews',
 	'subscriptions',
 	'adminpanel',
+	'front_web',
 ]
 
 MIDDLEWARE = [

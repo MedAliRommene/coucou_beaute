@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Professionnel - Coucou Beauté{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="p-6 space-y-6">
+    <div class="flex items-center justify-between">
+        <h1 class="text-2xl font-bold">Tableau de bord Pro</h1>
+        <a href="/logout/" class="text-sm px-3 py-2 rounded-lg bg-gray-200">Déconnexion</a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="bg-white rounded-xl border p-4">
+            <div class="text-sm text-gray-600">Chiffre d'affaires</div>
+            <div id="kpiRevenue" class="text-2xl font-semibold">—</div>
+        </div>
+        <div class="bg-white rounded-xl border p-4">
+            <div class="text-sm text-gray-600">Rendez-vous</div>
+            <div id="kpiAppts" class="text-2xl font-semibold">—</div>
+        </div>
+        <div class="bg-white rounded-xl border p-4">
+            <div class="text-sm text-gray-600">Fidélisation</div>
+            <div id="kpiRet" class="text-2xl font-semibold">—</div>
+        </div>
+        <div class="bg-white rounded-xl border p-4">
+            <div class="text-sm text-gray-600">Marge</div>
+            <div id="kpiMargin" class="text-2xl font-semibold">—</div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-xl border p-4">
+        <h3 class="text-sm font-medium text-gray-700 mb-2">Revenus</h3>
+        <canvas id="revChart" height="120"></canvas>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', async function () {
+        const proId = '{{ pro_id|default:"" }}';
+        if (!proId) return;
+        const today = new Date();
+        const to = today.toISOString().slice(0, 10);
+        const fromDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 6);
+        const from = fromDate.toISOString().slice(0, 10);
+        const q = new URLSearchParams({ pro_id: proId, from, to });
+        const r = await fetch('/api/appointments/analytics/overview/?' + q.toString(), { headers: { 'Accept': 'application/json' }, credentials: 'same-origin' });
+        if (!r.ok) return;
+        const data = await r.json();
+        const sum = data.summary || {};
+        const fmtMoney = (v) => new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(v || 0);
+        document.getElementById('kpiRevenue').textContent = fmtMoney(sum.revenue_total || 0);
+        document.getElementById('kpiAppts').textContent = String(sum.reservations_total || 0);
+        document.getElementById('kpiRet').textContent = Math.round((sum.retention_rate || 0) * 100) + '%';
+        document.getElementById('kpiMargin').textContent = (sum.margin_pct || 0) + '%';
+
+        const ctx = document.getElementById('revChart').getContext('2d');
+        const series = data.revenue_daily || [];
+        new Chart(ctx, {
+            type: 'line',
+            data: { labels: series.map(x => x.date), datasets: [{ data: series.map(x => x.value), borderColor: 'rgb(236,72,153)', backgroundColor: 'rgba(236,72,153,0.12)', tension: 0.35, fill: true }] },
+            options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+        });
+    });
+</script>
+{% endblock %}

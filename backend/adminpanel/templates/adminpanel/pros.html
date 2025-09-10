@@ -197,9 +197,9 @@
               <div class="mt-2"><span class="px-2 py-1 text-xs rounded-full ${p.is_verified ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}">${p.is_verified ? 'Vérifié' : 'Non vérifié'}</span></div>
             </div>
             <div class="flex flex-col gap-2">
-              <a class="btn-glass text-blue-700" href="/pros/${p.id}/">Ouvrir</a>
-              <button class="btn-secondary-glass text-green-700" data-action="verify" data-id="${p.id}">Vérifier</button>
-              <button class="btn-secondary-glass text-red-600" data-action="delete" data-id="${p.id}">Supprimer</button>
+              <a class="btn-glass text-blue-700" href="/dashboard/pros/${p.id}/">Ouvrir</a>
+
+              <button class="btn-secondary-glass text-red-600" data-action="delete" data-id="${p.id}" data-email="${(p.user_email || '').replace(/"/g, '&quot;')}">Supprimer</button>
             </div>
           </div>
         `;
@@ -272,11 +272,51 @@
             await fetch(`/api/professionals/${id}/verify/`, { method: 'POST', headers: { 'X-CSRFToken': getCookie('csrftoken') } });
             fetchPros();
         } else if (action === 'delete') {
-            if (confirm('Supprimer ce professionnel ?')) {
-                await fetch(`/api/professionals/${id}/delete/`, { method: 'DELETE', headers: { 'X-CSRFToken': getCookie('csrftoken') } });
-                fetchPros();
-            }
+            openProDeleteModal(id, btn.getAttribute('data-email') || '');
         }
+    });
+</script>
+<!-- Modal de confirmation (même design que pros_pending) -->
+<div id="proDeleteModal" class="fixed inset-0 hidden items-center justify-center z-50">
+    <div class="absolute inset-0 bg-black/30"></div>
+    <div class="glass p-6 w-full max-w-md relative z-10">
+        <div class="flex items-start gap-3">
+            <div
+                class="w-10 h-10 rounded-xl bg-gradient-to-br from-red-300 to-orange-300 flex items-center justify-center text-white">
+                <i data-lucide="trash-2" class="w-5 h-5"></i>
+            </div>
+            <div class="flex-1">
+                <h3 class="text-lg font-semibold text-gray-900">Confirmer la suppression</h3>
+                <p class="text-sm text-gray-600 mt-1">Vous êtes sur le point de supprimer ce professionnel (<span
+                        id="proDelEmail" class="font-medium"></span>). Cette action est irréversible.</p>
+            </div>
+        </div>
+        <div class="flex items-center justify-end gap-2 mt-4">
+            <button class="btn-secondary-glass" onclick="closeProDeleteModal()">Annuler</button>
+            <button class="btn-glass text-red-700" id="confirmProDeleteBtn">Supprimer</button>
+        </div>
+    </div>
+
+</div>
+<script>
+    let pendingProDeleteId = null;
+    function openProDeleteModal(id, email) {
+        pendingProDeleteId = id;
+        document.getElementById('proDelEmail').textContent = email || '';
+        const m = document.getElementById('proDeleteModal');
+        m.classList.remove('hidden'); m.classList.add('flex');
+        if (window.lucide) { window.lucide.createIcons(); }
+    }
+    function closeProDeleteModal() {
+        const m = document.getElementById('proDeleteModal');
+        m.classList.add('hidden'); m.classList.remove('flex');
+        pendingProDeleteId = null;
+    }
+    document.getElementById('confirmProDeleteBtn').addEventListener('click', async () => {
+        if (!pendingProDeleteId) return;
+        await fetch(`/api/professionals/${pendingProDeleteId}/delete/`, { method: 'DELETE', headers: { 'X-CSRFToken': getCookie('csrftoken') } });
+        closeProDeleteModal();
+        fetchPros();
     });
 </script>
 {% endblock %}
