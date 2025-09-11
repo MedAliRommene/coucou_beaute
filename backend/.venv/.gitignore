@@ -1,0 +1,11 @@
+# Created by venv; see https://docs.python.org/3/library/venv.html
+
+.env
+.env.*
+*.env
+*.env.local
+*.env.development
+*.env.production
+backend/.env
+backend/.env.*
+/srv/**      # au cas où
