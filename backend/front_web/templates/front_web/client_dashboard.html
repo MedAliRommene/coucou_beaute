@@ -580,7 +580,7 @@
     // Load categories
     async function loadCategories() {
         try {
-            const response = await fetch('/api/professionals/categories/');
+            const response = await fetch('/api/api/professionals/categories/');
             const data = await response.json();
 
             const tabsContainer = document.getElementById('categoryTabs');
@@ -629,7 +629,7 @@
 
             console.log('Fetching professionals with params:', params.toString());
 
-            const response = await fetch(`/api/professionals/simple/?${params}`);
+            const response = await fetch(`/api/api/professionals/simple/?${params}`);
 
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
