@@ -12,6 +12,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .models import ProfessionalApplication, ProfessionalApplicationAction, User
 from .models import Professional, ProfessionalProfileExtra
 import re
+import math
 from .serializers import ProfessionalApplicationSerializer, ClientRegistrationSerializer
 
 
@@ -457,4 +458,468 @@ def register_client(request):
             }
         }, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+def calculate_distance(lat1, lon1, lat2, lon2):
+    """Calculate distance between two points in kilometers using Haversine formula"""
+    R = 6371  # Earth's radius in kilometers
+    
+    lat1_rad = math.radians(lat1)
+    lon1_rad = math.radians(lon1)
+    lat2_rad = math.radians(lat2)
+    lon2_rad = math.radians(lon2)
+    
+    dlat = lat2_rad - lat1_rad
+    dlon = lon2_rad - lon1_rad
+    
+    a = math.sin(dlat/2)**2 + math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(dlon/2)**2
+    c = 2 * math.asin(math.sqrt(a))
+    
+    return R * c
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def search_professionals(request):
+    """Search for professionals with filters"""
+    try:
+        # Get parameters
+        center_lat = float(request.GET.get('center_lat', 36.4515))
+        center_lng = float(request.GET.get('center_lng', 10.7353))
+        within_km = float(request.GET.get('within_km', 25))
+        price_min = float(request.GET.get('price_min', 0))
+        price_max = float(request.GET.get('price_max', 300))
+        min_rating = float(request.GET.get('min_rating', 0))
+        category = request.GET.get('category', '')
+        search_query = request.GET.get('search', '')
+        language = request.GET.get('language', '')
+        
+        # Get all active professionals with extra profiles
+        professionals = Professional.objects.filter(
+            user__is_active=True,
+            user__is_staff=False
+        ).select_related('user').prefetch_related('extra')
+        
+        results = []
+        
+        for pro in professionals:
+            try:
+                # Get extra profile data
+                extra = pro.extra
+                pro_lat = extra.latitude
+                pro_lng = extra.longitude
+                
+                if pro_lat is None or pro_lng is None:
+                    continue
+                
+                # Calculate distance
+                distance = calculate_distance(center_lat, center_lng, pro_lat, pro_lng)
+                
+                if distance > within_km:
+                    continue
+                
+                # Get spoken languages first
+                languages = []
+                if extra.spoken_languages:
+                    try:
+                        languages = [lang.strip() for lang in extra.spoken_languages.split(',')]
+                    except:
+                        languages = ['french']
+                else:
+                    languages = ['french']
+                
+                # Filter by language
+                if language and language not in languages:
+                    continue
+                
+                # Filter by category
+                if category and category != 'all':
+                    if extra.primary_service != category:
+                        continue
+                
+                # Filter by search query
+                if search_query:
+                    search_lower = search_query.lower()
+                    if not any([
+                        search_lower in (pro.business_name or '').lower(),
+                        search_lower in (extra.bio or '').lower(),
+                        search_lower in (pro.user.first_name or '').lower(),
+                        search_lower in (pro.user.last_name or '').lower(),
+                    ]):
+                        continue
+                
+                # Get rating and price
+                rating = extra.rating or 4.0
+                price = extra.price or 50
+                
+                # Filter by rating and price
+                if rating < min_rating or price < price_min or price > price_max:
+                    continue
+                
+                # Get services
+                services = []
+                if extra.services and isinstance(extra.services, list):
+                    services = [service.get('name', 'Service') for service in extra.services[:3]]
+                elif extra.services and isinstance(extra.services, str):
+                    try:
+                        services = extra.services.split(',')[:3]
+                    except:
+                        services = []
+                
+                # Get profile photo
+                profile_photo = None
+                if extra.profile_photo:
+                    profile_photo = extra.profile_photo.url
+                
+                # Get gallery images
+                gallery = []
+                if extra.gallery and isinstance(extra.gallery, list):
+                    gallery = extra.gallery[:5]
+                elif extra.gallery and isinstance(extra.gallery, str):
+                    try:
+                        gallery = extra.gallery.split(',')[:5]
+                    except:
+                        gallery = []
+                
+                # Ensure we have valid data
+                name = pro.business_name or f"{pro.user.first_name} {pro.user.last_name}".strip() or "Professionnel"
+                service = extra.primary_service or 'Service'
+                rating_val = round(rating, 1) if rating else 4.0
+                price_val = int(price) if price else 50
+                reviews_val = extra.reviews or 0
+                bio_val = extra.bio or ''
+                phone_val = extra.phone_number or ''
+                address_val = extra.address or ''
+                city_val = extra.city or ''
+                
+                results.append({
+                    'id': pro.id,
+                    'name': name,
+                    'service': service,
+                    'categoryCode': service or 'other',
+                    'rating': rating_val,
+                    'reviews': reviews_val,
+                    'price': price_val,
+                    'lat': pro_lat,
+                    'lng': pro_lng,
+                    'langs': languages,
+                    'distanceKm': round(distance, 1),
+                    'bio': bio_val,
+                    'services': services,
+                    'profile_photo': profile_photo,
+                    'gallery': gallery,
+                    'phone': phone_val,
+                    'address': address_val,
+                    'city': city_val,
+                    'email': pro.user.email or '',
+                    'extra': {
+                        'bio': bio_val,
+                        'services': services,
+                        'gallery': gallery,
+                        'rating': rating_val,
+                        'reviews': reviews_val,
+                        'price': price_val,
+                        'spoken_languages': languages,
+                        'working_days': extra.working_days or [],
+                        'working_hours': extra.working_hours or {},
+                        'social_instagram': extra.social_instagram or '',
+                        'social_facebook': extra.social_facebook or '',
+                        'social_tiktok': extra.social_tiktok or '',
+                    }
+                })
+                
+            except Exception as e:
+                continue
+        
+        # Sort by distance
+        results.sort(key=lambda x: x['distanceKm'])
+        
+        return Response({
+            'results': results,
+            'count': len(results)
+        })
+        
+    except Exception as e:
+        return Response({
+            'error': str(e),
+            'results': [],
+            'count': 0
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def get_professional_categories(request):
+    """Get list of professional categories"""
+    categories = [
+        {'code': 'all', 'label': 'Tous'},
+        {'code': 'hairdressing', 'label': 'Coiffure'},
+        {'code': 'makeup', 'label': 'Maquillage'},
+        {'code': 'manicure', 'label': 'Manucure'},
+        {'code': 'esthetics', 'label': 'Esthétique'},
+        {'code': 'massage', 'label': 'Massage'},
+        {'code': 'other', 'label': 'Autre'},
+    ]
+    
+    return Response({
+        'categories': categories
+    })
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def test_professionals(request):
+    """Test API to get all professionals with coordinates"""
+    try:
+        professionals = Professional.objects.filter(
+            user__is_active=True,
+            user__is_staff=False
+        ).select_related('user').prefetch_related('extra')
+        
+        results = []
+        
+        for pro in professionals:
+            try:
+                extra = pro.extra
+                pro_lat = extra.latitude
+                pro_lng = extra.longitude
+                
+                if pro_lat is None or pro_lng is None:
+                    continue
+                
+                # Calculate distance from center
+                center_lat = 36.8065
+                center_lng = 10.1815
+                distance = calculate_distance(center_lat, center_lng, pro_lat, pro_lng)
+                
+                results.append({
+                    'id': pro.id,
+                    'name': pro.business_name or f"{pro.user.first_name} {pro.user.last_name}".strip(),
+                    'service': extra.primary_service or 'Service',
+                    'rating': extra.rating or 4.0,
+                    'price': extra.price or 50,
+                    'lat': pro_lat,
+                    'lng': pro_lng,
+                    'distanceKm': round(distance, 1),
+                    'phone': extra.phone_number or '',
+                    'address': extra.address or '',
+                    'city': extra.city or '',
+                })
+                
+            except Exception as e:
+                continue
+        
+        return Response({
+            'results': results,
+            'count': len(results)
+        })
+        
+    except Exception as e:
+        return Response({'error': str(e), 'results': [], 'count': 0}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def get_all_professionals(request):
+    """Simple API to get all professionals with coordinates"""
+    try:
+        # Get all professionals with extra profiles
+        professionals = Professional.objects.filter(
+            user__is_active=True,
+            user__is_staff=False
+        ).select_related('user').prefetch_related('extra')
+        
+        results = []
+        
+        for pro in professionals:
+            try:
+                extra = pro.extra
+                
+                # Skip if no coordinates
+                if not extra.latitude or not extra.longitude:
+                    continue
+                
+                # Calculate distance from center
+                center_lat = float(request.GET.get('center_lat', 36.8065))
+                center_lng = float(request.GET.get('center_lng', 10.1815))
+                distance = calculate_distance(center_lat, center_lng, extra.latitude, extra.longitude)
+                
+                # Get services
+                services = []
+                if extra.services and isinstance(extra.services, list):
+                    services = [service.get('name', 'Service') for service in extra.services[:3]]
+                elif extra.services and isinstance(extra.services, str):
+                    try:
+                        services = extra.services.split(',')[:3]
+                    except:
+                        services = []
+                
+                # Get profile photo
+                profile_photo = None
+                if extra.profile_photo:
+                    profile_photo = extra.profile_photo.url
+                
+                # Get spoken languages
+                languages = []
+                if extra.spoken_languages:
+                    try:
+                        languages = [lang.strip() for lang in extra.spoken_languages.split(',')]
+                    except:
+                        languages = ['french']
+                else:
+                    languages = ['french']
+                
+                results.append({
+                    'id': pro.id,
+                    'name': pro.business_name or f"{pro.user.first_name} {pro.user.last_name}".strip() or "Professionnel",
+                    'service': extra.primary_service or 'Service',
+                    'categoryCode': extra.primary_service or 'other',
+                    'rating': round(extra.rating, 1) if extra.rating else 4.0,
+                    'reviews': extra.reviews or 0,
+                    'price': int(extra.price) if extra.price else 50,
+                    'lat': extra.latitude,
+                    'lng': extra.longitude,
+                    'langs': languages,
+                    'distanceKm': round(distance, 1),
+                    'bio': extra.bio or '',
+                    'services': services,
+                    'profile_photo': profile_photo,
+                    'gallery': [],
+                    'phone': extra.phone_number or '',
+                    'address': extra.address or '',
+                    'city': extra.city or '',
+                    'email': pro.user.email or '',
+                    'extra': {
+                        'bio': extra.bio or '',
+                        'services': services,
+                        'gallery': [],
+                        'rating': round(extra.rating, 1) if extra.rating else 4.0,
+                        'reviews': extra.reviews or 0,
+                        'price': int(extra.price) if extra.price else 50,
+                        'spoken_languages': languages,
+                        'working_days': extra.working_days or [],
+                        'working_hours': extra.working_hours or {},
+                        'social_instagram': extra.social_instagram or '',
+                        'social_facebook': extra.social_facebook or '',
+                        'social_tiktok': extra.social_tiktok or '',
+                    }
+                })
+                
+            except Exception as e:
+                print(f"Error processing professional {pro.id}: {e}")
+                continue
+        
+        # Sort by distance
+        results.sort(key=lambda x: x['distanceKm'])
+        
+        return Response({
+            'results': results,
+            'count': len(results)
+        })
+        
+    except Exception as e:
+        print(f"API Error: {e}")
+        return Response({'error': str(e), 'results': [], 'count': 0}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def simple_professionals_api(request):
+    """API pour récupérer tous les professionnels avec coordonnées"""
+    try:
+        print(f"🔍 API simple_professionals_api appelée avec params: {dict(request.GET)}")
+        
+        # Get all professionals
+        professionals = Professional.objects.filter(
+            user__is_active=True,
+            user__is_staff=False
+        ).select_related('user', 'extra')
+        
+        print(f"📊 Total professionnels trouvés: {professionals.count()}")
+        
+        results = []
+        skipped_no_coords = 0
+        
+        for pro in professionals:
+            try:
+                # Get extra profile
+                extra = pro.extra
+                
+                # Skip if no coordinates
+                if not extra.latitude or not extra.longitude:
+                    skipped_no_coords += 1
+                    print(f"⚠️  Professionnel {pro.id} ({pro.business_name}) sans coordonnées")
+                    continue
+                
+                # Calculate distance
+                center_lat = float(request.GET.get('center_lat', 36.4515))  # Nabeul par défaut
+                center_lng = float(request.GET.get('center_lng', 10.7353))
+                distance = calculate_distance(center_lat, center_lng, extra.latitude, extra.longitude)
+                
+                # Construire le nom
+                name = pro.business_name
+                if not name:
+                    first_name = pro.user.first_name or ""
+                    last_name = pro.user.last_name or ""
+                    name = f"{first_name} {last_name}".strip()
+                if not name:
+                    name = "Professionnel"
+                
+                # Construire l'adresse complète
+                address_parts = []
+                if extra.address:
+                    address_parts.append(extra.address)
+                if extra.city:
+                    address_parts.append(extra.city)
+                full_address = ", ".join(address_parts) if address_parts else "Adresse non disponible"
+                
+                result = {
+                    'id': pro.id,
+                    'name': name,
+                    'service': extra.primary_service or 'Service',
+                    'rating': round(float(extra.rating), 1) if extra.rating else 4.0,
+                    'reviews': int(extra.reviews) if extra.reviews else 0,
+                    'price': int(extra.price) if extra.price else 50,
+                    'lat': float(extra.latitude),
+                    'lng': float(extra.longitude),
+                    'distanceKm': round(distance, 1),
+                    'phone': extra.phone_number or '',
+                    'address': full_address,
+                    'city': extra.city or '',
+                    'profile_photo': None,
+                    'bio': extra.bio or '',
+                    'spoken_languages': extra.spoken_languages or 'Français',
+                    'working_days': extra.working_days or [],
+                    'working_hours': extra.working_hours or {'start': '09:00', 'end': '18:00'}
+                }
+                
+                results.append(result)
+                print(f"✅ Professionnel ajouté: {name} - {result['service']} - {result['distanceKm']}km")
+                
+            except Exception as e:
+                print(f"❌ Erreur traitement professionnel {pro.id}: {e}")
+                continue
+        
+        print(f"📈 Résultats: {len(results)} professionnels avec coordonnées, {skipped_no_coords} sans coordonnées")
+        
+        # Sort by distance
+        results.sort(key=lambda x: x['distanceKm'])
+        
+        return Response({
+            'results': results,
+            'count': len(results),
+            'debug': {
+                'total_professionals': professionals.count(),
+                'with_coordinates': len(results),
+                'without_coordinates': skipped_no_coords
+            }
+        })
+        
+    except Exception as e:
+        print(f"❌ Erreur API simple_professionals_api: {e}")
+        import traceback
+        traceback.print_exc()
+        return Response({
+            'error': str(e), 
+            'results': [], 
+            'count': 0,
+            'debug': {'error_details': str(e)}
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 

@@ -1,0 +1,248 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{{ pro.business_name|default:pro.user.get_full_name }} - Coucou Beauté{% endblock %}
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    body {
+        font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial;
+    }
+
+    .grad-btn {
+        background: linear-gradient(90deg, #F28BB2 0%, #6CA9E0 100%);
+    }
+
+    .glass {
+        backdrop-filter: blur(12px);
+        background: rgba(255, 255, 255, 0.75);
+        box-shadow: 0 10px 30px rgba(108, 169, 224, 0.15);
+    }
+
+    .text-rosePastel {
+        color: #F28BB2;
+    }
+
+    .text-blueLight {
+        color: #6CA9E0;
+    }
+
+    .btn-elevated {
+        box-shadow: 0 10px 30px rgba(108, 169, 224, 0.20);
+    }
+
+    .btn-elevated:hover {
+        box-shadow: 0 10px 30px rgba(242, 139, 178, 0.40);
+    }
+
+    .card-hover {
+        transition: all 0.3s ease;
+    }
+
+    .card-hover:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 40px rgba(108, 169, 224, 0.25);
+    }
+
+    .service-card {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .gallery-item {
+        aspect-ratio: 1;
+        object-fit: cover;
+        border-radius: 0.75rem;
+    }
+
+    .rating-stars {
+        color: #FCD34D;
+    }
+
+    .back-btn {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-pink-50 via-white to-blue-50">
+    <!-- Header with Back Button -->
+    <div class="sticky top-0 z-50 p-4">
+        <div class="max-w-4xl mx-auto">
+            <button onclick="history.back()"
+                class="back-btn px-4 py-2 rounded-xl flex items-center gap-2 text-gray-700 hover:bg-white/80 transition-all">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                Retour
+            </button>
+        </div>
+    </div>
+
+    <div class="max-w-4xl mx-auto px-4 pb-8">
+        <!-- Profile Header -->
+        <div class="glass rounded-3xl p-8 mb-6">
+            <div class="flex flex-col md:flex-row gap-6">
+                <!-- Profile Photo -->
+                <div class="flex-shrink-0">
+                    {% if pro.extra.profile_photo %}
+                    <img src="{{ pro.extra.profile_photo.url }}"
+                        alt="{{ pro.business_name|default:pro.user.get_full_name }}"
+                        class="w-32 h-32 rounded-2xl object-cover border-4 border-white shadow-lg">
+                    {% else %}
+                    <div
+                        class="w-32 h-32 rounded-2xl bg-gradient-to-br from-pink-100 to-blue-100 flex items-center justify-center border-4 border-white shadow-lg">
+                        <i data-lucide="user" class="w-16 h-16 text-gray-400"></i>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Profile Info -->
+                <div class="flex-1">
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">
+                        {{ pro.business_name|default:pro.user.get_full_name }}
+                    </h1>
+                    <p class="text-lg text-gray-600 mb-4">{{ pro.extra.primary_service|default:"Service" }}</p>
+
+                    <!-- Rating -->
+                    <div class="flex items-center gap-2 mb-4">
+                        <div class="flex rating-stars">
+                            {% for i in "12345" %}
+                            <i data-lucide="star"
+                                class="w-5 h-5 {% if forloop.counter <= pro.extra.rating %}fill-current{% endif %}"></i>
+                            {% endfor %}
+                        </div>
+                        <span class="text-gray-600">{{ pro.extra.rating|default:4.0|floatformat:1 }} ({{
+                            pro.extra.reviews|default:0 }} avis)</span>
+                    </div>
+
+                    <!-- Location -->
+                    <div class="flex items-center gap-2 text-gray-600 mb-4">
+                        <i data-lucide="map-pin" class="w-4 h-4"></i>
+                        <span>{{ pro.address }}, {{ pro.city }}</span>
+                    </div>
+
+                    <!-- Price -->
+                    <div class="flex items-center gap-2 text-gray-600 mb-4">
+                        <i data-lucide="dollar-sign" class="w-4 h-4"></i>
+                        <span>À partir de {{ pro.extra.price|default:50 }} DT</span>
+                    </div>
+
+                    <!-- Languages -->
+                    <div class="flex items-center gap-2 text-gray-600">
+                        <i data-lucide="globe" class="w-4 h-4"></i>
+                        <span>{{ pro.extra.spoken_languages|default:"Français" }}</span>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex flex-col gap-3">
+                    <button
+                        class="grad-btn text-white px-6 py-3 rounded-xl font-semibold btn-elevated hover:scale-105 transition-all">
+                        <i data-lucide="calendar" class="w-4 h-4 inline mr-2"></i>
+                        Réserver
+                    </button>
+                    <button
+                        class="bg-white/60 text-gray-700 px-6 py-3 rounded-xl font-semibold border border-gray-200 hover:bg-white/80 transition-all">
+                        <i data-lucide="heart" class="w-4 h-4 inline mr-2"></i>
+                        Favoris
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bio Section -->
+        {% if pro.extra.bio %}
+        <div class="glass rounded-2xl p-6 mb-6">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">À propos</h2>
+            <p class="text-gray-700 leading-relaxed">{{ pro.extra.bio }}</p>
+        </div>
+        {% endif %}
+
+        <!-- Services Section -->
+        {% if pro.extra.services %}
+        <div class="glass rounded-2xl p-6 mb-6">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">Services</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {% for service in pro.extra.services|split:"," %}
+                <div class="service-card rounded-xl p-4 card-hover">
+                    <div class="flex items-center">
+                        <div
+                            class="w-10 h-10 rounded-lg bg-gradient-to-r from-pink-100 to-pink-200 flex items-center justify-center">
+                            <i data-lucide="scissors" class="w-5 h-5 text-rosePastel"></i>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="font-semibold text-gray-900">{{ service|title }}</h3>
+                            <p class="text-sm text-gray-600">Service professionnel</p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Gallery Section -->
+        {% if pro.extra.gallery %}
+        <div class="glass rounded-2xl p-6 mb-6">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">Galerie</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {% for image_url in pro.extra.gallery|split:"," %}
+                <img src="{{ image_url }}" alt="Galerie" class="gallery-item">
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Working Hours -->
+        {% if pro.extra.working_days and pro.extra.working_hours %}
+        <div class="glass rounded-2xl p-6 mb-6">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">Horaires</h2>
+            <div class="space-y-2">
+                <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                    <span class="font-medium text-gray-700">Jours de travail</span>
+                    <span class="text-gray-600">{{ pro.extra.working_days }}</span>
+                </div>
+                <div class="flex justify-between items-center py-2">
+                    <span class="font-medium text-gray-700">Heures</span>
+                    <span class="text-gray-600">{{ pro.extra.working_hours }}</span>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Contact Info -->
+        <div class="glass rounded-2xl p-6 mb-6">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">Contact</h2>
+            <div class="space-y-3">
+                <div class="flex items-center gap-3">
+                    <i data-lucide="phone" class="w-5 h-5 text-gray-500"></i>
+                    <span class="text-gray-700">{{ pro.phone_number|default:"Non disponible" }}</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <i data-lucide="mail" class="w-5 h-5 text-gray-500"></i>
+                    <span class="text-gray-700">{{ pro.user.email }}</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <i data-lucide="map-pin" class="w-5 h-5 text-gray-500"></i>
+                    <span class="text-gray-700">{{ pro.address }}, {{ pro.city }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reviews Section (Placeholder) -->
+        <div class="glass rounded-2xl p-6">
+            <h2 class="text-xl font-bold text-gray-900 mb-4">Avis clients</h2>
+            <div class="text-center py-8 text-gray-500">
+                <i data-lucide="star" class="w-12 h-12 mx-auto mb-4 text-gray-300"></i>
+                <p>Aucun avis pour le moment</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>window.lucide && window.lucide.createIcons();</script>
+{% endblock %}

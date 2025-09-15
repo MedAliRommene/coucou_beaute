@@ -23,7 +23,8 @@ def login_view(request: HttpRequest) -> HttpResponse:
     if request.method == 'POST':
         identifier = (request.POST.get('email') or '').strip()
         password = request.POST.get('password') or ''
-        role = request.POST.get('role') or 'client'
+        selected_role = request.POST.get('role') or 'client'  # Rôle sélectionné dans le formulaire
+        
         # Allow login with email OR username
         username_to_use = identifier
         try:
@@ -34,27 +35,88 @@ def login_view(request: HttpRequest) -> HttpResponse:
                     username_to_use = u.username
         except Exception:
             pass
+            
         user = authenticate(request, username=username_to_use, password=password)
         if user is not None:
+            # Check if user is active
+            if not user.is_active:
+                messages.error(request, "Votre compte n'est pas encore activé. Vérifiez votre email ou contactez le support.")
+                return render(request, 'front_web/login.html')
+            
             login(request, user)
+            
             # Admin -> dashboard
             if user.is_staff or user.is_superuser:
                 return redirect('/dashboard/')
-            # Professional role
+            
+            # Vérifier le rôle sélectionné et rediriger en conséquence
+            if selected_role == 'professional':
+                # Vérifier si l'utilisateur a un profil professionnel
+                try:
+                    pro = getattr(user, 'professional_profile', None)
+                    if pro:
+                        # Vérifier si le profil extra existe
+                        try:
+                            _ = pro.extra  # will raise if not exists
+                            return redirect('front_web:pro_dashboard')
+                        except ProfessionalProfileExtra.DoesNotExist:
+                            return redirect('front_web:pro_onboarding')
+                    else:
+                        messages.error(request, "Aucun profil professionnel trouvé pour cet utilisateur.")
+                        return render(request, 'front_web/login.html')
+                except Exception:
+                    messages.error(request, "Erreur lors de la vérification du profil professionnel.")
+                    return render(request, 'front_web/login.html')
+            
+            elif selected_role == 'client':
+                # Vérifier si l'utilisateur a un profil client
+                try:
+                    client_profile = getattr(user, 'client_profile', None)
+                    if client_profile:
+                        return redirect('front_web:client_dashboard')
+                    else:
+                        # Créer un profil client s'il n'existe pas
+                        ClientProfile.objects.get_or_create(
+                            user=user,
+                            defaults={
+                                'phone_number': '',
+                                'address': '',
+                                'city': '',
+                            }
+                        )
+                        return redirect('front_web:client_dashboard')
+                except Exception:
+                    messages.error(request, "Erreur lors de la création du profil client.")
+                    return render(request, 'front_web/login.html')
+            
+            # Fallback: si aucun rôle spécifique, essayer de détecter automatiquement
             try:
                 pro = getattr(user, 'professional_profile', None)
                 if pro:
-                    # If no extra profile completed yet, redirect to onboarding first
                     try:
-                        _ = pro.extra  # will raise if not exists
+                        _ = pro.extra
+                        return redirect('front_web:pro_dashboard')
                     except ProfessionalProfileExtra.DoesNotExist:
                         return redirect('front_web:pro_onboarding')
-                    return redirect('front_web:pro_dashboard')
             except Exception:
                 pass
-            # Default to client dashboard
-            return redirect('front_web:client_dashboard')
-        messages.error(request, "Identifiants invalides")
+            
+            # Par défaut, créer un profil client
+            try:
+                ClientProfile.objects.get_or_create(
+                    user=user,
+                    defaults={
+                        'phone_number': '',
+                        'address': '',
+                        'city': '',
+                    }
+                )
+                return redirect('front_web:client_dashboard')
+            except Exception:
+                messages.error(request, "Erreur lors de la création du profil.")
+                return render(request, 'front_web/login.html')
+        else:
+            messages.error(request, "Identifiants invalides")
     return render(request, 'front_web/login.html')
 
 
@@ -91,7 +153,24 @@ def signup_view(request: HttpRequest) -> HttpResponse:
                     phone = request.POST.get('phone') or ''
                     address = request.POST.get('address') or ''
                     city = request.POST.get('city') or ''
-                    ClientProfile.objects.create(user=u, phone_number=phone, address=address, city=city)
+                    latitude = request.POST.get('latitude')
+                    longitude = request.POST.get('longitude')
+                    
+                    # Convert coordinates to float if provided
+                    try:
+                        latitude = float(latitude) if latitude else None
+                        longitude = float(longitude) if longitude else None
+                    except (ValueError, TypeError):
+                        latitude = longitude = None
+                    
+                    ClientProfile.objects.create(
+                        user=u, 
+                        phone_number=phone, 
+                        address=address, 
+                        city=city,
+                        latitude=latitude,
+                        longitude=longitude
+                    )
                     login(request, u)
                     return redirect('front_web:client_dashboard')
             # Flow PROFESSIONNEL: créer une demande (application) et ne pas activer l'utilisateur tant que non approuvé
@@ -187,7 +266,37 @@ def signup_view(request: HttpRequest) -> HttpResponse:
 
 @login_required
 def client_dashboard(request: HttpRequest) -> HttpResponse:
-    return render(request, 'front_web/client_dashboard.html')
+    # Get client profile data
+    client_profile = None
+    try:
+        client_profile = request.user.client_profile
+    except Exception:
+        pass
+    
+    context = {
+        'client_profile': client_profile,
+    }
+    return render(request, 'front_web/client_dashboard.html', context)
+
+
+def logout_view(request: HttpRequest) -> HttpResponse:
+    logout(request)
+    messages.success(request, "Vous avez été déconnecté avec succès.")
+    return redirect('front_web:home')
+
+
+def professional_detail(request: HttpRequest, pro_id: int) -> HttpResponse:
+    """Display professional profile details"""
+    try:
+        pro = Professional.objects.select_related('user').prefetch_related('extra').get(id=pro_id)
+        context = {
+            'pro': pro,
+            'pro_id': pro_id,
+        }
+        return render(request, 'front_web/professional_detail.html', context)
+    except Professional.DoesNotExist:
+        messages.error(request, "Professionnel non trouvé.")
+        return redirect('front_web:client_dashboard')
 
 
 @login_required
@@ -227,46 +336,48 @@ def pro_onboarding(request: HttpRequest) -> HttpResponse:
         try:
             e = pro.extra
             extra_hint = {
-                'bio': e.bio,
-                'city': e.city,
-                'social_instagram': e.social_instagram,
-                'social_facebook': e.social_facebook,
-                'social_tiktok': e.social_tiktok,
-                'services': e.services,
-                'working_days': e.working_days,
-                'working_hours': e.working_hours,
-                'gallery': e.gallery,
+                'bio': e.bio or '',
+                'city': e.city or '',
+                'social_instagram': e.social_instagram or '',
+                'social_facebook': e.social_facebook or '',
+                'social_tiktok': e.social_tiktok or '',
+                'services': e.services or [],
+                'working_days': e.working_days or [],
+                'working_hours': e.working_hours or {},
+                'gallery': e.gallery or [],
             }
         except ProfessionalProfileExtra.DoesNotExist:
-            extra_hint = None
-        # Inclure business_name pour préremplir le nom du centre
-        if extra_hint is None:
             extra_hint = {}
-        extra_hint['business_name'] = getattr(pro, 'business_name', '')
+        
+        # Inclure business_name pour préremplir le nom du centre
+        extra_hint['business_name'] = getattr(pro, 'business_name', '') or ''
+        
     except Exception:
-        pass
+        extra_hint = {}
+    
     try:
         app = ProfessionalApplication.objects.filter(email__iexact=request.user.email, is_approved=True).order_by('-created_at').first() or \
               ProfessionalApplication.objects.filter(email__iexact=request.user.email).order_by('-created_at').first()
         if app:
             app_hint = {
-                'first_name': app.first_name,
-                'last_name': app.last_name,
-                'activity_category': app.activity_category,
-                'service_type': app.service_type,
-                'address': app.address,
+                'first_name': app.first_name or '',
+                'last_name': app.last_name or '',
+                'activity_category': app.activity_category or '',
+                'service_type': app.service_type or '',
+                'address': app.address or '',
                 'latitude': app.latitude,
                 'longitude': app.longitude,
-                'email': app.email,
-                'phone_number': app.phone_number,
-                'salon_name': app.salon_name,
-                'profile_photo': app.profile_photo,
-                'id_document': app.id_document,
+                'email': app.email or '',
+                'phone_number': app.phone_number or '',
+                'salon_name': app.salon_name or '',
+                'profile_photo': app.profile_photo or '',
+                'id_document': app.id_document or '',
                 'created_at': app.created_at.isoformat() if getattr(app, 'created_at', None) else None,
             }
     except Exception:
-        app_hint = None
-    prefill = { 'application_hint': app_hint, 'extra': extra_hint }
+        app_hint = {}
+    
+    prefill = { 'application_hint': app_hint or {}, 'extra': extra_hint or {} }
     return render(request, 'front_web/pro_onboarding.html', { 'prefill': json.dumps(prefill) })
 
 
@@ -361,4 +472,48 @@ def booking_page(request: HttpRequest) -> HttpResponse:
         return render(request, 'front_web/booking.html', { 'pro': pro, 'pro_id': pro.id })
     except Exception:
         return redirect('front_web:home')
+
+
+@login_required
+def client_appointments(request):
+    """Page des rendez-vous du client"""
+    try:
+        # Récupérer les rendez-vous du client
+        client_profile = getattr(request.user, 'client_profile', None)
+        if not client_profile:
+            messages.error(request, "Profil client non trouvé.")
+            return redirect('front_web:client_dashboard')
+        
+        # TODO: Récupérer les rendez-vous depuis la base de données
+        appointments = []  # Placeholder pour les rendez-vous
+        
+        return render(request, 'front_web/client_appointments.html', {
+            'appointments': appointments,
+            'client_profile': client_profile
+        })
+    except Exception as e:
+        messages.error(request, f"Erreur lors du chargement des rendez-vous: {str(e)}")
+        return redirect('front_web:client_dashboard')
+
+
+@login_required
+def client_calendar(request):
+    """Page calendrier du client"""
+    try:
+        # Récupérer le profil client
+        client_profile = getattr(request.user, 'client_profile', None)
+        if not client_profile:
+            messages.error(request, "Profil client non trouvé.")
+            return redirect('front_web:client_dashboard')
+        
+        # TODO: Récupérer les rendez-vous pour le calendrier
+        appointments = []  # Placeholder pour les rendez-vous
+        
+        return render(request, 'front_web/client_calendar.html', {
+            'appointments': appointments,
+            'client_profile': client_profile
+        })
+    except Exception as e:
+        messages.error(request, f"Erreur lors du chargement du calendrier: {str(e)}")
+        return redirect('front_web:client_dashboard')
 

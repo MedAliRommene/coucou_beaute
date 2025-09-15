@@ -67,6 +67,12 @@
             {% endif %}
             <form method="post" class="space-y-4">
                 {% csrf_token %}
+                <div class="flex gap-4 text-sm mb-4">
+                    <label class="flex items-center gap-2"><input type="radio" name="role" value="client" checked>
+                        Client</label>
+                    <label class="flex items-center gap-2"><input type="radio" name="role" value="professional">
+                        Professionnel</label>
+                </div>
                 <div>
                     <label class="block text-sm text-textMuted mb-1">Email</label>
                     <div class="flex items-center gap-2 border rounded-xl px-3 py-3 bg-white/60">

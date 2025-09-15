@@ -13,6 +13,7 @@ from datetime import timedelta
 from django.db.models import Q
 from django.http import HttpResponse
 import csv
+import threading
 from typing import Optional
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -155,11 +156,73 @@ def approve_professional_application(request, app_id: int):
     if updates:
         pro.save(update_fields=updates)
 
+    # Créer ou mettre à jour le ProfessionalProfileExtra avec les données de l'application
+    extra, extra_created = ProfessionalProfileExtra.objects.get_or_create(professional=pro)
+    
+    # Transférer TOUTES les données de l'application vers le profil extra
+    # Forcer la mise à jour même si les champs sont vides
+    
+    if app.address:
+        extra.address = app.address
+    if app.latitude is not None:
+        extra.latitude = app.latitude
+    if app.longitude is not None:
+        extra.longitude = app.longitude
+    if app.phone_number:
+        extra.phone_number = app.phone_number
+    if app.activity_category:
+        extra.primary_service = app.activity_category
+    if app.spoken_languages:
+        if isinstance(app.spoken_languages, list):
+            extra.spoken_languages = ','.join(app.spoken_languages)
+        else:
+            extra.spoken_languages = str(app.spoken_languages)
+    
+    # Si les coordonnées sont manquantes mais qu'on a une adresse, essayer de géocoder
+    if (extra.latitude is None or extra.longitude is None) and extra.address:
+        try:
+            import requests
+            url = "https://nominatim.openstreetmap.org/search"
+            params = {
+                'q': extra.address,
+                'format': 'json',
+                'limit': 1,
+                'countrycodes': 'tn',
+                'addressdetails': 1
+            }
+            headers = {'User-Agent': 'CoucouBeaute/1.0'}
+            response = requests.get(url, params=params, headers=headers, timeout=5)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if data:
+                    result = data[0]
+                    extra.latitude = float(result['lat'])
+                    extra.longitude = float(result['lon'])
+                    print(f"✅ Coordonnées géocodées pour {app.email}: {extra.latitude}, {extra.longitude}")
+        except Exception as e:
+            print(f"⚠️  Erreur géocodage pour {app.email}: {e}")
+    
+    # Définir des valeurs par défaut si elles n'existent pas
+    if not extra.rating:
+        extra.rating = 4.0
+    if not extra.reviews:
+        extra.reviews = 0
+    if not extra.price:
+        extra.price = 50.0
+    if not extra.services:
+        extra.services = []
+    if not extra.working_days:
+        extra.working_days = []
+    if not extra.working_hours:
+        extra.working_hours = {'start': '09:00', 'end': '18:00'}
+    
+    extra.save()
+
     # Réponse rapide avec pro_id pour redirection immédiate
     payload = {"detail": "Demande approuvée", "pro_id": pro.id}
 
     # Envoyer l'email en tâche non bloquante (thread léger)
-    import threading
     def _send_approve_email():
         try:
             subject = "Votre profil Coucou Beauté est activé"
@@ -194,14 +257,103 @@ def approve_professional_application(request, app_id: int):
                 message=plain,
                 from_email=getattr(settings, "DEFAULT_FROM_EMAIL", "no-reply@coucou-beaute.local"),
                 recipient_list=[app.email],
-                fail_silently=True,
+                fail_silently=False,  # Ne pas ignorer les erreurs pour le debugging
                 html_message=html,
             )
-        except Exception:
-            pass
-    threading.Thread(target=_send_approve_email, daemon=True).start()
+            print(f"✅ Email d'approbation envoyé à {app.email}")  # Debug
+        except Exception as e:
+            print(f"❌ Erreur envoi email d'approbation: {e}")  # Debug
+    
+    # Lancer l'envoi d'email en arrière-plan
+    email_thread = threading.Thread(target=_send_approve_email, daemon=True)
+    email_thread.start()
+
+    # Réponse avec succès et informations pour redirection
+    payload = {
+        "detail": "Demande approuvée avec succès", 
+        "pro_id": pro.id,
+        "professional_name": f"{app.first_name} {app.last_name}".strip(),
+        "email": app.email,
+        "success": True
+    }
 
     return Response(payload)
+
+
+@api_view(["POST"]) 
+@permission_classes([IsAdminUser])
+@authentication_classes([SessionAuthentication])
+def fix_professionals_coordinates(request):
+    """API pour corriger les coordonnées des professionnels existants"""
+    try:
+        # Trouver tous les profils extra sans coordonnées
+        extras_without_coords = ProfessionalProfileExtra.objects.filter(
+            latitude__isnull=True,
+            longitude__isnull=True
+        )
+        
+        fixed_count = 0
+        
+        for extra in extras_without_coords:
+            # Construire l'adresse complète
+            full_address = ""
+            if extra.address:
+                full_address = extra.address
+            if extra.city and extra.city not in full_address:
+                if full_address:
+                    full_address += f", {extra.city}"
+                else:
+                    full_address = extra.city
+            
+            if full_address and "tunisie" not in full_address.lower():
+                full_address += ", Tunisie"
+            
+            if full_address:
+                try:
+                    import requests
+                    url = "https://nominatim.openstreetmap.org/search"
+                    params = {
+                        'q': full_address,
+                        'format': 'json',
+                        'limit': 1,
+                        'countrycodes': 'tn',
+                        'addressdetails': 1
+                    }
+                    headers = {'User-Agent': 'CoucouBeaute/1.0'}
+                    
+                    response = requests.get(url, params=params, headers=headers, timeout=10)
+                    
+                    if response.status_code == 200:
+                        data = response.json()
+                        if data:
+                            result = data[0]
+                            lat = float(result['lat'])
+                            lng = float(result['lon'])
+                            
+                            # Mettre à jour les coordonnées
+                            extra.latitude = lat
+                            extra.longitude = lng
+                            extra.save()
+                            fixed_count += 1
+                            
+                except Exception as e:
+                    print(f"Erreur géocodage pour {extra.professional.business_name}: {e}")
+                    continue
+        
+        # Vérifier le résultat final
+        total_with_coords = ProfessionalProfileExtra.objects.filter(
+            latitude__isnull=False,
+            longitude__isnull=False
+        ).count()
+        
+        return Response({
+            'detail': f'Coordonnées corrigées pour {fixed_count} professionnels',
+            'fixed_count': fixed_count,
+            'total_with_coordinates': total_with_coords
+        })
+        
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(["POST"]) 

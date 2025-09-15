@@ -106,6 +106,27 @@
         border-color: #6CA9E0;
         background: rgba(108, 169, 224, 0.08)
     }
+
+    /* Client form enhancements */
+    .client-field {
+        transition: all 0.2s ease;
+    }
+
+    .client-field:focus-within {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(108, 169, 224, 0.15);
+    }
+
+    .map-container {
+        border-radius: 0.75rem;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .coordinate-input {
+        font-family: 'Courier New', monospace;
+        font-size: 0.875rem;
+    }
 </style>
 <!-- Leaflet CSS for the map selector -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -152,35 +173,61 @@
                     <label class="block text-sm text-textMuted mb-1">Mot de passe</label>
                     <div class="flex items-center gap-2 border rounded-xl px-3 py-3 bg-white/60">
                         <i data-lucide="lock" class="w-5 h-5 text-blueLight"></i>
-                        <input id="passwordField" name="password" type="password" required
-                            pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$"
-                            title="8+ caractères, majuscule, minuscule, chiffre et caractère spécial"
-                            class="w-full border-0 focus:ring-0 bg-transparent" placeholder="••••••••" />
+                        <input id="passwordField" name="password" type="password" required minlength="6"
+                            title="Au moins 6 caractères" class="w-full border-0 focus:ring-0 bg-transparent"
+                            placeholder="••••••••" />
                         <button type="button" id="togglePwd" class="text-sm text-gray-500">👁️</button>
                     </div>
                     <div class="mt-2 flex flex-wrap gap-4 text-xs">
-                        <div class="hint-item" data-check="len"><span class="indicator"></span>≥ 8 caractères</div>
-                        <div class="hint-item" data-check="upper"><span class="indicator"></span>Majuscule</div>
-                        <div class="hint-item" data-check="lower"><span class="indicator"></span>Minuscule</div>
-                        <div class="hint-item" data-check="digit"><span class="indicator"></span>Chiffre</div>
-                        <div class="hint-item" data-check="special"><span class="indicator"></span>Caractère spécial
-                        </div>
+                        <div class="hint-item" data-check="len"><span class="indicator"></span>≥ 6 caractères</div>
                     </div>
                 </div>
-                <div id="clientFields" class="space-y-3">
-                    <div>
+                <div id="clientFields" class="space-y-4">
+                    <!-- Phone Field with Icon -->
+                    <div class="client-field">
                         <label class="block text-sm text-textMuted mb-1">Téléphone</label>
-                        <input name="phone" type="tel" inputmode="numeric" pattern="^\+?[0-9]{8,15}$"
-                            title="Entre 8 et 15 chiffres" class="w-full border rounded-xl px-3 py-2 bg-white/60" />
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-sm text-textMuted mb-1">Adresse</label>
-                            <input name="address" class="w-full border rounded-xl px-3 py-2 bg-white/60" />
+                        <div class="flex items-center gap-2 border rounded-xl px-3 py-3 bg-white/60">
+                            <i data-lucide="phone" class="w-5 h-5 text-blueLight"></i>
+                            <input name="phone" type="tel" inputmode="numeric" pattern="^\+?[0-9]{8,15}$"
+                                title="Entre 8 et 15 chiffres" placeholder="+216XXXXXXXX"
+                                class="w-full border-0 focus:ring-0 bg-transparent" />
                         </div>
-                        <div>
-                            <label class="block text-sm text-textMuted mb-1">Ville</label>
-                            <input name="city" class="w-full border rounded-xl px-3 py-2 bg-white/60" />
+                    </div>
+
+                    <!-- Address Field with Icon -->
+                    <div class="client-field">
+                        <label class="block text-sm text-textMuted mb-1">Adresse</label>
+                        <div class="flex items-center gap-2 border rounded-xl px-3 py-3 bg-white/60">
+                            <i data-lucide="map-pin" class="w-5 h-5 text-rosePastel"></i>
+                            <input name="address" placeholder="Votre adresse complète"
+                                class="w-full border-0 focus:ring-0 bg-transparent" />
+                        </div>
+                    </div>
+
+                    <!-- City Field with Icon -->
+                    <div class="client-field">
+                        <label class="block text-sm text-textMuted mb-1">Ville</label>
+                        <div class="flex items-center gap-2 border rounded-xl px-3 py-3 bg-white/60">
+                            <i data-lucide="building" class="w-5 h-5 text-blueLight"></i>
+                            <input name="city" placeholder="Votre ville"
+                                class="w-full border-0 focus:ring-0 bg-transparent" />
+                        </div>
+                    </div>
+
+                    <!-- Map Section for Location Selection -->
+                    <div class="space-y-2">
+                        <label class="block text-sm text-textMuted mb-1">Position sur la carte</label>
+                        <div class="text-xs text-gray-600 mb-2">
+                            Cliquez sur la carte pour choisir votre position précise
+                        </div>
+                        <div class="map-container border rounded-xl overflow-hidden bg-white/60">
+                            <div id="clientMap" style="height: 200px;"></div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <input id="clientLat" name="latitude" placeholder="Latitude" readonly
+                                class="coordinate-input border rounded-xl px-3 py-2 bg-white/60 text-sm" />
+                            <input id="clientLng" name="longitude" placeholder="Longitude" readonly
+                                class="coordinate-input border rounded-xl px-3 py-2 bg-white/60 text-sm" />
                         </div>
                     </div>
                 </div>
@@ -495,11 +542,7 @@
         const field = document.getElementById('passwordField');
         const toggle = document.getElementById('togglePwd');
         const checks = {
-            len: (v) => v.length >= 8,
-            upper: (v) => /[A-Z]/.test(v),
-            lower: (v) => /[a-z]/.test(v),
-            digit: (v) => /\d/.test(v),
-            special: (v) => /[^A-Za-z0-9]/.test(v)
+            len: (v) => v.length >= 6
         };
         function sync() {
             const v = field?.value || '';
@@ -513,6 +556,153 @@
         toggle?.addEventListener('click', () => {
             if (!field) return; const t = field.getAttribute('type') === 'password' ? 'text' : 'password';
             field.setAttribute('type', t); toggle.textContent = t === 'password' ? '👁️' : '🙈';
+        });
+    })();
+</script>
+<script>
+    // Client map functionality (matching mobile behavior)
+    (function () {
+        let clientMap, clientMarker;
+        const clientLatInput = document.getElementById('clientLat');
+        const clientLngInput = document.getElementById('clientLng');
+        const addressInput = document.querySelector('#clientFields input[name="address"]');
+        const cityInput = document.querySelector('#clientFields input[name="city"]');
+
+        // Initialize client map when client fields are shown
+        function initClientMap() {
+            if (clientMap || !window.L) return;
+
+            const nabeulCenter = [36.4515, 10.7353];
+            clientMap = L.map('clientMap').setView(nabeulCenter, 13);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap'
+            }).addTo(clientMap);
+
+            // Add initial marker
+            clientMarker = L.marker(nabeulCenter, { draggable: true }).addTo(clientMap);
+
+            // Handle map clicks
+            clientMap.on('click', (e) => {
+                setClientMarker(e.latlng);
+            });
+
+            // Handle marker drag
+            clientMarker.on('dragend', () => {
+                setClientMarker(clientMarker.getLatLng());
+            });
+
+            // Set initial coordinates
+            setClientMarker(nabeulCenter);
+        }
+
+        function setClientMarker(latlng) {
+            if (clientMarker) {
+                clientMarker.setLatLng(latlng);
+            }
+
+            if (clientLatInput) clientLatInput.value = latlng.lat.toFixed(6);
+            if (clientLngInput) clientLngInput.value = latlng.lng.toFixed(6);
+
+            // Reverse geocoding
+            reverseGeocode(latlng.lat, latlng.lng);
+        }
+
+        function reverseGeocode(lat, lng) {
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&accept-language=fr&lat=${lat}&lon=${lng}`)
+                .then(r => r.json())
+                .then(data => {
+                    const addr = data?.display_name || '';
+                    const city = data?.address?.city || data?.address?.town || data?.address?.village || data?.address?.county || '';
+
+                    if (addressInput) addressInput.value = addr;
+                    if (cityInput && city) cityInput.value = city;
+                })
+                .catch(() => { });
+        }
+
+        // Show/hide client map based on role selection
+        const roleInputs = document.querySelectorAll('input[name="role"]');
+        roleInputs.forEach(input => {
+            input.addEventListener('change', () => {
+                if (input.value === 'client') {
+                    setTimeout(initClientMap, 100); // Small delay to ensure DOM is ready
+                }
+            });
+        });
+
+        // Initialize if client is already selected
+        if (document.querySelector('input[name="role"]:checked')?.value === 'client') {
+            setTimeout(initClientMap, 100);
+        }
+    })();
+</script>
+<script>
+    // Enhanced form validation matching mobile requirements
+    (function () {
+        const form = document.getElementById('signupForm');
+        if (!form) return;
+
+        form.addEventListener('submit', function (e) {
+            const role = document.querySelector('input[name="role"]:checked')?.value || 'client';
+
+            // Client-specific validation
+            if (role === 'client') {
+                const firstName = form.querySelector('input[name="first_name"]').value.trim();
+                const lastName = form.querySelector('input[name="last_name"]').value.trim();
+                const email = form.querySelector('input[name="email"]').value.trim();
+                const password = form.querySelector('input[name="password"]').value;
+                const phone = form.querySelector('#clientFields input[name="phone"]').value.trim();
+                const address = form.querySelector('#clientFields input[name="address"]').value.trim();
+                const city = form.querySelector('#clientFields input[name="city"]').value.trim();
+
+                // Required field validation
+                if (!firstName) {
+                    e.preventDefault();
+                    alert('Le prénom est requis');
+                    return;
+                }
+                if (!lastName) {
+                    e.preventDefault();
+                    alert('Le nom est requis');
+                    return;
+                }
+                if (!email) {
+                    e.preventDefault();
+                    alert('L\'email est requis');
+                    return;
+                }
+                if (!password) {
+                    e.preventDefault();
+                    alert('Le mot de passe est requis');
+                    return;
+                }
+
+                // Email validation
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(email)) {
+                    e.preventDefault();
+                    alert('Format d\'email invalide');
+                    return;
+                }
+
+                // Password validation (matching mobile: at least 6 characters)
+                if (password.length < 6) {
+                    e.preventDefault();
+                    alert('Le mot de passe doit contenir au moins 6 caractères');
+                    return;
+                }
+
+                // Phone validation (optional but if provided, must be valid)
+                if (phone) {
+                    const phoneRegex = /^\+?[0-9]{8,15}$/;
+                    if (!phoneRegex.test(phone)) {
+                        e.preventDefault();
+                        alert('Format de téléphone invalide (ex: +216XXXXXXXX)');
+                        return;
+                    }
+                }
+            }
         });
     })();
 </script>

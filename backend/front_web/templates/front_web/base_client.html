@@ -1,0 +1,297 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Coucou Beauté - Espace Client{% endblock %}</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        rosePastel: '#F28BB2',
+                        blueLight: '#6CA9E0',
+                        textMuted: '#6B7280'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Custom CSS -->
+    <style>
+        .icon-bubble {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-label {
+            transition: opacity 0.3s ease;
+        }
+
+        .sidebar-chevron {
+            transition: transform 0.3s ease;
+        }
+
+        #sidebar.collapsed {
+            width: 80px;
+        }
+
+        #sidebar.collapsed .sidebar-label,
+        #sidebar.collapsed .sidebar-chevron {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        #sidebar.collapsed .icon-bubble {
+            width: 48px;
+            height: 48px;
+        }
+
+        .main-content {
+            transition: margin-left 0.3s ease;
+        }
+
+        .main-content.expanded {
+            margin-left: 80px;
+        }
+
+        .logo-enhanced {
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
+        }
+
+        .animate-blob-1 {
+            animation: blob 7s infinite;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.55);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 8px 24px rgba(16, 24, 40, 0.08);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 16px;
+        }
+
+        .kpi-glass {
+            background: linear-gradient(135deg, rgba(255, 255, 255, .65), rgba(255, 255, 255, .45));
+            border: 1px solid rgba(255, 255, 255, .6);
+            border-radius: 18px;
+            padding: 16px;
+            box-shadow: 0 10px 30px rgba(16, 24, 40, .10);
+            transition: transform .18s ease, box-shadow .18s ease;
+        }
+
+        .kpi-glass:hover {
+            transform: translateY(-2px) scale(1.01);
+            box-shadow: 0 18px 36px rgba(16, 24, 40, .16);
+        }
+
+        .btn-glass {
+            background: rgba(255, 255, 255, .35);
+            border: 1px solid rgba(255, 255, 255, .6);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-radius: 12px;
+            padding: 8px 14px;
+            transition: transform .15s ease, box-shadow .15s ease;
+        }
+
+        .btn-glass:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 24px rgba(16, 24, 40, .12);
+        }
+
+        .btn-secondary-glass {
+            background: rgba(248, 250, 252, .35);
+            border: 1px solid rgba(226, 232, 240, .8);
+            border-radius: 12px;
+            padding: 8px 12px;
+            transition: transform .15s ease, box-shadow .15s ease;
+        }
+
+        .btn-secondary-glass:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 24px rgba(16, 24, 40, .10);
+        }
+
+        .table-glass thead {
+            background: rgba(248, 250, 252, .55);
+            backdrop-filter: blur(6px);
+        }
+
+        .table-glass tbody tr {
+            transition: background .12s ease, transform .12s ease;
+        }
+
+        .table-glass tbody tr:hover {
+            background: rgba(248, 250, 252, .6);
+        }
+
+        .animate-blob-2 {
+            animation: blob 7s infinite;
+            animation-delay: 2s;
+        }
+
+        .animate-blob-3 {
+            animation: blob 7s infinite;
+            animation-delay: 4s;
+        }
+
+        @keyframes blob {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            33% {
+                transform: translate(30px, -50px) scale(1.1);
+            }
+
+            66% {
+                transform: translate(-20px, 20px) scale(.9);
+            }
+
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+        }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body class="bg-gray-50 font-sans text-gray-800 overflow-hidden relative">
+    <!-- Background animation blobs -->
+    <div class="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+        <div class="absolute rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob-1 bg-pink-200"
+            style="width: 300px; height: 300px; top: 10%; left: 15%;"></div>
+        <div class="absolute rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob-2 bg-blue-200"
+            style="width: 250px; height: 250px; bottom: 10%; right: 20%;"></div>
+        <div class="absolute rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob-3 bg-pink-100"
+            style="width: 350px; height: 350px; top: 30%; right: 10%;"></div>
+    </div>
+
+    <div class="flex h-screen relative z-10">
+        <!-- Sidebar -->
+        <aside id="sidebar"
+            class="w-64 bg-white shadow-lg transition-all duration-300 ease-in-out flex flex-col py-6 px-4">
+            <div class="flex items-center justify-center mb-8">
+                <img src="{{ MEDIA_URL }}logo%20coucou%20beaute.png" alt="Coucou Beauté Logo"
+                    class="h-20 w-auto object-contain logo-enhanced">
+            </div>
+            <nav class="flex-1 space-y-2">
+                <a href="{% url 'front_web:client_dashboard' %}"
+                    class="flex items-center p-3 rounded-xl text-gray-700 hover:bg-pink-50 hover:text-pink-600 transition-colors duration-200 group relative {% if request.resolver_match.url_name == 'client_dashboard' %}bg-gradient-to-r from-pink-50 to-blue-50 text-pink-600 font-semibold shadow-sm{% endif %}">
+                    <div
+                        class="icon-bubble {% if request.resolver_match.url_name == 'client_dashboard' %}bg-gradient-to-br from-pink-400 to-blue-400 text-white{% else %}bg-gray-100 text-gray-500 group-hover:bg-pink-100 group-hover:text-pink-500{% endif %}">
+                        <i data-lucide="home" class="w-5 h-5"></i>
+                    </div>
+                    <span class="ml-3 sidebar-label">Accueil</span>
+                    <i data-lucide="chevron-right"
+                        class="ml-auto w-4 h-4 text-gray-400 group-hover:text-pink-500 transition-transform duration-200 sidebar-chevron"></i>
+                </a>
+
+                <a href="{% url 'front_web:client_appointments' %}"
+                    class="flex items-center p-3 rounded-xl text-gray-700 hover:bg-pink-50 hover:text-pink-600 transition-colors duration-200 group relative {% if request.resolver_match.url_name == 'client_appointments' %}bg-gradient-to-r from-pink-50 to-blue-50 text-pink-600 font-semibold shadow-sm{% endif %}">
+                    <div
+                        class="icon-bubble {% if request.resolver_match.url_name == 'client_appointments' %}bg-gradient-to-br from-pink-400 to-blue-400 text-white{% else %}bg-gray-100 text-gray-500 group-hover:bg-pink-100 group-hover:text-pink-500{% endif %}">
+                        <i data-lucide="calendar-check" class="w-5 h-5"></i>
+                    </div>
+                    <span class="ml-3 sidebar-label">Rendez-vous</span>
+                    <i data-lucide="chevron-right"
+                        class="ml-auto w-4 h-4 text-gray-400 group-hover:text-pink-500 transition-transform duration-200 sidebar-chevron"></i>
+                </a>
+
+                <a href="{% url 'front_web:client_calendar' %}"
+                    class="flex items-center p-3 rounded-xl text-gray-700 hover:bg-pink-50 hover:text-pink-600 transition-colors duration-200 group relative {% if request.resolver_match.url_name == 'client_calendar' %}bg-gradient-to-r from-pink-50 to-blue-50 text-pink-600 font-semibold shadow-sm{% endif %}">
+                    <div
+                        class="icon-bubble {% if request.resolver_match.url_name == 'client_calendar' %}bg-gradient-to-br from-pink-400 to-blue-400 text-white{% else %}bg-gray-100 text-gray-500 group-hover:bg-pink-100 group-hover:text-pink-500{% endif %}">
+                        <i data-lucide="calendar" class="w-5 h-5"></i>
+                    </div>
+                    <span class="ml-3 sidebar-label">Calendrier</span>
+                    <i data-lucide="chevron-right"
+                        class="ml-auto w-4 h-4 text-gray-400 group-hover:text-pink-500 transition-transform duration-200 sidebar-chevron"></i>
+                </a>
+            </nav>
+
+            <a href="/logout/"
+                class="mt-auto pt-4 border-t border-gray-100 flex items-center p-3 rounded-xl text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors duration-200">
+                <div class="icon-bubble bg-gray-100 text-gray-500 hover:bg-red-100 hover:text-red-500">
+                    <i data-lucide="log-out" class="w-5 h-5"></i>
+                </div>
+                <span class="ml-3 sidebar-label">Déconnexion</span>
+            </a>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <!-- Top Bar -->
+            <header class="bg-white shadow-sm border-b border-gray-100 px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <button id="sidebarToggle" class="text-gray-500 hover:text-gray-700 transition-colors">
+                            <i data-lucide="menu" class="w-6 h-6"></i>
+                        </button>
+                        <div class="text-sm text-gray-600">
+                            <span class="font-medium">{{ user.get_full_name|default:user.email }}</span>
+                            <span class="mx-2">•</span>
+                            <span>Client</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-4">
+                        <div
+                            class="w-8 h-8 rounded-full bg-gradient-to-r from-pink-400 to-blue-400 flex items-center justify-center text-white text-sm font-medium">
+                            {{ user.get_full_name|default:user.email|first|upper }}
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <main class="flex-1 overflow-y-auto bg-gray-50">
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Sidebar toggle functionality
+        const sidebar = document.getElementById('sidebar');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const mainContent = document.querySelector('.main-content');
+
+        sidebarToggle.addEventListener('click', function () {
+            sidebar.classList.toggle('collapsed');
+            if (mainContent) {
+                mainContent.classList.toggle('expanded');
+            }
+        });
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

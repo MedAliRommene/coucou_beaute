@@ -20,6 +20,7 @@
             <h2 class="text-xl font-semibold text-gray-900">Professionnels approuvés</h2>
             <div class="flex items-center gap-2">
                 <a href="/pros/pending/" class="btn-secondary-glass">Voir demandes en attente</a>
+                <button id="fixCoordinatesBtn" class="btn-glass text-green-700">Corriger coordonnées</button>
                 <button id="syncBtn" class="btn-glass text-blue-700">Synchroniser</button>
             </div>
         </div>
@@ -260,6 +261,49 @@
     document.getElementById('syncBtn').addEventListener('click', async () => {
         const r = await fetch('/api/professionals/sync/', { method: 'POST', headers: { 'X-CSRFToken': getCookie('csrftoken') } });
         if (r.ok) { fetchPros(); }
+    });
+
+
+    // Fix coordinates button
+    document.getElementById('fixCoordinatesBtn').addEventListener('click', async function () {
+        const btn = this;
+        btn.disabled = true;
+        btn.textContent = 'Correction en cours...';
+
+        try {
+            const response = await fetch('/api/professionals/fix-coordinates/', {
+                method: 'POST',
+                headers: { 'X-CSRFToken': getCookie('csrftoken') }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+
+                // Notification de succès
+                const notification = document.createElement('div');
+                notification.className = 'fixed top-4 right-4 z-50 kpi-glass px-4 py-2 text-green-700';
+                notification.textContent = `✅ ${data.detail} - Total: ${data.total_with_coordinates} professionnels`;
+                document.body.appendChild(notification);
+                setTimeout(() => notification.remove(), 4000);
+
+                // Rafraîchir la liste
+                fetchPros();
+            } else {
+                throw new Error('Erreur lors de la correction');
+            }
+        } catch (error) {
+            console.error('Erreur:', error);
+
+            // Notification d'erreur
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-4 right-4 z-50 kpi-glass px-4 py-2 text-red-700';
+            notification.textContent = '❌ Erreur lors de la correction des coordonnées';
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 4000);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Corriger coordonnées';
+        }
     });
 
     // CRUD actions for professional cards

@@ -58,6 +58,15 @@ class ProfessionalProfileExtra(models.Model):
     professional = models.OneToOneField(Professional, on_delete=models.CASCADE, related_name="extra")
     bio = models.TextField(blank=True)
     city = models.CharField(max_length=128, blank=True)
+    address = models.TextField(blank=True)
+    phone_number = models.CharField(max_length=32, blank=True)
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
+    primary_service = models.CharField(max_length=50, blank=True)
+    rating = models.FloatField(default=4.0)
+    reviews = models.IntegerField(default=0)
+    price = models.FloatField(default=50.0)
+    spoken_languages = models.CharField(max_length=255, blank=True)
     social_instagram = models.CharField(max_length=255, blank=True)
     social_facebook = models.CharField(max_length=255, blank=True)
     social_tiktok = models.CharField(max_length=255, blank=True)
@@ -65,6 +74,7 @@ class ProfessionalProfileExtra(models.Model):
     working_days = models.JSONField(default=list, help_text="Jours de travail")
     working_hours = models.JSONField(default=dict, help_text="Ex: {start:'09:00', end:'18:00'}")
     gallery = models.JSONField(default=list)
+    profile_photo = models.ImageField(upload_to='professionals/', blank=True, null=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self) -> str:
