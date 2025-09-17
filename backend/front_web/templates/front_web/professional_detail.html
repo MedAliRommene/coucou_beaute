@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'front_web/base_client.html' %}
 {% load static %}
 {% block title %}{{ pro.business_name|default:pro.user.get_full_name }} - Coucou Beauté{% endblock %}
 {% block extra_css %}
@@ -9,14 +9,62 @@
         font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial;
     }
 
+    /* Beautiful background like login page */
+    #three-bg {
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        overflow: hidden;
+    }
+
+    #three-bg::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(242, 139, 178, 0.1) 0%, transparent 70%);
+        animation: float 20s ease-in-out infinite;
+    }
+
+    #three-bg::after {
+        content: '';
+        position: absolute;
+        bottom: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(108, 169, 224, 0.1) 0%, transparent 70%);
+        animation: float 25s ease-in-out infinite reverse;
+    }
+
+    @keyframes float {
+
+        0%,
+        100% {
+            transform: translate(0, 0) rotate(0deg);
+        }
+
+        33% {
+            transform: translate(30px, -30px) rotate(120deg);
+        }
+
+        66% {
+            transform: translate(-20px, 20px) rotate(240deg);
+        }
+    }
+
     .grad-btn {
         background: linear-gradient(90deg, #F28BB2 0%, #6CA9E0 100%);
     }
 
     .glass {
-        backdrop-filter: blur(12px);
-        background: rgba(255, 255, 255, 0.75);
-        box-shadow: 0 10px 30px rgba(108, 169, 224, 0.15);
+        backdrop-filter: blur(20px);
+        background: rgba(255, 255, 255, 0.85);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
     }
 
     .text-rosePastel {
@@ -40,12 +88,12 @@
     }
 
     .card-hover:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 15px 40px rgba(108, 169, 224, 0.25);
+        transform: translateY(-5px);
+        box-shadow: 0 20px 50px rgba(108, 169, 224, 0.3);
     }
 
     .service-card {
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%);
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.8) 100%);
         border: 1px solid rgba(255, 255, 255, 0.3);
     }
 
@@ -63,11 +111,20 @@
         background: rgba(255, 255, 255, 0.9);
         backdrop-filter: blur(10px);
     }
+
+    .booking-form {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.9) 100%);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="min-h-screen bg-gradient-to-br from-pink-50 via-white to-blue-50">
+<!-- Beautiful animated background -->
+<div id="three-bg"></div>
+
+<div class="min-h-screen relative">
     <!-- Header with Back Button -->
     <div class="sticky top-0 z-50 p-4">
         <div class="max-w-4xl mx-auto">
@@ -80,19 +137,29 @@
     </div>
 
     <div class="max-w-4xl mx-auto px-4 pb-8">
+
         <!-- Profile Header -->
         <div class="glass rounded-3xl p-8 mb-6">
             <div class="flex flex-col md:flex-row gap-6">
-                <!-- Profile Photo -->
+                <!-- Profile Photo - Main Image -->
                 <div class="flex-shrink-0">
                     {% if pro.extra.profile_photo %}
-                    <img src="{{ pro.extra.profile_photo.url }}"
-                        alt="{{ pro.business_name|default:pro.user.get_full_name }}"
-                        class="w-32 h-32 rounded-2xl object-cover border-4 border-white shadow-lg">
+                    <div class="relative group">
+                        <img src="{{ pro.extra.profile_photo.url }}"
+                            alt="{{ pro.business_name|default:pro.user.get_full_name }}"
+                            class="w-40 h-40 rounded-3xl object-cover border-4 border-white shadow-2xl transition-transform duration-300 group-hover:scale-105">
+                        <div
+                            class="absolute inset-0 rounded-3xl bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        </div>
+                        <div
+                            class="absolute bottom-2 right-2 bg-white/90 backdrop-blur-sm rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            <i data-lucide="camera" class="w-4 h-4 text-gray-600"></i>
+                        </div>
+                    </div>
                     {% else %}
                     <div
-                        class="w-32 h-32 rounded-2xl bg-gradient-to-br from-pink-100 to-blue-100 flex items-center justify-center border-4 border-white shadow-lg">
-                        <i data-lucide="user" class="w-16 h-16 text-gray-400"></i>
+                        class="w-40 h-40 rounded-3xl bg-gradient-to-br from-pink-100 to-blue-100 flex items-center justify-center border-4 border-white shadow-2xl">
+                        <i data-lucide="user" class="w-20 h-20 text-gray-400"></i>
                     </div>
                     {% endif %}
                 </div>
@@ -112,8 +179,11 @@
                                 class="w-5 h-5 {% if forloop.counter <= pro.extra.rating %}fill-current{% endif %}"></i>
                             {% endfor %}
                         </div>
-                        <span class="text-gray-600">{{ pro.extra.rating|default:4.0|floatformat:1 }} ({{
-                            pro.extra.reviews|default:0 }} avis)</span>
+                        <span class="text-gray-600">{{ pro.extra.rating|default:4.0|floatformat:1 }}
+                            ({{pro.extra.reviews|default:0 }} avis)</span>
+
+
+
                     </div>
 
                     <!-- Location -->
@@ -135,19 +205,8 @@
                     </div>
                 </div>
 
-                <!-- Action Buttons -->
-                <div class="flex flex-col gap-3">
-                    <button
-                        class="grad-btn text-white px-6 py-3 rounded-xl font-semibold btn-elevated hover:scale-105 transition-all">
-                        <i data-lucide="calendar" class="w-4 h-4 inline mr-2"></i>
-                        Réserver
-                    </button>
-                    <button
-                        class="bg-white/60 text-gray-700 px-6 py-3 rounded-xl font-semibold border border-gray-200 hover:bg-white/80 transition-all">
-                        <i data-lucide="heart" class="w-4 h-4 inline mr-2"></i>
-                        Favoris
-                    </button>
-                </div>
+                <!-- Action Buttons (kept minimal to encourage selecting a service below) -->
+                <div class="flex flex-col gap-3"></div>
             </div>
         </div>
 
@@ -160,89 +219,594 @@
         {% endif %}
 
         <!-- Services Section -->
-        {% if pro.extra.services %}
         <div class="glass rounded-2xl p-6 mb-6">
-            <h2 class="text-xl font-bold text-gray-900 mb-4">Services</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {% for service in pro.extra.services|split:"," %}
-                <div class="service-card rounded-xl p-4 card-hover">
-                    <div class="flex items-center">
-                        <div
-                            class="w-10 h-10 rounded-lg bg-gradient-to-r from-pink-100 to-pink-200 flex items-center justify-center">
-                            <i data-lucide="scissors" class="w-5 h-5 text-rosePastel"></i>
+            <div class="flex items-center gap-3 mb-6">
+                <div
+                    class="w-10 h-10 rounded-xl bg-gradient-to-r from-pink-400 to-blue-400 flex items-center justify-center">
+                    <i data-lucide="scissors" class="w-5 h-5 text-white"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-900">Services & Tarifs</h2>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% if services_list %}
+                {% for service in services_list %}
+                <!-- Debug: Service data -->
+                <!-- Service: {{ service.name }}, Price: {{ service.price }}, Duration: {{ service.duration }} -->
+                <div
+                    class="service-card rounded-2xl p-6 card-hover bg-gradient-to-br from-white to-pink-50/30 border border-pink-100 hover:border-pink-200 transition-all duration-300">
+                    <div class="flex flex-col h-full">
+                        <!-- Header avec icône -->
+                        <div class="flex items-center gap-4 mb-4">
+                            <div
+                                class="w-14 h-14 rounded-xl bg-gradient-to-r from-pink-400 to-blue-400 flex items-center justify-center flex-shrink-0">
+                                <i data-lucide="sparkles" class="w-7 h-7 text-white"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-bold text-gray-900 text-xl mb-1">{{ service.name|title }}</h3>
+                                <div class="flex items-center gap-2">
+                                    <span
+                                        class="text-xs text-green-600 bg-green-100 px-2 py-1 rounded-full font-medium">
+                                        <i data-lucide="check-circle" class="w-3 h-3 inline mr-1"></i>
+                                        Disponible
+                                    </span>
+                                </div>
+                            </div>
                         </div>
-                        <div class="ml-3">
-                            <h3 class="font-semibold text-gray-900">{{ service|title }}</h3>
-                            <p class="text-sm text-gray-600">Service professionnel</p>
+
+                        <!-- Informations du service -->
+                        <div class="flex-1 space-y-3">
+                            <!-- Prix -->
+                            <div
+                                class="flex items-center justify-between p-3 bg-gradient-to-r from-pink-50 to-blue-50 rounded-xl">
+                                <div class="flex items-center gap-2">
+                                    <i data-lucide="dollar-sign" class="w-4 h-4 text-rosePastel"></i>
+                                    <span class="text-sm font-medium text-gray-700">Prix</span>
+                                </div>
+                                <span class="text-lg font-bold text-rosePastel">{{ service.price }} DT</span>
+                            </div>
+
+                            <!-- Durée -->
+                            <div
+                                class="flex items-center justify-between p-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl">
+                                <div class="flex items-center gap-2">
+                                    <i data-lucide="clock" class="w-4 h-4 text-blueLight"></i>
+                                    <span class="text-sm font-medium text-gray-700">Durée</span>
+                                </div>
+                                <span class="text-lg font-bold text-blueLight">{{ service.duration }} min</span>
+                            </div>
+
+                            <!-- Description -->
+                            <p class="text-sm text-gray-600 leading-relaxed">
+                                Service professionnel de qualité avec des techniques modernes et des produits de haute
+                                qualité.
+                            </p>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="mt-4 pt-4 border-t border-gray-100">
+                            <div class="flex items-center justify-between">
+                                <button
+                                    class="text-rosePastel hover:text-rosePastel/80 text-sm font-medium flex items-center gap-2 px-4 py-2 rounded-xl hover:bg-pink-50 transition-colors">
+                                    <i data-lucide="info" class="w-4 h-4"></i>
+                                    Plus d'infos
+                                </button>
+                                <a href="{% url 'front_web:book_appointment_page' pro_id=pro_id %}"
+                                    class="grad-btn text-white px-6 py-2 rounded-xl font-semibold text-sm hover:scale-105 transition-transform inline-flex items-center">
+                                    <i data-lucide="calendar" class="w-4 h-4 mr-2"></i>
+                                    Prendre un rendez-vous
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
                 {% endfor %}
+                {% else %}
+                <!-- Fallback service card if no services are defined -->
+                <div
+                    class="service-card rounded-2xl p-6 card-hover bg-gradient-to-br from-white to-pink-50/30 border border-pink-100 hover:border-pink-200 transition-all duration-300">
+                    <div class="flex flex-col h-full">
+                        <!-- Header avec icône -->
+                        <div class="flex items-center gap-4 mb-4">
+                            <div
+                                class="w-14 h-14 rounded-xl bg-gradient-to-r from-pink-400 to-blue-400 flex items-center justify-center flex-shrink-0">
+                                <i data-lucide="sparkles" class="w-7 h-7 text-white"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-bold text-gray-900 text-xl mb-1">Service Général</h3>
+                                <div class="flex items-center gap-2">
+                                    <span
+                                        class="text-xs text-green-600 bg-green-100 px-2 py-1 rounded-full font-medium">
+                                        <i data-lucide="check-circle" class="w-3 h-3 inline mr-1"></i>
+                                        Disponible
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Informations du service -->
+                        <div class="flex-1 space-y-3">
+                            <!-- Prix -->
+                            <div
+                                class="flex items-center justify-between p-3 bg-gradient-to-r from-pink-50 to-blue-50 rounded-xl">
+                                <div class="flex items-center gap-2">
+                                    <i data-lucide="dollar-sign" class="w-4 h-4 text-rosePastel"></i>
+                                    <span class="text-sm font-medium text-gray-700">Prix</span>
+                                </div>
+                                <span class="text-lg font-bold text-rosePastel">50 DT</span>
+                            </div>
+
+                            <!-- Durée -->
+                            <div
+                                class="flex items-center justify-between p-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl">
+                                <div class="flex items-center gap-2">
+                                    <i data-lucide="clock" class="w-4 h-4 text-blueLight"></i>
+                                    <span class="text-sm font-medium text-gray-700">Durée</span>
+                                </div>
+                                <span class="text-lg font-bold text-blueLight">60 min</span>
+                            </div>
+
+                            <!-- Description -->
+                            <p class="text-sm text-gray-600 leading-relaxed">
+                                Service professionnel de qualité avec des techniques modernes et des produits de haute
+                                qualité.
+                            </p>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="mt-4 pt-4 border-t border-gray-100">
+                            <div class="flex items-center justify-between">
+                                <button
+                                    class="text-rosePastel hover:text-rosePastel/80 text-sm font-medium flex items-center gap-2 px-4 py-2 rounded-xl hover:bg-pink-50 transition-colors">
+                                    <i data-lucide="info" class="w-4 h-4"></i>
+                                    Plus d'infos
+                                </button>
+                                <a href="{% url 'front_web:book_appointment_page' pro_id=pro_id %}"
+                                    class="grad-btn text-white px-6 py-2 rounded-xl font-semibold text-sm hover:scale-105 transition-transform inline-flex items-center">
+                                    <i data-lucide="calendar" class="w-4 h-4 mr-2"></i>
+                                    Prendre un rendez-vous
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
             </div>
         </div>
-        {% endif %}
 
         <!-- Gallery Section -->
-        {% if pro.extra.gallery %}
+        {% if gallery_list %}
         <div class="glass rounded-2xl p-6 mb-6">
             <h2 class="text-xl font-bold text-gray-900 mb-4">Galerie</h2>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {% for image_url in pro.extra.gallery|split:"," %}
-                <img src="{{ image_url }}" alt="Galerie" class="gallery-item">
+                {% for image_url in gallery_list %}
+                <img src="{{ image_url }}" alt="Galerie" class="gallery-item rounded-xl object-cover h-32 w-full">
                 {% endfor %}
             </div>
         </div>
         {% endif %}
 
         <!-- Working Hours -->
-        {% if pro.extra.working_days and pro.extra.working_hours %}
+        {% if working_days_list or working_hours_display %}
         <div class="glass rounded-2xl p-6 mb-6">
-            <h2 class="text-xl font-bold text-gray-900 mb-4">Horaires</h2>
-            <div class="space-y-2">
-                <div class="flex justify-between items-center py-2 border-b border-gray-100">
-                    <span class="font-medium text-gray-700">Jours de travail</span>
-                    <span class="text-gray-600">{{ pro.extra.working_days }}</span>
+            <div class="flex items-center gap-3 mb-6">
+                <div
+                    class="w-10 h-10 rounded-xl bg-gradient-to-r from-blue-400 to-purple-400 flex items-center justify-center">
+                    <i data-lucide="clock" class="w-5 h-5 text-white"></i>
                 </div>
-                <div class="flex justify-between items-center py-2">
-                    <span class="font-medium text-gray-700">Heures</span>
-                    <span class="text-gray-600">{{ pro.extra.working_hours }}</span>
+                <h2 class="text-2xl font-bold text-gray-900">Horaires de Travail</h2>
+            </div>
+
+            <!-- Working Days -->
+            {% if working_days_list %}
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                    <i data-lucide="calendar" class="w-5 h-5 text-blueLight"></i>
+                    Jours de travail
+                </h3>
+                <div class="flex flex-wrap gap-2">
+                    {% for day in working_days_list %}
+                    <span
+                        class="px-4 py-2 bg-gradient-to-r from-blue-50 to-purple-50 text-blue-700 rounded-full text-sm font-medium border border-blue-200">
+                        {% if day == 'mon' %}Lundi
+                        {% elif day == 'tue' %}Mardi
+                        {% elif day == 'wed' %}Mercredi
+                        {% elif day == 'thu' %}Jeudi
+                        {% elif day == 'fri' %}Vendredi
+                        {% elif day == 'sat' %}Samedi
+                        {% elif day == 'sun' %}Dimanche
+                        {% else %}{{ day|title }}
+                        {% endif %}
+                    </span>
+                    {% endfor %}
                 </div>
             </div>
+            {% endif %}
+
+            <!-- Working Hours -->
+            {% if working_hours_display %}
+            <div class="mb-4">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                    <i data-lucide="clock" class="w-5 h-5 text-rosePastel"></i>
+                    Heures d'ouverture
+                </h3>
+                <div class="bg-gradient-to-r from-pink-50 to-blue-50 rounded-2xl p-6 border border-pink-100">
+                    <div class="flex items-center justify-center gap-4">
+                        <div class="text-center">
+                            <div class="text-3xl font-bold text-gray-900">{{ working_hours_display }}</div>
+                            <div class="text-sm text-gray-600 mt-1">Heures d'ouverture</div>
+                        </div>
+                        <div class="w-px h-12 bg-gradient-to-b from-pink-200 to-blue-200"></div>
+                        <div class="text-center">
+                            <div class="text-lg font-semibold text-green-600 flex items-center gap-2">
+                                <i data-lucide="check-circle" class="w-5 h-5"></i>
+                                Ouvert maintenant
+                            </div>
+                            <div class="text-sm text-gray-600 mt-1">Disponible pour réservation</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
         </div>
         {% endif %}
 
         <!-- Contact Info -->
         <div class="glass rounded-2xl p-6 mb-6">
-            <h2 class="text-xl font-bold text-gray-900 mb-4">Contact</h2>
-            <div class="space-y-3">
-                <div class="flex items-center gap-3">
-                    <i data-lucide="phone" class="w-5 h-5 text-gray-500"></i>
-                    <span class="text-gray-700">{{ pro.phone_number|default:"Non disponible" }}</span>
+            <div class="flex items-center gap-3 mb-6">
+                <div
+                    class="w-10 h-10 rounded-xl bg-gradient-to-r from-green-400 to-blue-400 flex items-center justify-center">
+                    <i data-lucide="phone" class="w-5 h-5 text-white"></i>
                 </div>
-                <div class="flex items-center gap-3">
-                    <i data-lucide="mail" class="w-5 h-5 text-gray-500"></i>
-                    <span class="text-gray-700">{{ pro.user.email }}</span>
+                <h2 class="text-2xl font-bold text-gray-900">Informations de Contact</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Téléphone -->
+                <div class="bg-gradient-to-r from-pink-50 to-blue-50 rounded-2xl p-6 border border-pink-100">
+                    <div class="flex items-center gap-4">
+                        <div
+                            class="w-12 h-12 rounded-xl bg-gradient-to-r from-pink-400 to-blue-400 flex items-center justify-center">
+                            <i data-lucide="phone" class="w-6 h-6 text-white"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-900 mb-1">Téléphone</h3>
+                            <p class="text-gray-600">{{ pro.extra.phone_number|default:"Non disponible" }}</p>
+                            {% if pro.extra.phone_number %}
+                            <a href="tel:{{ pro.extra.phone_number }}"
+                                class="text-rosePastel hover:text-rosePastel/80 text-sm font-medium flex items-center gap-1 mt-2">
+                                <i data-lucide="phone-call" class="w-4 h-4"></i>
+                                Appeler maintenant
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
-                <div class="flex items-center gap-3">
-                    <i data-lucide="map-pin" class="w-5 h-5 text-gray-500"></i>
-                    <span class="text-gray-700">{{ pro.address }}, {{ pro.city }}</span>
+
+                <!-- Email -->
+                <div class="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-6 border border-blue-100">
+                    <div class="flex items-center gap-4">
+                        <div
+                            class="w-12 h-12 rounded-xl bg-gradient-to-r from-blue-400 to-purple-400 flex items-center justify-center">
+                            <i data-lucide="mail" class="w-6 h-6 text-white"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-900 mb-1">Email</h3>
+                            <p class="text-gray-600 break-all">{{ pro.user.email }}</p>
+                            <a href="mailto:{{ pro.user.email }}"
+                                class="text-blueLight hover:text-blueLight/80 text-sm font-medium flex items-center gap-1 mt-2">
+                                <i data-lucide="send" class="w-4 h-4"></i>
+                                Envoyer un email
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Adresse -->
+                <div
+                    class="bg-gradient-to-r from-green-50 to-teal-50 rounded-2xl p-6 border border-green-100 md:col-span-2">
+                    <div class="flex items-start gap-4">
+                        <div
+                            class="w-12 h-12 rounded-xl bg-gradient-to-r from-green-400 to-teal-400 flex items-center justify-center flex-shrink-0">
+                            <i data-lucide="map-pin" class="w-6 h-6 text-white"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-semibold text-gray-900 mb-2">Adresse du salon</h3>
+                            <p class="text-gray-600 mb-3">{{ pro.extra.address|default:"Adresse non disponible" }}</p>
+                            {% if pro.extra.address %}
+                            <div class="flex items-center gap-3">
+                                <a href="https://www.google.com/maps/search/{{ pro.extra.address|urlencode }}"
+                                    target="_blank"
+                                    class="text-green-600 hover:text-green-700 text-sm font-medium flex items-center gap-2 px-4 py-2 bg-white rounded-xl border border-green-200 hover:bg-green-50 transition-colors">
+                                    <i data-lucide="navigation" class="w-4 h-4"></i>
+                                    Voir sur Google Maps
+                                </a>
+                                <button onclick="copyToClipboard('{{ pro.extra.address }}')"
+                                    class="text-gray-600 hover:text-gray-700 text-sm font-medium flex items-center gap-2 px-4 py-2 bg-white rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors">
+                                    <i data-lucide="copy" class="w-4 h-4"></i>
+                                    Copier
+                                </button>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
             </div>
+
+            <!-- Réseaux sociaux -->
+            {% if pro.extra.social_instagram or pro.extra.social_facebook or pro.extra.social_tiktok %}
+            <div class="mt-6 pt-6 border-t border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <i data-lucide="share-2" class="w-5 h-5 text-rosePastel"></i>
+                    Réseaux sociaux
+                </h3>
+                <div class="flex flex-wrap gap-3">
+                    {% if pro.extra.social_instagram %}
+                    <a href="{{ pro.extra.social_instagram }}" target="_blank"
+                        class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-xl hover:from-pink-600 hover:to-purple-600 transition-all">
+                        <i data-lucide="instagram" class="w-4 h-4"></i>
+                        <span class="text-sm font-medium">Instagram</span>
+                    </a>
+                    {% endif %}
+                    {% if pro.extra.social_facebook %}
+                    <a href="{{ pro.extra.social_facebook }}" target="_blank"
+                        class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all">
+                        <i data-lucide="facebook" class="w-4 h-4"></i>
+                        <span class="text-sm font-medium">Facebook</span>
+                    </a>
+                    {% endif %}
+                    {% if pro.extra.social_tiktok %}
+                    <a href="{{ pro.extra.social_tiktok }}" target="_blank"
+                        class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-gray-800 to-gray-900 text-white rounded-xl hover:from-gray-900 hover:to-black transition-all">
+                        <i data-lucide="video" class="w-4 h-4"></i>
+                        <span class="text-sm font-medium">TikTok</span>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
         </div>
 
-        <!-- Reviews Section (Placeholder) -->
+        <!-- Reviews Section -->
         <div class="glass rounded-2xl p-6">
-            <h2 class="text-xl font-bold text-gray-900 mb-4">Avis clients</h2>
-            <div class="text-center py-8 text-gray-500">
-                <i data-lucide="star" class="w-12 h-12 mx-auto mb-4 text-gray-300"></i>
-                <p>Aucun avis pour le moment</p>
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-gray-900">Avis clients</h2>
+                {% if user.is_authenticated and not user_has_reviewed %}
+                <a href="{% url 'front_web:create_review' pro_id=pro_id %}"
+                    class="grad-btn text-white px-6 py-2 rounded-xl font-semibold text-sm hover:scale-105 transition-transform">
+                    <i data-lucide="star" class="w-4 h-4 mr-2"></i>
+                    Donner un avis
+                </a>
+                {% elif user.is_authenticated and user_has_reviewed %}
+                <a href="{% url 'front_web:create_review' pro_id=pro_id %}"
+                    class="bg-blue-100 text-blue-700 px-6 py-2 rounded-xl font-semibold text-sm hover:bg-blue-200 transition-colors">
+                    <i data-lucide="edit" class="w-4 h-4 mr-2"></i>
+                    Modifier mon avis
+                </a>
+                {% endif %}
+            </div>
+
+            <!-- Rating Summary -->
+            {% if pro.extra.rating %}
+            <div class="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl p-4 mb-6">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <div class="text-center">
+                            <div class="text-4xl font-bold text-gray-900">{{ pro.extra.rating|floatformat:1 }}</div>
+                            <div class="text-yellow-500 text-lg">
+                                {% for i in "12345" %}
+                                {% if forloop.counter <= pro.extra.rating %} ★ {% else %} ☆ {% endif %} {% endfor %}
+                                    </div>
+                            </div>
+                            <div>
+                                <div class="text-gray-700 font-medium">{{ pro.extra.reviews|default:0 }} avis</div>
+                                <div class="text-sm text-gray-500">Basé sur les avis clients</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Reviews List -->
+                {% if reviews %}
+                <div class="space-y-4">
+                    {% for review in reviews %}
+                    <div class="bg-white rounded-xl p-4 border border-gray-100">
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="w-10 h-10 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full flex items-center justify-center text-white font-semibold">
+                                    {{ review.client_name|first|upper }}
+                                </div>
+                                <div>
+                                    <div class="font-semibold text-gray-900">{{ review.client_name }}</div>
+                                    <div class="text-sm text-gray-500">{{ review.created_at|date:"d M Y" }}</div>
+                                </div>
+                            </div>
+                            <div class="text-yellow-500">
+                                {% for i in "12345" %}
+                                {% if forloop.counter <= review.rating %} ★ {% else %} ☆ {% endif %} {% endfor %} </div>
+                            </div>
+                            {% if review.comment %}
+                            <p class="text-gray-700 leading-relaxed">{{ review.comment }}</p>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-8 text-gray-500">
+                        <i data-lucide="star" class="w-12 h-12 mx-auto mb-4 text-gray-300"></i>
+                        <p>Aucun avis pour le moment</p>
+                        {% if user.is_authenticated and not user_has_reviewed %}
+                        <p class="text-sm mt-2">Soyez le premier à donner votre avis !</p>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
             </div>
         </div>
-    </div>
-</div>
-{% endblock %}
+        {% endblock %}
 
-{% block extra_js %}
-<script src="https://unpkg.com/lucide@latest"></script>
-<script>window.lucide && window.lucide.createIcons();</script>
-{% endblock %}
+        {% block extra_js %}
+        <script src="https://unpkg.com/lucide@latest"></script>
+        <script>
+            // Initialize Lucide icons
+            window.lucide && window.lucide.createIcons();
+
+            // Simple booking form functions
+            function openBookingForm(serviceName, duration, price) {
+                document.getElementById('bookingServiceName').value = serviceName;
+                document.getElementById('bookingServiceDuration').value = duration;
+                document.getElementById('bookingServicePrice').value = price;
+
+                // Update display elements
+                document.getElementById('displayServiceName').textContent = serviceName;
+                document.getElementById('displayServicePrice').textContent = price + ' DT';
+
+                document.getElementById('bookingModal').classList.remove('hidden');
+            }
+
+            function closeBookingForm() {
+                document.getElementById('bookingModal').classList.add('hidden');
+            }
+
+            // Close modal when clicking outside
+            document.addEventListener('click', function (e) {
+                if (e.target.id === 'bookingModal') {
+                    closeBookingForm();
+                }
+            });
+
+            // Utility function for copying to clipboard
+            function copyToClipboard(text) {
+                navigator.clipboard.writeText(text).then(function () {
+                    const button = event.target.closest('button');
+                    if (!button) return;
+
+                    const originalText = button.innerHTML;
+                    button.innerHTML = '<i data-lucide="check" class="w-4 h-4"></i> Copié!';
+                    button.classList.add('bg-green-100', 'text-green-700', 'border-green-300');
+
+                    setTimeout(() => {
+                        button.innerHTML = originalText;
+                        button.classList.remove('bg-green-100', 'text-green-700', 'border-green-300');
+                        window.lucide.createIcons();
+                    }, 2000);
+                }).catch(function (err) {
+                    console.error('Erreur lors de la copie: ', err);
+                    alert('Impossible de copier l\'adresse');
+                });
+            }
+        </script>
+        {% endblock %}
+
+        <!-- Booking Modal -->
+        <div id="bookingModal" class="fixed inset-0 z-50 hidden">
+            <!-- Backdrop -->
+            <div class="absolute inset-0 bg-gradient-to-br from-black/30 to-black/40 backdrop-blur-sm"></div>
+
+            <!-- Panel -->
+            <div class="relative max-w-2xl w-[95%] mx-auto mt-8">
+                <!-- Main Container -->
+                <div class="booking-form rounded-3xl overflow-hidden shadow-2xl">
+                    <!-- Header -->
+                    <div class="bg-gradient-to-r from-pink-500 to-blue-500 p-6 text-white">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-4">
+                                <div
+                                    class="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                                    <i data-lucide="calendar" class="w-6 h-6"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-bold">Réserver un rendez-vous</h3>
+                                    <p class="text-pink-100">{{ pro.business_name|default:pro.user.get_full_name }}</p>
+                                </div>
+                            </div>
+                            <button onclick="closeBookingForm()"
+                                class="text-white/80 hover:text-white hover:bg-white/10 p-2 rounded-xl transition-all">
+                                <i data-lucide="x" class="w-6 h-6"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Form Body -->
+                    <form method="POST" action="{% url 'front_web:book_appointment' pro_id=pro_id %}" class="p-8">
+                        {% csrf_token %}
+
+                        <!-- Hidden fields for service data -->
+                        <input type="hidden" id="bookingServiceName" name="service_name" value="">
+                        <input type="hidden" id="bookingServiceDuration" name="service_duration" value="">
+                        <input type="hidden" id="bookingServicePrice" name="service_price" value="">
+
+                        <div class="space-y-6">
+                            <!-- Service Display -->
+                            <div
+                                class="bg-gradient-to-r from-pink-50 to-blue-50 rounded-2xl p-6 border border-pink-100">
+                                <h4 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                                    <i data-lucide="scissors" class="w-5 h-5 text-rosePastel"></i>
+                                    Service sélectionné
+                                </h4>
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <div class="text-sm text-gray-500">Service</div>
+                                        <div class="font-semibold text-gray-900" id="displayServiceName">Service</div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-2xl font-bold text-rosePastel" id="displayServicePrice">0 DT
+                                        </div>
+                                        <div class="text-sm text-gray-500">Prix</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Date and Time Selection -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                                        <i data-lucide="calendar" class="w-4 h-4 inline mr-1"></i>
+                                        Date souhaitée
+                                    </label>
+                                    <input type="date" name="appointment_date" required
+                                        class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all"
+                                        min="{{ 'now'|date:'Y-m-d' }}">
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                                        <i data-lucide="clock" class="w-4 h-4 inline mr-1"></i>
+                                        Heure souhaitée
+                                    </label>
+                                    <input type="time" name="appointment_time" required
+                                        class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all"
+                                        min="08:00" max="18:00">
+                                </div>
+                            </div>
+
+                            <!-- Notes -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    <i data-lucide="message-circle" class="w-4 h-4 inline mr-1"></i>
+                                    Notes (optionnel)
+                                </label>
+                                <textarea name="client_notes" rows="3"
+                                    class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all"
+                                    placeholder="Décrivez vos besoins spécifiques..."></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="mt-8 pt-6 border-t border-gray-200 flex justify-end gap-4">
+                            <button type="button" onclick="closeBookingForm()"
+                                class="px-6 py-3 rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 transition-all">
+                                <i data-lucide="x" class="w-4 h-4 inline mr-2"></i>
+                                Annuler
+                            </button>
+                            <button type="submit"
+                                class="grad-btn text-white px-8 py-3 rounded-xl font-semibold hover:scale-105 transition-transform">
+                                <i data-lucide="check" class="w-4 h-4 inline mr-2"></i>
+                                Confirmer la demande
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>

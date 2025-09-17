@@ -1,159 +1,475 @@
 {% extends 'front_web/base_client.html' %}
 {% load static %}
+{% block title %}Mes rendez-vous - Coucou Beauté{% endblock %}
 
-{% block title %}Mes Rendez-vous - Coucou Beauté{% endblock %}
+{% block extra_css %}
+<style>
+    .gradient-text {
+        background: linear-gradient(135deg, #f5a3c7 0%, #c9b8ff 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    /* List item (replaces cards) */
+    .appointment-item {
+        background: linear-gradient(135deg, rgba(255, 255, 255, .95), rgba(255, 255, 255, .85));
+        border: 1px solid rgba(255, 255, 255, .8);
+        border-radius: 16px;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        box-shadow: 0 4px 20px rgba(16, 24, 40, .06);
+        transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .appointment-item::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        opacity: 0;
+        transition: opacity .2s ease;
+    }
+
+    .appointment-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px rgba(16, 24, 40, .12);
+        border-color: rgba(255, 255, 255, .9);
+    }
+
+    .appointment-item:hover::before {
+        opacity: 1;
+    }
+
+    .appointment-item.confirmed::before {
+        background: linear-gradient(180deg, #10b981, #059669);
+    }
+
+    .appointment-item.pending::before {
+        background: linear-gradient(180deg, #f59e0b, #d97706);
+    }
+
+    .appointment-item.cancelled::before {
+        background: linear-gradient(180deg, #ef4444, #dc2626);
+    }
+
+    .status-indicator {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 8px;
+    }
+
+    .status-confirmed {
+        background: #10b981;
+    }
+
+    .status-pending {
+        background: #f59e0b;
+    }
+
+    .status-cancelled {
+        background: #ef4444;
+    }
+
+    .filter-section {
+        background: linear-gradient(135deg, rgba(255, 255, 255, .95), rgba(255, 255, 255, .85));
+        border: 1px solid rgba(255, 255, 255, .8);
+        border-radius: 20px;
+        backdrop-filter: blur(16px);
+        box-shadow: 0 8px 32px rgba(16, 24, 40, .08);
+    }
+
+    .filter-btn {
+        background: rgba(255, 255, 255, .6);
+        border: 1px solid rgba(255, 255, 255, .8);
+        border-radius: 12px;
+        padding: 8px 16px;
+        font-weight: 600;
+        transition: all .2s ease;
+        backdrop-filter: blur(8px);
+    }
+
+    .filter-btn:hover {
+        background: rgba(255, 255, 255, .85);
+        transform: translateY(-1px);
+    }
+
+    .filter-btn.active {
+        background: linear-gradient(135deg, #f5a3c7, #c9b8ff);
+        color: #fff;
+        border-color: transparent;
+    }
+
+    .date-picker {
+        background: rgba(255, 255, 255, .85);
+        border: 1px solid rgba(255, 255, 255, .95);
+        border-radius: 12px;
+        padding: 10px 14px;
+        backdrop-filter: blur(8px);
+        transition: all .2s ease;
+    }
+
+    .date-picker:focus {
+        outline: none;
+        border-color: #f5a3c7;
+        box-shadow: 0 0 0 3px rgba(245, 163, 199, .12);
+    }
+
+    .appointment-time {
+        background: linear-gradient(135deg, rgba(245, 163, 199, .1), rgba(201, 184, 255, .1));
+        border-radius: 12px;
+        padding: 8px 12px;
+        font-weight: 700;
+        color: #6b7280;
+    }
+
+    .appointment-price {
+        background: linear-gradient(135deg, rgba(34, 197, 94, .1), rgba(22, 163, 74, .1));
+        color: #059669;
+        border-radius: 8px;
+        padding: 4px 8px;
+        font-weight: 700;
+        font-size: 14px;
+    }
+
+    .professional-info {
+        background: rgba(248, 250, 252, .85);
+        border-radius: 12px;
+        padding: 12px;
+        border: 1px solid rgba(226, 232, 240, .6);
+    }
+
+    .appointment-list {
+        max-height: 70vh;
+        overflow-y: auto;
+    }
+
+    .appointment-list::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .appointment-list::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, .05);
+        border-radius: 3px;
+    }
+
+    .appointment-list::-webkit-scrollbar-thumb {
+        background: rgba(245, 163, 199, .3);
+        border-radius: 3px;
+    }
+
+    .appointment-list::-webkit-scrollbar-thumb:hover {
+        background: rgba(245, 163, 199, .5);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 80px 20px;
+        background: linear-gradient(135deg, rgba(255, 255, 255, .8), rgba(255, 255, 255, .6));
+        border-radius: 20px;
+        backdrop-filter: blur(12px);
+    }
+
+    .fab-primary {
+        position: fixed;
+        right: 24px;
+        bottom: 24px;
+        z-index: 40;
+        padding: 16px 20px;
+        border-radius: 16px;
+        box-shadow: 0 16px 40px rgba(240, 114, 182, .35);
+        background: linear-gradient(135deg, #f5a3c7, #c9b8ff);
+        color: #fff;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        transition: transform .2s ease, box-shadow .2s ease;
+    }
+
+    .fab-primary:hover {
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 22px 50px rgba(154, 126, 255, .45);
+    }
+
+    .fab-pulse {
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(245, 163, 199, .5);
+        }
+
+        70% {
+            box-shadow: 0 0 0 16px rgba(245, 163, 199, 0);
+        }
+
+        100% {
+            box-shadow: 0 0 0 0 rgba(245, 163, 199, 0);
+        }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="p-6">
-    <!-- En-tête de la page -->
-    <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900 mb-2">Mes Rendez-vous</h1>
-        <p class="text-gray-600">Gérez vos rendez-vous de beauté</p>
+<div class="min-h-screen bg-gradient-to-br from-pink-50 via-white to-blue-50 relative">
+    <!-- Animated background blobs -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute rounded-full mix-blend-multiply filter blur-2xl opacity-15 animate-blob-1 bg-pink-300"
+            style="width: 400px; height: 400px; top: 15%; left: 10%;"></div>
+        <div class="absolute rounded-full mix-blend-multiply filter blur-2xl opacity-15 animate-blob-2 bg-blue-300"
+            style="width: 350px; height: 350px; bottom: 15%; right: 10%;"></div>
     </div>
 
-    <!-- Filtres et actions -->
-    <div class="mb-6 flex flex-wrap gap-4 items-center justify-between">
-        <div class="flex gap-2">
-            <button class="px-4 py-2 bg-rosePastel text-white rounded-lg hover:bg-opacity-80 transition-colors">
-                Tous
-            </button>
-            <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
-                À venir
-            </button>
-            <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
-                Passés
-            </button>
+    <div class="relative z-10 max-w-7xl mx-auto px-6 py-10">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-8">
+            <div class="flex items-center gap-4">
+                <div
+                    class="w-16 h-16 rounded-2xl bg-gradient-to-br from-pink-400 to-blue-500 flex items-center justify-center shadow-xl">
+                    <i data-lucide="calendar-heart" class="w-8 h-8 text-white"></i>
+                </div>
+                <div>
+                    <h1 class="text-4xl font-bold gradient-text mb-2">Mes Rendez-vous</h1>
+                    <p class="text-gray-600 text-lg">Gérez et suivez vos réservations</p>
+                </div>
+            </div>
+            <a href="{% url 'front_web:client_dashboard' %}"
+                class="kpi-glass px-6 py-3 rounded-xl font-semibold text-gray-700 hover:text-pink-600 transition-colors flex items-center gap-2">
+                <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                Retour
+            </a>
         </div>
 
-        <button
-            class="px-4 py-2 bg-blueLight text-white rounded-lg hover:bg-opacity-80 transition-colors flex items-center gap-2">
-            <i data-lucide="plus" class="w-4 h-4"></i>
-            Nouveau rendez-vous
-        </button>
-    </div>
-
-    <!-- Liste des rendez-vous -->
-    <div class="space-y-4">
-        <!-- Rendez-vous à venir -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-semibold text-gray-900">Rendez-vous à venir</h3>
-                <span class="px-3 py-1 bg-green-100 text-green-800 text-sm rounded-full">2</span>
-            </div>
-
-            <div class="space-y-4">
-                <!-- Rendez-vous 1 -->
-                <div class="flex items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                    <div class="flex-shrink-0">
-                        <img src="{% static 'images/placeholder-avatar.jpg' %}" alt="Professionnel"
-                            class="w-12 h-12 rounded-full object-cover">
-                    </div>
-                    <div class="flex-1 ml-4">
-                        <h4 class="font-semibold text-gray-900">Sarah Martinez</h4>
-                        <p class="text-sm text-gray-600">Coiffure et maquillage</p>
-                        <p class="text-xs text-gray-500">📍 Salon de beauté Sarah</p>
-                    </div>
-                    <div class="text-right">
-                        <p class="font-semibold text-gray-900">15 Jan 2024</p>
-                        <p class="text-sm text-gray-600">14:30 - 16:00</p>
-                        <p class="text-sm text-rosePastel font-medium">120 DT</p>
-                    </div>
-                    <div class="ml-4 flex gap-2">
-                        <button
-                            class="px-3 py-1 bg-blueLight text-white text-sm rounded-lg hover:bg-opacity-80 transition-colors">
-                            Modifier
-                        </button>
-                        <button
-                            class="px-3 py-1 bg-red-100 text-red-700 text-sm rounded-lg hover:bg-red-200 transition-colors">
-                            Annuler
-                        </button>
-                    </div>
+        <!-- Filters -->
+        <div class="filter-section p-6 mb-8">
+            <div class="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+                <div class="flex flex-wrap gap-3">
+                    <button class="filter-btn active" data-filter="all">
+                        <i data-lucide="list" class="w-4 h-4 mr-2"></i>
+                        Tous ({{ total_count }})
+                    </button>
+                    {% if confirmed_count %}
+                    <button class="filter-btn" data-filter="confirmed">
+                        <i data-lucide="check-circle" class="w-4 h-4 mr-2"></i>
+                        Confirmés ({{ confirmed_count }})
+                    </button>
+                    {% endif %}
+                    {% if pending_count %}
+                    <button class="filter-btn" data-filter="pending">
+                        <i data-lucide="clock" class="w-4 h-4 mr-2"></i>
+                        En attente ({{ pending_count }})
+                    </button>
+                    {% endif %}
+                    {% if cancelled_count %}
+                    <button class="filter-btn" data-filter="cancelled">
+                        <i data-lucide="x-circle" class="w-4 h-4 mr-2"></i>
+                        Annulés ({{ cancelled_count }})
+                    </button>
+                    {% endif %}
                 </div>
-
-                <!-- Rendez-vous 2 -->
-                <div class="flex items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                    <div class="flex-shrink-0">
-                        <img src="{% static 'images/placeholder-avatar.jpg' %}" alt="Professionnel"
-                            class="w-12 h-12 rounded-full object-cover">
-                    </div>
-                    <div class="flex-1 ml-4">
-                        <h4 class="font-semibold text-gray-900">Marie Dubois</h4>
-                        <p class="text-sm text-gray-600">Manucure et soins</p>
-                        <p class="text-xs text-gray-500">📍 À domicile</p>
-                    </div>
-                    <div class="text-right">
-                        <p class="font-semibold text-gray-900">18 Jan 2024</p>
-                        <p class="text-sm text-gray-600">10:00 - 11:30</p>
-                        <p class="text-sm text-rosePastel font-medium">80 DT</p>
-                    </div>
-                    <div class="ml-4 flex gap-2">
-                        <button
-                            class="px-3 py-1 bg-blueLight text-white text-sm rounded-lg hover:bg-opacity-80 transition-colors">
-                            Modifier
-                        </button>
-                        <button
-                            class="px-3 py-1 bg-red-100 text-red-700 text-sm rounded-lg hover:bg-red-200 transition-colors">
-                            Annuler
-                        </button>
-                    </div>
+                <div class="flex gap-3">
+                    <input type="date" id="dateFrom" class="date-picker" placeholder="Date de début">
+                    <input type="date" id="dateTo" class="date-picker" placeholder="Date de fin">
+                    <button id="resetFilters" class="filter-btn">
+                        <i data-lucide="refresh-cw" class="w-4 h-4 mr-2"></i>
+                        Réinitialiser
+                    </button>
                 </div>
             </div>
         </div>
 
-        <!-- Rendez-vous passés -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-semibold text-gray-900">Rendez-vous passés</h3>
-                <span class="px-3 py-1 bg-gray-100 text-gray-800 text-sm rounded-full">3</span>
-            </div>
+        {% if confirmed or pending or cancelled %}
+        <!-- Unified list -->
+        <div class="appointment-list space-y-4">
+            {% for a in confirmed %}
+            <div class="appointment-item confirmed p-6" data-status="confirmed" data-date="{{ a.start|date:'Y-m-d' }}">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-4 flex-1">
+                        <div class="flex items-center gap-3">
+                            <span class="status-indicator status-confirmed"></span>
+                            <div
+                                class="w-12 h-12 rounded-xl bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center">
+                                <i data-lucide="sparkles" class="w-6 h-6 text-green-600"></i>
+                            </div>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-2">
+                                <h3 class="text-lg font-bold text-gray-900">{{ a.service_name }}</h3>
+                                <span
+                                    class="px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">CONFIRMÉ</span>
+                            </div>
+                            <p class="text-gray-600 mb-3">{{ a.center_name }}</p>
+                            <div class="flex items-center gap-6 text-sm">
+                                <div class="appointment-time"><i data-lucide="calendar" class="w-4 h-4 mr-1"></i>{{
+                                    a.start|date:"d/m/Y" }}</div>
+                                <div class="appointment-time"><i data-lucide="clock" class="w-4 h-4 mr-1"></i>{{
+                                    a.start|date:"H:i" }} - {{ a.end|date:"H:i" }}</div>
+                                <div class="appointment-price"><i data-lucide="banknote" class="w-4 h-4 mr-1"></i>{{
+                                    a.price }} DT</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% if a.professional_email or a.professional_phone or a.professional_address or a.business_name or
+                    a.map_url %}
 
-            <div class="space-y-4">
-                <!-- Rendez-vous passé 1 -->
-                <div class="flex items-center p-4 bg-gray-50 rounded-lg opacity-75">
-                    <div class="flex-shrink-0">
-                        <img src="{% static 'images/placeholder-avatar.jpg' %}" alt="Professionnel"
-                            class="w-12 h-12 rounded-full object-cover">
+                    <div class="professional-info ml-4">
+                        <div class="flex items-center gap-2 mb-2"><i data-lucide="user-check"
+                                class="w-4 h-4 text-green-500"></i><span
+                                class="text-sm font-medium text-gray-700">Professionnel</span></div>
+                        <div class="space-y-1 text-xs text-gray-600">
+                            {% if a.professional_phone %}<div class="flex items-center gap-2"><i data-lucide="phone"
+                                    class="w-3 h-3"></i>{{ a.professional_phone }}</div>{% endif %}
+                            {% if a.professional_email %}<div class="flex items-center gap-2"><i data-lucide="mail"
+                                    class="w-3 h-3"></i>{{ a.professional_email }}</div>{% endif %}
+                            {% if a.professional_address %}<div class="flex items-center gap-2"><i data-lucide="map-pin"
+                                    class="w-3 h-3"></i>{{ a.professional_address }}</div>{% endif %}
+                            {% if a.map_url %}<div class="flex items-center gap-2"><i data-lucide="map"
+                                    class="w-3 h-3"></i><a href="{{ a.map_url }}" target="_blank" rel="noopener"
+                                    class="text-blue-600 hover:underline">Voir sur Google Maps</a></div>{% endif %}
+                        </div>
                     </div>
-                    <div class="flex-1 ml-4">
-                        <h4 class="font-semibold text-gray-900">Sophie Laurent</h4>
-                        <p class="text-sm text-gray-600">Soins du visage</p>
-                        <p class="text-xs text-gray-500">📍 Institut de beauté Sophie</p>
-                    </div>
-                    <div class="text-right">
-                        <p class="font-semibold text-gray-900">10 Jan 2024</p>
-                        <p class="text-sm text-gray-600">15:00 - 16:30</p>
-                        <p class="text-sm text-rosePastel font-medium">150 DT</p>
-                    </div>
-                    <div class="ml-4 flex gap-2">
-                        <button
-                            class="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-lg hover:bg-gray-200 transition-colors">
-                            Réserver à nouveau
-                        </button>
-                        <button
-                            class="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-lg hover:bg-gray-200 transition-colors">
-                            Évaluer
-                        </button>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+
+            {% for a in pending %}
+            <div class="appointment-item pending p-6" data-status="pending" data-date="{{ a.start|date:'Y-m-d' }}">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-4 flex-1">
+                        <div class="flex items-center gap-3">
+                            <span class="status-indicator status-pending"></span>
+                            <div
+                                class="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-100 to-yellow-200 flex items-center justify-center">
+                                <i data-lucide="clock" class="w-6 h-6 text-yellow-600"></i>
+                            </div>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-2">
+                                <h3 class="text-lg font-bold text-gray-900">{{ a.service_name }}</h3>
+                                <span class="px-3 py-1 bg-yellow-100 text-yellow-700 text-xs font-bold rounded-full">EN
+                                    ATTENTE</span>
+                            </div>
+                            <p class="text-gray-600 mb-3">{{ a.center_name }}</p>
+                            <div class="flex items-center gap-6 text-sm">
+                                <div class="appointment-time"><i data-lucide="calendar" class="w-4 h-4 mr-1"></i>{{
+                                    a.start|date:"d/m/Y" }}</div>
+                                <div class="appointment-time"><i data-lucide="clock" class="w-4 h-4 mr-1"></i>{{
+                                    a.start|date:"H:i" }} - {{ a.end|date:"H:i" }}</div>
+                                <div class="appointment-price"><i data-lucide="banknote" class="w-4 h-4 mr-1"></i>{{
+                                    a.price }} DT</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
+            {% endfor %}
+
+            {% for a in cancelled %}
+            <div class="appointment-item cancelled p-6" data-status="cancelled" data-date="{{ a.start|date:'Y-m-d' }}">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-4 flex-1">
+                        <div class="flex items-center gap-3">
+                            <span class="status-indicator status-cancelled"></span>
+                            <div
+                                class="w-12 h-12 rounded-xl bg-gradient-to-br from-red-100 to-red-200 flex items-center justify-center">
+                                <i data-lucide="x-circle" class="w-6 h-6 text-red-600"></i>
+                            </div>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-2">
+                                <h3 class="text-lg font-bold text-gray-900">{{ a.service_name }}</h3>
+                                <span
+                                    class="px-3 py-1 bg-red-100 text-red-700 text-xs font-bold rounded-full">ANNULÉ</span>
+                            </div>
+                            <p class="text-gray-600 mb-3">{{ a.center_name }}</p>
+                            <div class="flex items-center gap-6 text-sm">
+                                <div class="appointment-time"><i data-lucide="calendar" class="w-4 h-4 mr-1"></i>{{
+                                    a.start|date:"d/m/Y" }}</div>
+                                <div class="appointment-time"><i data-lucide="clock" class="w-4 h-4 mr-1"></i>{{
+                                    a.start|date:"H:i" }} - {{ a.end|date:"H:i" }}</div>
+                                <div class="appointment-price"><i data-lucide="banknote" class="w-4 h-4 mr-1"></i>{{
+                                    a.price }} DT</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
         </div>
+        {% else %}
+        <div class="empty-state">
+            <div
+                class="w-20 h-20 rounded-full bg-gradient-to-br from-pink-100 to-blue-100 flex items-center justify-center mx-auto mb-6">
+                <i data-lucide="calendar" class="w-10 h-10 text-gray-400"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-700 mb-2">Aucun rendez-vous</h3>
+            <p class="text-gray-500 mb-6">Vous n'avez pas encore de rendez-vous programmés.</p>
+            <a href="{% url 'front_web:booking' %}"
+                class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-pink-400 to-blue-500 text-white font-semibold rounded-xl hover:from-pink-500 hover:to-blue-600 transition-all">
+                <i data-lucide="plus" class="w-5 h-5"></i>
+                Réserver un rendez-vous
+            </a>
+        </div>
+        {% endif %}
     </div>
 
-    <!-- Message si aucun rendez-vous -->
-    <div id="no-appointments" class="hidden text-center py-12">
-        <div class="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-            <i data-lucide="calendar" class="w-12 h-12 text-gray-400"></i>
-        </div>
-        <h3 class="text-lg font-semibold text-gray-900 mb-2">Aucun rendez-vous</h3>
-        <p class="text-gray-600 mb-6">Vous n'avez pas encore de rendez-vous programmés.</p>
-        <button class="px-6 py-3 bg-rosePastel text-white rounded-lg hover:bg-opacity-80 transition-colors">
-            Prendre un rendez-vous
-        </button>
-    </div>
+    <!-- Floating Action Button -->
+    <a href="{% url 'front_web:booking' %}" class="fab-primary fab-pulse">
+        <i data-lucide="plus" class="w-5 h-5"></i>
+        Nouveau RDV
+    </a>
 </div>
 
 <script>
-    // Initialiser les icônes Lucide
-    lucide.createIcons();
+    // Client-side filters
+    document.addEventListener('DOMContentLoaded', function () {
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        const items = document.querySelectorAll('.appointment-item');
+        const dateFrom = document.getElementById('dateFrom');
+        const dateTo = document.getElementById('dateTo');
+        const resetBtn = document.getElementById('resetFilters');
+
+        function applyFilters() {
+            const active = document.querySelector('.filter-btn.active')?.dataset.filter || 'all';
+            const from = dateFrom.value ? new Date(dateFrom.value) : null;
+            const to = dateTo.value ? new Date(dateTo.value) : null;
+
+            items.forEach(it => {
+                let show = true;
+                if (active !== 'all' && it.dataset.status !== active) show = false;
+                if (show && (from || to)) {
+                    const d = new Date(it.dataset.date);
+                    if (from && d < from) show = false;
+                    if (to && d > to) show = false;
+                }
+                it.style.display = show ? 'block' : 'none';
+            });
+        }
+
+        filterBtns.forEach(b => b.addEventListener('click', function () {
+            filterBtns.forEach(x => x.classList.remove('active'));
+            this.classList.add('active');
+            applyFilters();
+        }));
+
+        dateFrom?.addEventListener('change', applyFilters);
+        dateTo?.addEventListener('change', applyFilters);
+        resetBtn?.addEventListener('click', function () {
+            filterBtns.forEach(x => x.classList.remove('active'));
+            document.querySelector('[data-filter="all"]').classList.add('active');
+            if (dateFrom) dateFrom.value = '';
+            if (dateTo) dateTo.value = '';
+            applyFilters();
+        });
+    });
 </script>
 {% endblock %}

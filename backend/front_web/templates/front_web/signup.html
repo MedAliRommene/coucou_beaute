@@ -252,7 +252,8 @@
                                             class="text-blueBeauty">choisissez</span></div>
                                     <div class="text-xs text-textMuted">Formats image, max ~5MB</div>
                                 </div>
-                                <input id="profileFile" type="file" accept="image/*" class="hidden" required />
+                                <input id="profileFile" name="profile_file" type="file" accept="image/*"
+                                    class="hidden" />
                             </div>
                             <input type="hidden" name="profile_photo" id="profileUrl" />
                         </div>
@@ -270,8 +271,8 @@
                                             class="text-blueBeauty">choisissez</span></div>
                                     <div class="text-xs text-textMuted">Image ou PDF, max ~5MB</div>
                                 </div>
-                                <input id="idDocFile" type="file" accept="image/*,application/pdf" class="hidden"
-                                    required />
+                                <input id="idDocFile" name="id_doc_file" type="file" accept="image/*,application/pdf"
+                                    class="hidden" />
                             </div>
                             <input type="hidden" name="id_document" id="idDocUrl" />
                         </div>
@@ -378,11 +379,19 @@
     (function () {
         const client = document.getElementById('clientFields');
         const pro = document.getElementById('proFields');
+        const profileFile = document.getElementById('profileFile');
+        const idDocFile = document.getElementById('idDocFile');
+
         function sync() {
             const role = document.querySelector('input[name="role"]:checked')?.value || 'client';
-            if (role === 'professional') { pro.classList.remove('hidden'); client.classList.add('hidden'); }
+            const isPro = role === 'professional';
+            if (isPro) { pro.classList.remove('hidden'); client.classList.add('hidden'); }
             else { client.classList.remove('hidden'); pro.classList.add('hidden'); }
+
+            if (profileFile) { profileFile.required = isPro; profileFile.disabled = !isPro; if (!isPro) profileFile.value = ''; }
+            if (idDocFile) { idDocFile.required = isPro; idDocFile.disabled = !isPro; if (!isPro) idDocFile.value = ''; }
         }
+
         document.querySelectorAll('input[name="role"]').forEach(r => r.addEventListener('change', sync));
         sync();
     })();

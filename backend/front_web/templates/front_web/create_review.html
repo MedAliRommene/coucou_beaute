@@ -1,0 +1,279 @@
+{% extends 'front_web/base_client.html' %}
+{% load static %}
+
+{% block title %}Donner un avis - {{ pro.business_name|default:pro.user.get_full_name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .star-rating {
+        display: flex;
+        gap: 8px;
+        justify-content: center;
+        margin: 20px 0;
+    }
+
+    .star {
+        font-size: 2.5rem;
+        color: #e5e7eb;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        user-select: none;
+    }
+
+    .star:hover,
+    .star.active {
+        color: #fbbf24;
+        transform: scale(1.1);
+    }
+
+    .star.selected {
+        color: #f59e0b;
+    }
+
+    .review-form {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .form-group {
+        margin-bottom: 24px;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 8px;
+    }
+
+    .form-textarea {
+        width: 100%;
+        min-height: 120px;
+        padding: 12px 16px;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        font-size: 16px;
+        font-family: inherit;
+        resize: vertical;
+        transition: border-color 0.2s ease;
+    }
+
+    .form-textarea:focus {
+        outline: none;
+        border-color: #8b5cf6;
+        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+    }
+
+    .btn-submit {
+        background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+        color: white;
+        border: none;
+        padding: 12px 32px;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        width: 100%;
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3);
+    }
+
+    .btn-submit:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .professional-card {
+        background: white;
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        margin-bottom: 32px;
+        text-align: center;
+    }
+
+    .professional-photo {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin: 0 auto 16px;
+        display: block;
+        border: 3px solid #f3f4f6;
+    }
+
+    .professional-name {
+        font-size: 24px;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 8px;
+    }
+
+    .professional-service {
+        color: #6b7280;
+        font-size: 16px;
+    }
+
+    .rating-display {
+        font-size: 18px;
+        color: #374151;
+        margin-top: 16px;
+    }
+
+    .existing-review {
+        background: #f0f9ff;
+        border: 1px solid #0ea5e9;
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 24px;
+    }
+
+    .existing-review h3 {
+        color: #0369a1;
+        margin-bottom: 8px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 py-8">
+    <div class="container mx-auto px-4">
+        <!-- Professional Info Card -->
+        <div class="professional-card">
+            {% if pro.extra.profile_photo %}
+            <img src="{{ pro.extra.profile_photo.url }}" alt="{{ pro.business_name|default:pro.user.get_full_name }}"
+                class="professional-photo">
+            {% else %}
+            <div
+                class="professional-photo bg-gradient-to-r from-purple-400 to-pink-400 flex items-center justify-center text-white text-2xl font-bold">
+                {{ pro.business_name|default:pro.user.get_full_name|first|upper }}
+            </div>
+            {% endif %}
+
+            <h2 class="professional-name">{{ pro.business_name|default:pro.user.get_full_name }}</h2>
+            <p class="professional-service">{{ pro.extra.primary_service|default:"Professionnel" }}</p>
+
+            {% if pro.extra.rating %}
+            <div class="rating-display">
+                <span class="text-yellow-500">
+                    {% for i in "12345" %}
+                    {% if forloop.counter <= pro.extra.rating %} ★ {% else %} ☆ {% endif %} {% endfor %} </span>
+                        <span class="ml-2">{{ pro.extra.rating|floatformat:1 }} ({{ pro.extra.reviews|default:0 }}
+                            avis)</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Existing Review Notice -->
+        {% if existing_review %}
+        <div class="existing-review">
+            <h3>Vous avez déjà donné un avis</h3>
+            <p>Vous pouvez modifier votre avis ci-dessous. Votre note actuelle :
+                <span class="text-yellow-500">
+                    {% for i in "12345" %}
+                    {% if forloop.counter <= existing_review.rating %} ★ {% else %} ☆ {% endif %} {% endfor %} </span>
+            </p>
+        </div>
+        {% endif %}
+
+        <!-- Review Form -->
+        <div class="review-form">
+            <form method="post" action="{% url 'front_web:submit_review' pro_id=pro_id %}">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label class="form-label">Votre note *</label>
+                    <div class="star-rating" id="starRating">
+                        <span class="star" data-rating="1">★</span>
+                        <span class="star" data-rating="2">★</span>
+                        <span class="star" data-rating="3">★</span>
+                        <span class="star" data-rating="4">★</span>
+                        <span class="star" data-rating="5">★</span>
+                    </div>
+                    <input type="hidden" name="rating" id="ratingInput"
+                        value="{% if existing_review %}{{ existing_review.rating }}{% else %}0{% endif %}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="comment" class="form-label">Votre commentaire (optionnel)</label>
+                    <textarea name="comment" id="comment" class="form-textarea"
+                        placeholder="Partagez votre expérience avec ce professionnel...">{% if existing_review %}{{ existing_review.comment }}{% endif %}</textarea>
+                </div>
+
+                <button type="submit" class="btn-submit" id="submitBtn" disabled>
+                    {% if existing_review %}Modifier mon avis{% else %}Publier mon avis{% endif %}
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const stars = document.querySelectorAll('.star');
+        const ratingInput = document.getElementById('ratingInput');
+        const submitBtn = document.getElementById('submitBtn');
+
+        // Initialize with existing rating if any
+        const existingRating = parseInt(ratingInput.value);
+        if (existingRating > 0) {
+            updateStars(existingRating);
+            submitBtn.disabled = false;
+        }
+
+        stars.forEach(star => {
+            star.addEventListener('click', function () {
+                const rating = parseInt(this.dataset.rating);
+                ratingInput.value = rating;
+                updateStars(rating);
+                submitBtn.disabled = false;
+            });
+
+            star.addEventListener('mouseenter', function () {
+                const rating = parseInt(this.dataset.rating);
+                highlightStars(rating);
+            });
+        });
+
+        document.getElementById('starRating').addEventListener('mouseleave', function () {
+            const currentRating = parseInt(ratingInput.value);
+            if (currentRating > 0) {
+                updateStars(currentRating);
+            } else {
+                clearStars();
+            }
+        });
+
+        function updateStars(rating) {
+            stars.forEach((star, index) => {
+                if (index < rating) {
+                    star.classList.add('active', 'selected');
+                } else {
+                    star.classList.remove('active', 'selected');
+                }
+            });
+        }
+
+        function highlightStars(rating) {
+            stars.forEach((star, index) => {
+                if (index < rating) {
+                    star.classList.add('active');
+                } else {
+                    star.classList.remove('active');
+                }
+            });
+        }
+
+        function clearStars() {
+            stars.forEach(star => {
+                star.classList.remove('active', 'selected');
+            });
+        }
+    });
+</script>
+{% endblock %}

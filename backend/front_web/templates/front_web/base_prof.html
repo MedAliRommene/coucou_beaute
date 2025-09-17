@@ -194,7 +194,7 @@
         <aside id="sidebar"
             class="w-64 bg-white shadow-lg transition-all duration-300 ease-in-out flex flex-col py-6 px-4">
             <div class="flex items-center justify-center mb-8">
-                <img src="{{ MEDIA_URL }}logo%20coucou%20beaute.png" alt="Coucou Beauté Logo"
+                <img src="{{ MEDIA_URL }}logo%20coucou%20beaute.png" islt="Coucou Beauté Logo"
                     class="h-20 w-auto object-contain logo-enhanced">
             </div>
             <nav class="flex-1 space-y-2">
@@ -220,10 +220,21 @@
                         class="ml-auto w-4 h-4 text-gray-400 group-hover:text-pink-500 transition-transform duration-200 sidebar-chevron"></i>
                 </a>
 
-                <a href="{% url 'front_web:booking' %}"
-                    class="flex items-center p-3 rounded-xl text-gray-700 hover:bg-pink-50 hover:text-pink-600 transition-colors duration-200 group relative {% if request.resolver_match.url_name == 'booking' %}bg-gradient-to-r from-pink-50 to-blue-50 text-pink-600 font-semibold shadow-sm{% endif %}">
+                <a href="{% url 'front_web:pro_reviews_management' %}"
+                    class="flex items-center p-3 rounded-xl text-gray-700 hover:bg-pink-50 hover:text-pink-600 transition-colors duration-200 group relative {% if request.resolver_match.url_name == 'pro_reviews_management' %}bg-gradient-to-r from-pink-50 to-blue-50 text-pink-600 font-semibold shadow-sm{% endif %}">
                     <div
-                        class="icon-bubble {% if request.resolver_match.url_name == 'booking' %}bg-gradient-to-br from-pink-400 to-blue-400 text-white{% else %}bg-gray-100 text-gray-500 group-hover:bg-pink-100 group-hover:text-pink-500{% endif %}">
+                        class="icon-bubble {% if request.resolver_match.url_name == 'pro_reviews_management' %}bg-gradient-to-br from-pink-400 to-blue-400 text-white{% else %}bg-gray-100 text-gray-500 group-hover:bg-pink-100 group-hover:text-pink-500{% endif %}">
+                        <i data-lucide="star" class="w-5 h-5"></i>
+                    </div>
+                    <span class="ml-3 sidebar-label">Avis</span>
+                    <i data-lucide="chevron-right"
+                        class="ml-auto w-4 h-4 text-gray-400 group-hover:text-pink-500 transition-transform duration-200 sidebar-chevron"></i>
+                </a>
+
+                <a href="{% url 'front_web:pro_appointments' %}"
+                    class="flex items-center p-3 rounded-xl text-gray-700 hover:bg-pink-50 hover:text-pink-600 transition-colors duration-200 group relative {% if request.resolver_match.url_name == 'pro_appointments' %}bg-gradient-to-r from-pink-50 to-blue-50 text-pink-600 font-semibold shadow-sm{% endif %}">
+                    <div
+                        class="icon-bubble {% if request.resolver_match.url_name == 'pro_appointments' %}bg-gradient-to-br from-pink-400 to-blue-400 text-white{% else %}bg-gray-100 text-gray-500 group-hover:bg-pink-100 group-hover:text-pink-500{% endif %}">
                         <i data-lucide="calendar" class="w-5 h-5"></i>
                     </div>
                     <span class="ml-3 sidebar-label">Rendez‑vous</span>

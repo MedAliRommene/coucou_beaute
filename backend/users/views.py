@@ -178,6 +178,10 @@ def approve_professional_application(request, app_id: int):
         else:
             extra.spoken_languages = str(app.spoken_languages)
     
+    # Transférer la photo de profil
+    if app.profile_photo:
+        extra.profile_photo = app.profile_photo
+    
     # Si les coordonnées sont manquantes mais qu'on a une adresse, essayer de géocoder
     if (extra.latitude is None or extra.longitude is None) and extra.address:
         try:

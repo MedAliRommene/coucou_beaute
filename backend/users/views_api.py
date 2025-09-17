@@ -870,24 +870,59 @@ def simple_professionals_api(request):
                     address_parts.append(extra.city)
                 full_address = ", ".join(address_parts) if address_parts else "Adresse non disponible"
                 
+                # Construire l'URL de la photo de profil
+                profile_photo_url = None
+                if extra.profile_photo:
+                    try:
+                        profile_photo_url = extra.profile_photo.url
+                    except:
+                        profile_photo_url = None
+
+                # Construire les services
+                services_list = []
+                if extra.services:
+                    if isinstance(extra.services, list):
+                        services_list = extra.services
+                    elif isinstance(extra.services, str):
+                        services_list = [s.strip() for s in extra.services.split(',') if s.strip()]
+                    elif isinstance(extra.services, dict):
+                        services_list = list(extra.services.values())
+
+                # Construire les langues parlées
+                languages_list = []
+                if extra.spoken_languages:
+                    if isinstance(extra.spoken_languages, list):
+                        languages_list = extra.spoken_languages
+                    elif isinstance(extra.spoken_languages, str):
+                        languages_list = [l.strip() for l in extra.spoken_languages.split(',') if l.strip()]
+
                 result = {
                     'id': pro.id,
                     'name': name,
                     'service': extra.primary_service or 'Service',
+                    'services': services_list,
                     'rating': round(float(extra.rating), 1) if extra.rating else 4.0,
                     'reviews': int(extra.reviews) if extra.reviews else 0,
                     'price': int(extra.price) if extra.price else 50,
+                    'price_range': f"{int(extra.price) if extra.price else 50} - {int(extra.price * 1.5) if extra.price else 75} DT",
                     'lat': float(extra.latitude),
                     'lng': float(extra.longitude),
                     'distanceKm': round(distance, 1),
                     'phone': extra.phone_number or '',
+                    'email': pro.user.email,
                     'address': full_address,
                     'city': extra.city or '',
-                    'profile_photo': None,
+                    'profile_photo': profile_photo_url,
                     'bio': extra.bio or '',
-                    'spoken_languages': extra.spoken_languages or 'Français',
+                    'spoken_languages': languages_list,
                     'working_days': extra.working_days or [],
-                    'working_hours': extra.working_hours or {'start': '09:00', 'end': '18:00'}
+                    'working_hours': extra.working_hours or {'start': '09:00', 'end': '18:00'},
+                    'social_instagram': extra.social_instagram or '',
+                    'social_facebook': extra.social_facebook or '',
+                    'social_tiktok': extra.social_tiktok or '',
+                    'gallery': extra.gallery or [],
+                    'is_verified': pro.is_verified,
+                    'created_at': pro.created_at.isoformat() if pro.created_at else None
                 }
                 
                 results.append(result)

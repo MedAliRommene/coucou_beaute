@@ -24,7 +24,7 @@ def _get_professional_from_user(user):
 
 @api_view(["GET"])  # /api/appointments/agenda/?from=...&to=...
 @permission_classes([IsAuthenticated])
-@authentication_classes([JWTAuthentication])
+@authentication_classes([JWTAuthentication, SessionAuthentication])
 def agenda(request):
     pro = _get_professional_from_user(request.user)
     if not pro:
@@ -298,7 +298,7 @@ def analytics_overview(request):
 
 @api_view(["GET"])  # /api/appointments/kpis/
 @permission_classes([IsAuthenticated])
-@authentication_classes([JWTAuthentication])
+@authentication_classes([JWTAuthentication, SessionAuthentication])
 def kpis(request):
     pro = _get_professional_from_user(request.user)
     if not pro:
@@ -323,7 +323,7 @@ def kpis(request):
 
 @api_view(["GET"])  # /api/appointments/notifications/
 @permission_classes([IsAuthenticated])
-@authentication_classes([JWTAuthentication])
+@authentication_classes([JWTAuthentication, SessionAuthentication])
 def notifications(request):
     pro = _get_professional_from_user(request.user)
     if not pro:
@@ -344,7 +344,7 @@ def notifications(request):
 
 @api_view(["GET"])  # /api/appointments/notifications/unread_count/
 @permission_classes([IsAuthenticated])
-@authentication_classes([JWTAuthentication])
+@authentication_classes([JWTAuthentication, SessionAuthentication])
 def notifications_unread_count(request):
     pro = _get_professional_from_user(request.user)
     if not pro:
@@ -355,7 +355,7 @@ def notifications_unread_count(request):
 
 @api_view(["POST"])  # {ids:[...]}
 @permission_classes([IsAuthenticated])
-@authentication_classes([JWTAuthentication])
+@authentication_classes([JWTAuthentication, SessionAuthentication])
 def notifications_mark_read(request):
     pro = _get_professional_from_user(request.user)
     if not pro:
@@ -367,7 +367,7 @@ def notifications_mark_read(request):
 
 @api_view(["POST"])  # create appointment
 @permission_classes([IsAuthenticated])
-@authentication_classes([JWTAuthentication])
+@authentication_classes([JWTAuthentication, SessionAuthentication])
 def create_appointment(request):
     pro = _get_professional_from_user(request.user)
     if not pro:
@@ -394,7 +394,7 @@ def create_appointment(request):
 
 @api_view(["PATCH"])  # update appointment
 @permission_classes([IsAuthenticated])
-@authentication_classes([JWTAuthentication])
+@authentication_classes([JWTAuthentication, SessionAuthentication])
 def update_appointment(request, pk: int):
     pro = _get_professional_from_user(request.user)
     if not pro:
@@ -589,7 +589,7 @@ def public_slots(request):
 
 @api_view(["POST"])  # /api/appointments/client/book/
 @permission_classes([IsAuthenticated])
-@authentication_classes([JWTAuthentication])
+@authentication_classes([JWTAuthentication, SessionAuthentication])
 def client_book(request):
     """Client creates a pending reservation for a professional.
     Body: {pro_id, service_name, price, start, end}
@@ -675,23 +675,24 @@ def accept_appointment(request):
         appt = Appointment.objects.get(id=int(appt_id), professional=pro)
     except Appointment.DoesNotExist:
         return Response({"detail": "Rendez-vous introuvable"}, status=status.HTTP_404_NOT_FOUND)
-    old_status = appt.status
+    if appt.status == "confirmed":
+        return Response({"detail": "Rendez-vous déjà confirmé"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Mark appointment as confirmed - signals will handle notifications and emails
     appt.status = "confirmed"
     appt.save(update_fields=["status"])
-    # Notify client
-    try:
-        if appt.client and appt.client.user and appt.client.user.email and old_status != "confirmed":
-            subject = "Votre rendez-vous est confirmé"
-            message = (
-                f"Bonjour {appt.client.user.first_name or ''},\n\n"
-                f"Votre rendez-vous '{appt.service_name}' du {appt.start.strftime('%d/%m/%Y %H:%M')} a été confirmé par le centre.\n\n"
-                "Merci d'utiliser COUCOU BEAUTÉ."
-            )
-            from_addr = getattr(settings, 'DEFAULT_FROM_EMAIL', 'no-reply@coucou-beaute.local')
-            threading.Thread(target=send_mail, args=(subject, message, from_addr, [appt.client.user.email]), kwargs={"fail_silently": True}).start()
-    except Exception:
-        pass
-    return Response({"ok": True})
+    
+    return Response({
+        "ok": True, 
+        "message": "Rendez-vous confirmé avec succès. Une notification a été envoyée au client.",
+        "appointment": {
+            "id": appt.id,
+            "status": appt.status,
+            "client": appt.client.user.get_full_name() if appt.client else None,
+            "service": appt.service_name,
+            "date": appt.start.strftime('%d/%m/%Y %H:%M')
+        }
+    })
 
 
 @api_view(["POST"])  # body: {appointment_id}
@@ -708,20 +709,22 @@ def reject_appointment(request):
         appt = Appointment.objects.get(id=int(appt_id), professional=pro)
     except Appointment.DoesNotExist:
         return Response({"detail": "Rendez-vous introuvable"}, status=status.HTTP_404_NOT_FOUND)
-    old_status = appt.status
+    if appt.status == "cancelled":
+        return Response({"detail": "Rendez-vous déjà annulé"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Mark appointment as cancelled - signals will handle notifications and emails
+    appt._cancelled_by_pro = True  # Flag to identify who cancelled
     appt.status = "cancelled"
     appt.save(update_fields=["status"])
-    # Notify client
-    try:
-        if appt.client and appt.client.user and appt.client.user.email and old_status != "cancelled":
-            subject = "Votre rendez-vous est annulé"
-            message = (
-                f"Bonjour {appt.client.user.first_name or ''},\n\n"
-                f"Votre rendez-vous '{appt.service_name}' du {appt.start.strftime('%d/%m/%Y %H:%M')} a été annulé par le centre.\n\n"
-                "Merci d'utiliser COUCOU BEAUTÉ."
-            )
-            from_addr = getattr(settings, 'DEFAULT_FROM_EMAIL', 'no-reply@coucou-beaute.local')
-            threading.Thread(target=send_mail, args=(subject, message, from_addr, [appt.client.user.email]), kwargs={"fail_silently": True}).start()
-    except Exception:
-        pass
-    return Response({"ok": True})
+    
+    return Response({
+        "ok": True, 
+        "message": "Rendez-vous refusé avec succès. Une notification a été envoyée au client.",
+        "appointment": {
+            "id": appt.id,
+            "status": appt.status,
+            "client": appt.client.user.get_full_name() if appt.client else None,
+            "service": appt.service_name,
+            "date": appt.start.strftime('%d/%m/%Y %H:%M')
+        }
+    })

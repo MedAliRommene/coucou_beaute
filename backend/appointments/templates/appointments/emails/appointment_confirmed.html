@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rendez-vous confirmé</title>
+    <style>
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            background: linear-gradient(90deg, #F28BB2 0%, #6CA9E0 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 15px;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .success-badge {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        .appointment-card {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.1) 100%);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+
+        .appointment-detail {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .appointment-detail:last-child {
+            border-bottom: none;
+        }
+
+        .label {
+            font-weight: 600;
+            color: #059669;
+        }
+
+        .value {
+            color: #333;
+            font-weight: 500;
+        }
+
+        .cta-button {
+            background: linear-gradient(90deg, #F28BB2 0%, #6CA9E0 100%);
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 600;
+            display: inline-block;
+            margin: 20px 0;
+            transition: transform 0.3s ease;
+        }
+
+        .important-info {
+            background: rgba(245, 158, 11, 0.1);
+            border-left: 4px solid #f59e0b;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">Coucou Beauté</div>
+            <div class="success-badge">✓ Rendez-vous confirmé</div>
+            <h2 style="color: #059669; margin: 0;">Votre rendez-vous est confirmé !</h2>
+        </div>
+
+        <p>Bonjour <strong>{{ client.user.get_full_name }}</strong>,</p>
+
+        <p>Excellente nouvelle ! Votre demande de rendez-vous a été acceptée par le professionnel.</p>
+
+        <div class="appointment-card">
+            <div class="appointment-detail">
+                <span class="label">Professionnel :</span>
+                <span class="value">{{ professional.user.get_full_name }}</span>
+            </div>
+            {% if professional.business_name %}
+            <div class="appointment-detail">
+                <span class="label">Centre :</span>
+                <span class="value">{{ professional.business_name }}</span>
+            </div>
+            {% endif %}
+            <div class="appointment-detail">
+                <span class="label">Service :</span>
+                <span class="value">{{ service }}</span>
+            </div>
+            <div class="appointment-detail">
+                <span class="label">Date :</span>
+                <span class="value">{{ date }}</span>
+            </div>
+            <div class="appointment-detail">
+                <span class="label">Heure :</span>
+                <span class="value">{{ time }}</span>
+            </div>
+            <div class="appointment-detail">
+                <span class="label">Prix :</span>
+                <span class="value">{{ appointment.price }} DT</span>
+            </div>
+            {% if professional.extra.address %}
+            <div class="appointment-detail">
+                <span class="label">Adresse :</span>
+                <span class="value">{{ professional.extra.address }}</span>
+            </div>
+            {% endif %}
+            {% if professional.extra.phone_number %}
+            <div class="appointment-detail">
+                <span class="label">Téléphone :</span>
+                <span class="value">{{ professional.extra.phone_number }}</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="important-info">
+            <h4 style="margin-top: 0; color: #d97706;">Informations importantes :</h4>
+            <ul style="margin-bottom: 0;">
+                <li>Veuillez vous présenter 5 minutes avant l'heure du rendez-vous</li>
+                <li>En cas d'empêchement, merci de prévenir le professionnel à l'avance</li>
+                <li>N'oubliez pas d'apporter une pièce d'identité si nécessaire</li>
+            </ul>
+        </div>
+
+        <div style="text-align: center;">
+            <a href="{{ site_url }}/client/appointments/" class="cta-button">
+                Voir mes rendez-vous
+            </a>
+        </div>
+
+        <div class="footer">
+            <p>Coucou Beauté - Votre plateforme de beauté de confiance</p>
+            <p>Cet email a été envoyé automatiquement, merci de ne pas y répondre.</p>
+        </div>
+    </div>
+</body>
+
+</html>

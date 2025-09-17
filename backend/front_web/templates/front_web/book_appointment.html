@@ -1,0 +1,649 @@
+{% extends 'front_web/base_client.html' %}
+{% load static %}
+{% block title %}Prendre rendez-vous - {{ pro.business_name|default:pro.user.get_full_name }} - Coucou Beauté{%endblock%}
+
+
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    body {
+        font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial;
+    }
+
+    /* Beautiful background like login page */
+    #three-bg {
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        overflow: hidden;
+    }
+
+    #three-bg::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(242, 139, 178, 0.1) 0%, transparent 70%);
+        animation: float 20s ease-in-out infinite;
+    }
+
+    #three-bg::after {
+        content: '';
+        position: absolute;
+        bottom: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(108, 169, 224, 0.1) 0%, transparent 70%);
+        animation: float 25s ease-in-out infinite reverse;
+    }
+
+    @keyframes float {
+
+        0%,
+        100% {
+            transform: translate(0, 0) rotate(0deg);
+        }
+
+        33% {
+            transform: translate(30px, -30px) rotate(120deg);
+        }
+
+        66% {
+            transform: translate(-20px, 20px) rotate(240deg);
+        }
+    }
+
+    .grad-btn {
+        background: linear-gradient(90deg, #F28BB2 0%, #6CA9E0 100%);
+    }
+
+    .glass {
+        backdrop-filter: blur(20px);
+        background: rgba(255, 255, 255, 0.85);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .text-rosePastel {
+        color: #F28BB2;
+    }
+
+    .text-blueLight {
+        color: #6CA9E0;
+    }
+
+    .calendar-day {
+        min-height: 120px;
+        transition: all 0.3s ease;
+    }
+
+    .calendar-day:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(108, 169, 224, 0.2);
+    }
+
+    .calendar-day.selected {
+        background: linear-gradient(135deg, #F28BB2 0%, #6CA9E0 100%);
+        color: white;
+    }
+
+    .time-slot {
+        transition: all 0.3s ease;
+    }
+
+    .time-slot:hover {
+        transform: scale(1.05);
+    }
+
+    .time-slot.selected {
+        background: linear-gradient(90deg, #F28BB2 0%, #6CA9E0 100%);
+        color: white;
+    }
+
+    .service-card {
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .service-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 35px rgba(108, 169, 224, 0.25);
+    }
+
+    .service-card.selected {
+        border-color: #F28BB2;
+        background: linear-gradient(135deg, rgba(242, 139, 178, 0.1) 0%, rgba(108, 169, 224, 0.1) 100%);
+    }
+
+    /* Notification styles */
+    .notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+        padding: 16px 24px;
+        border-radius: 12px;
+        font-weight: 500;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+    }
+
+    .notification.show {
+        transform: translateX(0);
+    }
+
+    .notification.success {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+    }
+
+    .notification.warning {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+    }
+
+    .notification.error {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+    }
+
+    /* Pulse animation for updated slots */
+    @keyframes pulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+        }
+
+        70% {
+            box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+        }
+
+        100% {
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+        }
+    }
+
+    .time-slot.updated {
+        animation: pulse 1s ease-out;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Beautiful animated background -->
+<div id="three-bg"></div>
+
+<div class="min-h-screen relative">
+    <!-- Header -->
+    <div class="sticky top-0 z-50 p-4">
+        <div class="max-w-6xl mx-auto">
+            <div class="flex items-center justify-between">
+                <a href="{% url 'front_web:professional_detail' pro_id=pro_id %}"
+                    class="glass px-4 py-2 rounded-xl flex items-center gap-2 text-gray-700 hover:bg-white/80 transition-all">
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                    Retour au profil
+                </a>
+                <div class="glass px-6 py-3 rounded-xl">
+                    <h1 class="text-xl font-bold text-gray-800">Prendre rendez-vous</h1>
+                    <p class="text-sm text-gray-600">{{ pro.business_name|default:pro.user.get_full_name }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-6xl mx-auto px-4 pb-8">
+        <form method="POST" action="{% url 'front_web:book_appointment' pro_id=pro_id %}" id="bookingForm">
+            {% csrf_token %}
+
+            <!-- Hidden fields -->
+            <input type="hidden" name="service_name" id="selectedServiceName" value="">
+            <input type="hidden" name="service_price" id="selectedServicePrice" value="">
+            <input type="hidden" name="service_duration" id="selectedServiceDuration" value="">
+            <input type="hidden" name="appointment_date" id="selectedDate" value="">
+            <input type="hidden" name="appointment_time" id="selectedTime" value="">
+
+            <!-- Steps -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+                <!-- Step 1: Service Selection -->
+                <div class="glass rounded-3xl p-6">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div
+                            class="w-10 h-10 rounded-xl bg-gradient-to-r from-pink-400 to-blue-400 flex items-center justify-center text-white font-bold">
+                            1
+                        </div>
+                        <h2 class="text-xl font-bold text-gray-900">Choisir le service</h2>
+                    </div>
+
+                    <div class="space-y-4">
+                        {% for service in services_list %}
+                        <div class="service-card glass rounded-2xl p-4 border-2 border-transparent"
+                            onclick="selectService('{{ service.name }}', {{ service.price }}, {{ service.duration }})">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h3 class="font-semibold text-gray-900">{{ service.name }}</h3>
+                                    <p class="text-sm text-gray-600">{{ service.duration }} minutes</p>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-lg font-bold text-rosePastel">{{ service.price }} DT</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Step 2: Date Selection -->
+                <div class="glass rounded-3xl p-6">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div
+                            class="w-10 h-10 rounded-xl bg-gradient-to-r from-blue-400 to-purple-400 flex items-center justify-center text-white font-bold">
+                            2
+                        </div>
+                        <h2 class="text-xl font-bold text-gray-900">Choisir la date</h2>
+                    </div>
+
+                    <!-- Calendar -->
+                    <div id="calendar" class="grid grid-cols-7 gap-2 mb-4">
+                        <!-- Calendar will be generated by JavaScript -->
+                    </div>
+
+                    <div class="text-center">
+                        <span id="selectedDateDisplay" class="text-sm text-gray-600">Sélectionnez une date</span>
+                    </div>
+                </div>
+
+                <!-- Step 3: Time Selection -->
+                <div class="glass rounded-3xl p-6">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div
+                            class="w-10 h-10 rounded-xl bg-gradient-to-r from-green-400 to-teal-400 flex items-center justify-center text-white font-bold">
+                            3
+                        </div>
+                        <h2 class="text-xl font-bold text-gray-900">Choisir l'heure</h2>
+                    </div>
+
+                    <div id="timeSlots" class="grid grid-cols-2 gap-3">
+                        <div class="col-span-2 text-center text-gray-500 py-8">
+                            Choisissez d'abord une date
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summary & Submit -->
+            <div class="glass rounded-3xl p-6 mt-8">
+                <h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <i data-lucide="check-circle" class="w-6 h-6 text-green-500"></i>
+                    Résumé de votre réservation
+                </h3>
+
+                <div id="bookingSummary" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <div class="text-center p-4 bg-gradient-to-r from-pink-50 to-blue-50 rounded-xl">
+                        <div class="text-sm text-gray-600">Service</div>
+                        <div class="font-bold text-gray-900" id="summaryService">Non sélectionné</div>
+                    </div>
+                    <div class="text-center p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl">
+                        <div class="text-sm text-gray-600">Date</div>
+                        <div class="font-bold text-gray-900" id="summaryDate">Non sélectionnée</div>
+                    </div>
+                    <div class="text-center p-4 bg-gradient-to-r from-green-50 to-teal-50 rounded-xl">
+                        <div class="text-sm text-gray-600">Heure</div>
+                        <div class="font-bold text-gray-900" id="summaryTime">Non sélectionnée</div>
+                    </div>
+                </div>
+
+                <!-- Notes -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i data-lucide="message-circle" class="w-4 h-4 inline mr-1"></i>
+                        Notes additionnelles (optionnel)
+                    </label>
+                    <textarea name="client_notes" rows="3"
+                        class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all"
+                        placeholder="Décrivez vos besoins spécifiques..."></textarea>
+                </div>
+
+                <div class="flex justify-center">
+                    <button type="submit" id="submitBtn" disabled
+                        class="grad-btn text-white px-8 py-3 rounded-xl font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 transition-transform">
+                        <i data-lucide="calendar-check" class="w-5 h-5 mr-2"></i>
+                        Confirmer la demande
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+    // Initialize Lucide icons
+    window.lucide && window.lucide.createIcons();
+
+    let selectedService = null;
+    let selectedDate = null;
+    let selectedTime = null;
+    let lastSlotsData = null; // Store last slots data for comparison
+
+    const workingHours = "{{ working_hours }}";
+    const workingDays = {{ working_days| safe }};
+
+    // Notification system
+    function showNotification(message, type = 'success') {
+        // Remove existing notifications
+        document.querySelectorAll('.notification').forEach(n => n.remove());
+
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.innerHTML = `
+            <div class="flex items-center gap-2">
+                <i data-lucide="${type === 'success' ? 'check-circle' : type === 'warning' ? 'alert-triangle' : 'x-circle'}" class="w-5 h-5"></i>
+                <span>${message}</span>
+            </div>
+        `;
+
+        document.body.appendChild(notification);
+        window.lucide && window.lucide.createIcons();
+
+        // Show notification
+        setTimeout(() => {
+            notification.classList.add('show');
+        }, 100);
+
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 300);
+        }, 5000);
+    }
+
+    // Service selection
+    function selectService(name, price, duration) {
+        selectedService = { name, price, duration };
+
+        // Update UI
+        document.querySelectorAll('.service-card').forEach(card => {
+            card.classList.remove('selected');
+        });
+        event.currentTarget.classList.add('selected');
+
+        // Update hidden fields
+        document.getElementById('selectedServiceName').value = name;
+        document.getElementById('selectedServicePrice').value = price;
+        document.getElementById('selectedServiceDuration').value = duration;
+
+        // Update summary
+        document.getElementById('summaryService').textContent = `${name} - ${price} DT`;
+
+        checkFormComplete();
+    }
+
+    // Generate calendar
+    function generateCalendar() {
+        const calendar = document.getElementById('calendar');
+        const today = new Date();
+        const currentMonth = today.getMonth();
+        const currentYear = today.getFullYear();
+
+        // Days of week header
+        const daysOfWeek = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+        daysOfWeek.forEach(day => {
+            const dayHeader = document.createElement('div');
+            dayHeader.className = 'text-center text-sm font-medium text-gray-600 py-2';
+            dayHeader.textContent = day;
+            calendar.appendChild(dayHeader);
+        });
+
+        // Generate next 30 days
+        for (let i = 0; i < 30; i++) {
+            const date = new Date(today);
+            date.setDate(today.getDate() + i);
+
+            const dayDiv = document.createElement('div');
+            dayDiv.className = 'calendar-day glass rounded-xl p-3 text-center cursor-pointer border border-gray-200';
+
+            const dayOfWeek = date.getDay();
+            const dayName = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'][dayOfWeek];
+
+            // Check if it's a working day
+            if (workingDays.includes(dayName)) {
+                dayDiv.innerHTML = `
+                    <div class="text-lg font-bold">${date.getDate()}</div>
+                    <div class="text-xs text-gray-600">${date.toLocaleDateString('fr-FR', { month: 'short' })}</div>
+                `;
+                dayDiv.onclick = () => selectDate(date, dayDiv);
+            } else {
+                dayDiv.className += ' opacity-50 cursor-not-allowed';
+                dayDiv.innerHTML = `
+                    <div class="text-lg font-bold text-gray-400">${date.getDate()}</div>
+                    <div class="text-xs text-gray-400">Fermé</div>
+                `;
+            }
+
+            calendar.appendChild(dayDiv);
+        }
+    }
+
+    // Date selection
+    function selectDate(date, element) {
+        selectedDate = date;
+
+        // Update UI
+        document.querySelectorAll('.calendar-day').forEach(day => {
+            day.classList.remove('selected');
+        });
+        element.classList.add('selected');
+
+        // Update hidden field
+        document.getElementById('selectedDate').value = date.toISOString().split('T')[0];
+
+        // Update display
+        document.getElementById('selectedDateDisplay').textContent = date.toLocaleDateString('fr-FR', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+
+        // Update summary
+        document.getElementById('summaryDate').textContent = date.toLocaleDateString('fr-FR');
+
+        // Generate time slots
+        generateTimeSlots();
+
+        checkFormComplete();
+    }
+
+    // Generate time slots with real-time availability
+    async function generateTimeSlots() {
+        const timeSlotsContainer = document.getElementById('timeSlots');
+        timeSlotsContainer.innerHTML = '<div class="col-span-2 text-center text-gray-500 py-4">Chargement des créneaux disponibles...</div>';
+
+        if (!selectedDate) {
+            timeSlotsContainer.innerHTML = '<div class="col-span-2 text-center text-gray-500 py-8">Choisissez d\'abord une date</div>';
+            return;
+        }
+
+        const dateStr = selectedDate.toISOString().split('T')[0];
+
+        try {
+            const response = await fetch(`/professional/{{ pro_id }}/available-slots/?date=${dateStr}`, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                throw new Error('Erreur lors du chargement des créneaux');
+            }
+
+            const data = await response.json();
+
+            // Check for changes in availability
+            const currentSlotTimes = data.slots ? data.slots.map(s => s.time) : [];
+            const lastSlotTimes = lastSlotsData ? lastSlotsData.map(s => s.time) : [];
+
+            // Detect if selected time is no longer available
+            if (selectedTime && !currentSlotTimes.includes(selectedTime)) {
+                showNotification(`Le créneau ${selectedTime} n'est plus disponible. Veuillez choisir un autre horaire.`, 'warning');
+                selectedTime = null;
+                document.getElementById('selectedTime').value = '';
+                document.getElementById('summaryTime').textContent = 'Non sélectionnée';
+                checkFormComplete();
+            }
+
+            // Detect new slots
+            if (lastSlotsData && currentSlotTimes.length > lastSlotTimes.length) {
+                const newSlots = currentSlotTimes.filter(time => !lastSlotTimes.includes(time));
+                if (newSlots.length > 0) {
+                    showNotification(`${newSlots.length} nouveau(x) créneau(x) disponible(s)!`, 'success');
+                }
+            }
+
+            // Store current data for next comparison
+            lastSlotsData = data.slots ? [...data.slots] : null;
+
+            timeSlotsContainer.innerHTML = '';
+
+            if (data.slots && data.slots.length > 0) {
+                data.slots.forEach((slot, index) => {
+                    const timeSlot = document.createElement('div');
+                    timeSlot.className = 'time-slot glass rounded-xl p-3 text-center cursor-pointer border border-gray-200 hover:border-green-300 transition-all';
+
+                    // Add pulse animation for new slots
+                    const isNewSlot = lastSlotsData && lastSlotTimes.length > 0 && !lastSlotTimes.includes(slot.time);
+                    if (isNewSlot) {
+                        timeSlot.classList.add('updated');
+                    }
+
+                    timeSlot.innerHTML = `
+                        <div class="font-semibold">${slot.time}</div>
+                        <div class="text-xs text-green-600 mt-1">
+                            <i data-lucide="check-circle" class="w-3 h-3 inline mr-1"></i>
+                            Disponible
+                        </div>
+                    `;
+                    timeSlot.onclick = () => selectTime(slot.time, timeSlot);
+                    timeSlotsContainer.appendChild(timeSlot);
+                });
+
+                // Re-initialize Lucide icons
+                window.lucide && window.lucide.createIcons();
+            } else {
+                timeSlotsContainer.innerHTML = `
+                    <div class="col-span-2 text-center text-gray-500 py-8">
+                        <i data-lucide="calendar-x" class="w-12 h-12 mx-auto mb-2 text-gray-300"></i>
+                        <p>Aucun créneau disponible pour cette date</p>
+                        <p class="text-sm mt-1">${data.message || 'Essayez une autre date'}</p>
+                    </div>
+                `;
+                window.lucide && window.lucide.createIcons();
+            }
+        } catch (error) {
+            console.error('Erreur:', error);
+            timeSlotsContainer.innerHTML = `
+                <div class="col-span-2 text-center text-red-500 py-8">
+                    <i data-lucide="alert-circle" class="w-12 h-12 mx-auto mb-2"></i>
+                    <p>Erreur lors du chargement des créneaux</p>
+                    <button onclick="generateTimeSlots()" class="text-sm text-blue-500 hover:text-blue-700 mt-2">
+                        Réessayer
+                    </button>
+                </div>
+            `;
+            window.lucide && window.lucide.createIcons();
+        }
+    }
+
+    // Time selection
+    function selectTime(time, element) {
+        selectedTime = time;
+
+        // Update UI
+        document.querySelectorAll('.time-slot').forEach(slot => {
+            slot.classList.remove('selected');
+        });
+        element.classList.add('selected');
+
+        // Update hidden field
+        document.getElementById('selectedTime').value = time;
+
+        // Update summary
+        document.getElementById('summaryTime').textContent = time;
+
+        checkFormComplete();
+    }
+
+    // Check if form is complete
+    function checkFormComplete() {
+        const submitBtn = document.getElementById('submitBtn');
+        if (selectedService && selectedDate && selectedTime) {
+            submitBtn.disabled = false;
+        } else {
+            submitBtn.disabled = true;
+        }
+    }
+
+    // Auto-refresh function to keep slots synchronized
+    function autoRefreshSlots() {
+        if (selectedDate) {
+            generateTimeSlots();
+        }
+    }
+
+    // Refresh slots every 30 seconds when a date is selected
+    let refreshInterval = null;
+    function startAutoRefresh() {
+        if (refreshInterval) {
+            clearInterval(refreshInterval);
+        }
+        refreshInterval = setInterval(autoRefreshSlots, 30000); // 30 seconds
+    }
+
+    function stopAutoRefresh() {
+        if (refreshInterval) {
+            clearInterval(refreshInterval);
+            refreshInterval = null;
+        }
+    }
+
+    // Update selectDate function to include auto-refresh
+    const originalSelectDate = selectDate;
+    selectDate = function (date, element) {
+        originalSelectDate(date, element);
+        startAutoRefresh(); // Start auto-refresh when date is selected
+    };
+
+    // Add visibility change listener to refresh when user comes back to tab
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden && selectedDate) {
+            generateTimeSlots(); // Refresh immediately when tab becomes visible
+        }
+    });
+
+    // Initialize calendar on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        generateCalendar();
+    });
+
+    // Clean up on page unload
+    window.addEventListener('beforeunload', () => {
+        stopAutoRefresh();
+    });
+</script>
+{% endblock %}

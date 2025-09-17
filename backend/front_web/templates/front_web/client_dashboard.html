@@ -119,6 +119,23 @@
         border: 1px solid rgba(255, 255, 255, 0.6);
     }
 
+    .glass-badge {
+        background: rgba(255, 255, 255, 0.65);
+        border: 1px solid rgba(226, 232, 240, 0.9);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border-radius: 9999px;
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+        line-height: 1rem;
+    }
+
+    .sticky-bar {
+        position: sticky;
+        top: 1rem;
+        z-index: 20;
+    }
+
     .map-container {
         border-radius: 16px;
         overflow: hidden;
@@ -246,6 +263,27 @@
         background: linear-gradient(90deg, transparent, rgba(242, 139, 178, 0.3), transparent);
         margin: 2rem 0;
     }
+
+    .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .pro-card {
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .pro-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 20px 48px rgba(16, 24, 40, 0.15);
+        border-color: rgba(242, 139, 178, 0.3);
+    }
 </style>
 <!-- Leaflet CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -276,7 +314,7 @@
     <!-- Main Content -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <!-- Search Bar -->
-        <div class="glass rounded-2xl p-6 mb-6">
+        <div class="glass rounded-2xl p-6 mb-6 sticky-bar shadow-md">
             <div class="flex items-center gap-4">
                 <div class="flex-1 relative">
                     <i data-lucide="search"
@@ -285,7 +323,7 @@
                         class="search-input w-full pl-10 pr-4 py-3 rounded-xl border-0 focus:ring-2 focus:ring-rosePastel/20 focus:outline-none">
                 </div>
                 <button id="filterBtn"
-                    class="px-4 py-3 bg-white/60 hover:bg-white/80 rounded-xl border border-gray-200 transition-all">
+                    class="px-4 py-3 bg-white/60 hover:bg-white/80 rounded-xl border border-gray-200 transition-all shadow-sm">
                     <i data-lucide="filter" class="w-5 h-5 text-gray-600"></i>
                 </button>
             </div>
@@ -729,65 +767,116 @@
             // Assurer que toutes les valeurs existent
             const name = pro.name || 'Professionnel';
             const service = pro.service || 'Service';
+            const services = pro.services || [];
             const rating = pro.rating || 0;
             const reviews = pro.reviews || 0;
             const price = pro.price || 0;
+            const priceRange = pro.price_range || `${price} DT`;
             const distance = pro.distanceKm || 0;
             const address = pro.address || 'Adresse non disponible';
             const phone = pro.phone || '';
+            const email = pro.email || '';
+            const city = pro.city || '';
+            const bio = pro.bio || '';
+            const languages = pro.spoken_languages || [];
+            const isVerified = pro.is_verified || false;
 
             return `
                 <div class="pro-card rounded-2xl p-6 card-hover cursor-pointer group" onclick="viewProfessional(${pro.id})">
-                    <div class="flex items-center gap-6">
+                    <div class="flex items-start gap-6">
+                        <!-- Photo de profil principale -->
                         <div class="flex-shrink-0 relative">
                             ${pro.profile_photo ?
-                    `<img src="${pro.profile_photo}" alt="${name}" class="w-16 h-16 rounded-2xl object-cover shadow-lg">` :
-                    `<div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-pink-100 to-blue-100 flex items-center justify-center shadow-lg">
-                                    <i data-lucide="user" class="w-8 h-8 text-gray-400"></i>
-                                </div>`
+                    `<div class="relative group/photo">
+                        <img src="${pro.profile_photo}" alt="${name}" class="w-20 h-20 rounded-2xl object-cover shadow-xl border-2 border-white">
+                        <div class="absolute inset-0 rounded-2xl bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover/photo:opacity-100 transition-opacity duration-300"></div>
+                        ${isVerified ? `<div class="absolute -top-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                            <i data-lucide="check" class="w-3 h-3 text-white"></i>
+                        </div>` : ''}
+                    </div>` :
+                    `<div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-pink-100 to-blue-100 flex items-center justify-center shadow-xl border-2 border-white">
+                        <i data-lucide="user" class="w-10 h-10 text-gray-400"></i>
+                    </div>`
                 }
                             <div class="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-pink-400 to-blue-400 rounded-full flex items-center justify-center text-white text-xs font-bold">
                                 ${index + 1}
                             </div>
                         </div>
+
+                        <!-- Informations principales -->
                         <div class="flex-1">
-                            <div class="flex items-center justify-between">
+                            <div class="flex items-start justify-between">
                                 <div class="flex-1">
-                                    <h3 class="text-xl font-bold text-gray-900 mb-2">${name}</h3>
+                                    <!-- Nom et statut -->
                                     <div class="flex items-center gap-3 mb-2">
+                                        <h3 class="text-xl font-bold text-gray-900">${name}</h3>
+                                        ${isVerified ? `<span class="px-2 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full flex items-center gap-1">
+                                            <i data-lucide="check-circle" class="w-3 h-3"></i>
+                                            Vérifié
+                                        </span>` : ''}
+                                    </div>
+
+                                    <!-- Note et avis -->
+                                    <div class="flex items-center gap-3 mb-3">
                                         <div class="flex rating-stars">
                                             ${Array(5).fill(0).map((_, i) =>
                     `<i data-lucide="star" class="w-4 h-4 ${i < Math.floor(rating) ? 'fill-current' : ''}"></i>`
                 ).join('')}
                                         </div>
                                         <span class="text-sm text-gray-600 font-medium">${rating} (${reviews} avis)</span>
+                                        <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">${city}</span>
                                     </div>
+
+                                    <!-- Service principal -->
                                     <p class="text-gray-600 mb-2 flex items-center gap-2">
                                         <i data-lucide="scissors" class="w-4 h-4 text-rosePastel"></i>
-                                        ${service}
+                                        <span class="font-medium">${service}</span>
                                     </p>
-                                    <p class="text-sm text-gray-500 mb-1 flex items-center gap-2">
-                                        <i data-lucide="map-pin" class="w-4 h-4"></i>
-                                        ${address}
+
+                                    <!-- Services supplémentaires -->
+                                    ${services.length > 0 ? `<div class="flex flex-wrap gap-1 mb-2">
+                                        ${services.slice(0, 3).map(s => `<span class="text-xs bg-pink-50 text-pink-700 px-2 py-1 rounded-full">${s}</span>`).join('')}
+                                        ${services.length > 3 ? `<span class="text-xs text-gray-500">+${services.length - 3} autres</span>` : ''}
+                                    </div>` : ''}
+
+                                    <!-- Adresse -->
+                                    <p class="text-sm text-gray-500 mb-2 flex items-start gap-2">
+                                        <i data-lucide="map-pin" class="w-4 h-4 mt-0.5 flex-shrink-0"></i>
+                                        <span class="line-clamp-2">${address}</span>
                                     </p>
-                                    ${phone ? `<p class="text-sm text-gray-500 flex items-center gap-2">
-                                        <i data-lucide="phone" class="w-4 h-4"></i>
-                                        ${phone}
-                                    </p>` : ''}
+
+                                    <!-- Contact -->
+                                    <div class="flex items-center gap-4 text-sm text-gray-500">
+                                        ${phone ? `<div class="flex items-center gap-1">
+                                            <i data-lucide="phone" class="w-4 h-4"></i>
+                                            <span>${phone}</span>
+                                        </div>` : ''}
+                                        ${languages.length > 0 ? `<div class="flex items-center gap-1">
+                                            <i data-lucide="globe" class="w-4 h-4"></i>
+                                            <span>${languages.slice(0, 2).join(', ')}</span>
+                                        </div>` : ''}
+                                    </div>
+
+                                    <!-- Bio courte -->
+                                    ${bio ? `<p class="text-sm text-gray-600 mt-2 line-clamp-2">${bio}</p>` : ''}
                                 </div>
-                                <div class="text-right ml-4">
-                                    <div class="mb-2">
+
+                                <!-- Informations de droite -->
+                                <div class="text-right ml-6 flex-shrink-0">
+                                    <div class="mb-3">
                                         <p class="text-sm text-gray-500">Distance</p>
                                         <p class="text-lg font-bold text-blueLight">${distance} km</p>
                                     </div>
-                                    <div class="mb-3">
-                                        <p class="text-sm text-gray-500">À partir de</p>
-                                        <p class="text-2xl font-bold text-rosePastel">${price} DT</p>
+                                    <div class="mb-4">
+                                        <p class="text-sm text-gray-500">Tarifs</p>
+                                        <p class="text-xl font-bold gradient-text">${priceRange}</p>
                                     </div>
-                                    <button class="grad-btn text-white px-6 py-3 rounded-xl font-semibold text-sm group-hover:scale-105 transition-transform">
-                                        <i data-lucide="eye" class="w-4 h-4 mr-2"></i>
-                                        Voir profil
-                                    </button>
+                                    <div class="flex items-center gap-2 justify-end">
+                                        <button type="button" onclick="event.stopPropagation(); viewProfessional(${pro.id});" class="grad-btn text-white px-6 py-3 rounded-xl font-semibold text-sm group-hover:scale-105 transition-transform flex items-center gap-2">
+                                            <i data-lucide="eye" class="w-4 h-4"></i>
+                                            Voir profil
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -894,6 +983,8 @@
     function viewProfessional(proId) {
         window.location.href = `/professional/${proId}/`;
     }
+
+    // Reserve flow happens on the professional detail page after selecting a service
 
     // Setup event listeners
     function setupEventListeners() {

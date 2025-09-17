@@ -3,15 +3,23 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods, require_POST
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
-from django.http import HttpRequest, HttpResponse
+from django.utils.http import url_has_allowed_host_and_scheme
+from urllib.parse import urlparse
+from django.http import HttpRequest, HttpResponse, JsonResponse
+from django.utils import timezone
 from users.models import Professional
 from django.contrib.auth import get_user_model
 from users.models import Client as ClientProfile, ProfessionalApplication, ProfessionalApplicationAction
+from appointments.models import Appointment
 from users.models import ProfessionalProfileExtra
+from reviews.models import Review
 import json
 import re
 from django.core.cache import cache
 from users.serializers import ProfessionalApplicationSerializer
+from django.db.models import Q, Avg, Count
+from django.core.paginator import Paginator
+from reviews.views import update_professional_rating
 
 
 def landing(request: HttpRequest) -> HttpResponse:
@@ -20,11 +28,19 @@ def landing(request: HttpRequest) -> HttpResponse:
 
 @require_http_methods(["GET", "POST"])
 def login_view(request: HttpRequest) -> HttpResponse:
+    # Ensure a clean form with no stale messages
+    if request.method == 'GET':
+        try:
+            for _ in messages.get_messages(request):
+                pass
+        except Exception:
+            pass
+
     if request.method == 'POST':
         identifier = (request.POST.get('email') or '').strip()
         password = request.POST.get('password') or ''
-        selected_role = request.POST.get('role') or 'client'  # Rôle sélectionné dans le formulaire
-        
+        selected_role = request.POST.get('role') or 'client'
+
         # Allow login with email OR username
         username_to_use = identifier
         try:
@@ -35,29 +51,25 @@ def login_view(request: HttpRequest) -> HttpResponse:
                     username_to_use = u.username
         except Exception:
             pass
-            
+
         user = authenticate(request, username=username_to_use, password=password)
         if user is not None:
-            # Check if user is active
             if not user.is_active:
                 messages.error(request, "Votre compte n'est pas encore activé. Vérifiez votre email ou contactez le support.")
                 return render(request, 'front_web/login.html')
-            
+
             login(request, user)
-            
-            # Admin -> dashboard
+
+            # Admin
             if user.is_staff or user.is_superuser:
                 return redirect('/dashboard/')
-            
-            # Vérifier le rôle sélectionné et rediriger en conséquence
+
             if selected_role == 'professional':
-                # Vérifier si l'utilisateur a un profil professionnel
                 try:
                     pro = getattr(user, 'professional_profile', None)
                     if pro:
-                        # Vérifier si le profil extra existe
                         try:
-                            _ = pro.extra  # will raise if not exists
+                            _ = pro.extra
                             return redirect('front_web:pro_dashboard')
                         except ProfessionalProfileExtra.DoesNotExist:
                             return redirect('front_web:pro_onboarding')
@@ -67,29 +79,28 @@ def login_view(request: HttpRequest) -> HttpResponse:
                 except Exception:
                     messages.error(request, "Erreur lors de la vérification du profil professionnel.")
                     return render(request, 'front_web/login.html')
-            
+
             elif selected_role == 'client':
-                # Vérifier si l'utilisateur a un profil client
                 try:
                     client_profile = getattr(user, 'client_profile', None)
                     if client_profile:
                         return redirect('front_web:client_dashboard')
                     else:
-                        # Créer un profil client s'il n'existe pas
                         ClientProfile.objects.get_or_create(
                             user=user,
-                            defaults={
-                                'phone_number': '',
-                                'address': '',
-                                'city': '',
-                            }
+                            defaults={'phone_number': '', 'address': '', 'city': ''}
                         )
                         return redirect('front_web:client_dashboard')
                 except Exception:
                     messages.error(request, "Erreur lors de la création du profil client.")
                     return render(request, 'front_web/login.html')
-            
-            # Fallback: si aucun rôle spécifique, essayer de détecter automatiquement
+
+            # Optional "next"
+            next_url = request.POST.get('next') or request.GET.get('next')
+            if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
+                return redirect(next_url)
+
+            # Auto-detect role
             try:
                 pro = getattr(user, 'professional_profile', None)
                 if pro:
@@ -100,16 +111,12 @@ def login_view(request: HttpRequest) -> HttpResponse:
                         return redirect('front_web:pro_onboarding')
             except Exception:
                 pass
-            
-            # Par défaut, créer un profil client
+
+            # Default: client dashboard
             try:
                 ClientProfile.objects.get_or_create(
                     user=user,
-                    defaults={
-                        'phone_number': '',
-                        'address': '',
-                        'city': '',
-                    }
+                    defaults={'phone_number': '', 'address': '', 'city': ''}
                 )
                 return redirect('front_web:client_dashboard')
             except Exception:
@@ -117,6 +124,7 @@ def login_view(request: HttpRequest) -> HttpResponse:
                 return render(request, 'front_web/login.html')
         else:
             messages.error(request, "Identifiants invalides")
+
     return render(request, 'front_web/login.html')
 
 
@@ -127,140 +135,169 @@ def signup_view(request: HttpRequest) -> HttpResponse:
         password = request.POST.get('password') or ''
         first_name = request.POST.get('first_name') or ''
         last_name = request.POST.get('last_name') or ''
-        role = (request.POST.get('role') or 'client').strip()
+        role_raw = (request.POST.get('role') or 'client').strip().lower()
+        # Normalize role value from UI (supports FR/EN labels)
+        if role_raw in ('client', 'customer'):
+            role = 'client'
+        elif role_raw in ('professional', 'professionnel', 'pro'):
+            role = 'professional'
+        else:
+            role = 'client'
+
         if not email or not password:
             messages.error(request, "Email et mot de passe requis")
+            return render(request, 'front_web/signup.html')
+
+        UserModel = get_user_model()
+
+        if role == 'client':
+            if UserModel.objects.filter(username__iexact=email).exists() or UserModel.objects.filter(email__iexact=email).exists():
+                messages.error(request, "Un compte existe déjà avec cet email")
+                return render(request, 'front_web/signup.html')
+
+            u = UserModel.objects.create_user(
+                username=email,
+                email=email,
+                password=password,
+                first_name=first_name,
+                last_name=last_name,
+            )
+            try:
+                if hasattr(u, 'role'):
+                    setattr(u, 'role', 'client')
+                    u.save(update_fields=['role'])
+            except Exception:
+                pass
+
+            phone = request.POST.get('phone') or ''
+            address = request.POST.get('address') or ''
+            city = request.POST.get('city') or ''
+            latitude = request.POST.get('latitude')
+            longitude = request.POST.get('longitude')
+
+            try:
+                latitude = float(latitude) if latitude else None
+                longitude = float(longitude) if longitude else None
+            except (ValueError, TypeError):
+                latitude = longitude = None
+
+            ClientProfile.objects.create(
+                user=u,
+                phone_number=phone,
+                address=address,
+                city=city,
+                latitude=latitude,
+                longitude=longitude,
+            )
+            login(request, u)
+            return redirect('front_web:client_dashboard')
+
+        # Professional application flow
+        phone = request.POST.get('phone') or ''
+        category = request.POST.get('activity_category') or 'other'
+        service_type = request.POST.get('service_type') or 'mobile'
+        address = request.POST.get('address') or ''
+        lat = request.POST.get('latitude') or None
+        lng = request.POST.get('longitude') or None
+        salon_name = request.POST.get('salon_name') or ''
+        spoken_languages = request.POST.getlist('spoken_languages') or ['french']
+        subscription_active = bool(request.POST.get('subscription_active'))
+        # Handle uploaded files
+        profile_photo = None
+        id_document = None
+        
+        # Handle profile photo upload
+        if 'profile_photo' in request.FILES:
+            profile_photo = request.FILES['profile_photo']
+        elif 'profile_photo' in request.POST and request.POST['profile_photo']:
+            # Handle base64 or URL data if needed
+            profile_photo = request.POST['profile_photo']
+        
+        # Handle ID document upload
+        if 'id_document' in request.FILES:
+            id_document = request.FILES['id_document']
+        elif 'id_document' in request.POST and request.POST['id_document']:
+            # Handle base64 or URL data if needed
+            id_document = request.POST['id_document']
+        try:
+            lat = float(lat) if lat else None
+            lng = float(lng) if lng else None
+        except Exception:
+            lat = lng = None
+
+        payload = {
+            'first_name': first_name or email.split('@')[0],
+            'last_name': last_name or '',
+            'email': email,
+            'phone_number': phone,
+            'activity_category': category,
+            'service_type': service_type,
+            'spoken_languages': spoken_languages,
+            'address': address,
+            'latitude': lat,
+            'longitude': lng,
+            'salon_name': salon_name,
+            'subscription_active': subscription_active,
+        }
+        
+        # Add files to payload if they exist
+        if profile_photo:
+            payload['profile_photo'] = profile_photo
+        if id_document:
+            payload['id_document'] = id_document
+        
+        ser = ProfessionalApplicationSerializer(data=payload)
+        if ser.is_valid():
+            # Si un utilisateur existe déjà avec cet e-mail, on bloque pour éviter le conflit serializer côté API mobile
+            if UserModel.objects.filter(email__iexact=email).exists():
+                messages.error(request, "Cet e-mail est déjà associé à un compte. Veuillez utiliser un autre e-mail ou vous connecter.")
+                return render(request, 'front_web/signup.html')
+
+            app = ser.save()
+            try:
+                ProfessionalApplicationAction.objects.create(
+                    application=app, action='submitted', actor=None, notes='Soumission via site web'
+                )
+            except Exception:
+                pass
+            # Créer un compte utilisateur inactif pour futur login après approbation (même logique mobile)
+            base_username = (email.split('@')[0] or 'pro').replace(' ', '_')[:150]
+            username = base_username
+            i = 1
+            while UserModel.objects.filter(username=username).exists():
+                suffix = f"_{i}"
+                username = (base_username[: (150 - len(suffix))] + suffix)
+                i += 1
+            extra_fields = {}
+            if hasattr(UserModel(), 'phone'):
+                extra_fields['phone'] = phone or '00000000'
+            if hasattr(UserModel(), 'role'):
+                extra_fields['role'] = 'professional'
+            if hasattr(UserModel(), 'language'):
+                extra_fields['language'] = 'fr'
+            user_obj = UserModel.objects.create_user(
+                username=username, email=email, password=password, **extra_fields
+            )
+            user_obj.first_name = first_name
+            user_obj.last_name = last_name
+            user_obj.is_active = False
+            try:
+                user_obj.save()
+            except Exception:
+                user_obj.save()
+            messages.info(request, "Votre demande professionnelle a été soumise et est en cours de vérification. Vous serez notifié par e-mail après validation.")
+            return redirect('front_web:home')
         else:
-            UserModel = get_user_model()
-            # Flow CLIENT: créer directement l'utilisateur + profil et rediriger vers dashboard client
-            if role == 'client':
-                if UserModel.objects.filter(username__iexact=email).exists() or UserModel.objects.filter(email__iexact=email).exists():
-                    messages.error(request, "Un compte existe déjà avec cet email")
-                else:
-                    u = UserModel.objects.create_user(
-                        username=email,
-                        email=email,
-                        password=password,
-                        first_name=first_name,
-                        last_name=last_name,
-                    )
-                    try:
-                        if hasattr(u, 'role'):
-                            setattr(u, 'role', 'client')
-                            u.save(update_fields=['role'])
-                    except Exception:
-                        pass
-                    phone = request.POST.get('phone') or ''
-                    address = request.POST.get('address') or ''
-                    city = request.POST.get('city') or ''
-                    latitude = request.POST.get('latitude')
-                    longitude = request.POST.get('longitude')
-                    
-                    # Convert coordinates to float if provided
-                    try:
-                        latitude = float(latitude) if latitude else None
-                        longitude = float(longitude) if longitude else None
-                    except (ValueError, TypeError):
-                        latitude = longitude = None
-                    
-                    ClientProfile.objects.create(
-                        user=u, 
-                        phone_number=phone, 
-                        address=address, 
-                        city=city,
-                        latitude=latitude,
-                        longitude=longitude
-                    )
-                    login(request, u)
-                    return redirect('front_web:client_dashboard')
-            # Flow PROFESSIONNEL: créer une demande (application) et ne pas activer l'utilisateur tant que non approuvé
-            else:
-                phone = request.POST.get('phone') or ''
-                category = request.POST.get('activity_category') or 'other'
-                service_type = request.POST.get('service_type') or 'mobile'
-                address = request.POST.get('address') or ''
-                lat = request.POST.get('latitude') or None
-                lng = request.POST.get('longitude') or None
-                salon_name = request.POST.get('salon_name') or ''
-                spoken_languages = request.POST.getlist('spoken_languages') or ['french']
-                subscription_active = bool(request.POST.get('subscription_active'))
-                # Newly added: uploaded asset URLs
-                profile_photo = request.POST.get('profile_photo') or ''
-                id_document = request.POST.get('id_document') or ''
+            # Afficher les erreurs du serializer
+            err_map = []
+            for k, v in ser.errors.items():
                 try:
-                    lat = float(lat) if lat else None
-                    lng = float(lng) if lng else None
+                    first = v[0]
                 except Exception:
-                    lat = lng = None
-
-                payload = {
-                    'first_name': first_name or email.split('@')[0],
-                    'last_name': last_name or '',
-                    'email': email,
-                    'phone_number': phone,
-                    'activity_category': category,
-                    'service_type': service_type,
-                    'spoken_languages': spoken_languages,
-                    'address': address,
-                    'latitude': lat,
-                    'longitude': lng,
-                    'salon_name': salon_name,
-                    'subscription_active': subscription_active,
-                    'profile_photo': profile_photo,
-                    'id_document': id_document,
-                }
-                ser = ProfessionalApplicationSerializer(data=payload)
-                if ser.is_valid():
-                    # Si un utilisateur existe déjà avec cet e-mail, on bloque pour éviter le conflit serializer côté API mobile
-                    if UserModel.objects.filter(email__iexact=email).exists():
-                        messages.error(request, "Cet e-mail est déjà associé à un compte. Veuillez utiliser un autre e-mail ou vous connecter.")
-                        return render(request, 'front_web/signup.html')
-
-                    app = ser.save()
-                    try:
-                        ProfessionalApplicationAction.objects.create(
-                            application=app, action='submitted', actor=None, notes='Soumission via site web'
-                        )
-                    except Exception:
-                        pass
-                    # Créer un compte utilisateur inactif pour futur login après approbation (même logique mobile)
-                    base_username = (email.split('@')[0] or 'pro').replace(' ', '_')[:150]
-                    username = base_username
-                    i = 1
-                    while UserModel.objects.filter(username=username).exists():
-                        suffix = f"_{i}"
-                        username = (base_username[: (150 - len(suffix))] + suffix)
-                        i += 1
-                    extra_fields = {}
-                    if hasattr(UserModel(), 'phone'):
-                        extra_fields['phone'] = phone or '00000000'
-                    if hasattr(UserModel(), 'role'):
-                        extra_fields['role'] = 'professional'
-                    if hasattr(UserModel(), 'language'):
-                        extra_fields['language'] = 'fr'
-                    user_obj = UserModel.objects.create_user(
-                        username=username, email=email, password=password, **extra_fields
-                    )
-                    user_obj.first_name = first_name
-                    user_obj.last_name = last_name
-                    user_obj.is_active = False
-                    try:
-                        user_obj.save()
-                    except Exception:
-                        user_obj.save()
-                    messages.info(request, "Votre demande professionnelle a été soumise et est en cours de vérification. Vous serez notifié par e-mail après validation.")
-                    return redirect('front_web:home')
-                else:
-                    # Afficher les erreurs du serializer
-                    err_map = []
-                    for k, v in ser.errors.items():
-                        try:
-                            first = v[0]
-                        except Exception:
-                            first = v
-                        err_map.append(f"{k}: {first}")
-                    messages.error(request, " ".join(err_map))
-                    return render(request, 'front_web/signup.html')
+                    first = v
+                err_map.append(f"{k}: {first}")
+            messages.error(request, " ".join(err_map))
+            return render(request, 'front_web/signup.html')
     return render(request, 'front_web/signup.html')
 
 
@@ -280,8 +317,14 @@ def client_dashboard(request: HttpRequest) -> HttpResponse:
 
 
 def logout_view(request: HttpRequest) -> HttpResponse:
-    logout(request)
-    messages.success(request, "Vous avez été déconnecté avec succès.")
+    try:
+        logout(request)
+    finally:
+        try:
+            for _ in messages.get_messages(request):
+                pass
+        except Exception:
+            pass
     return redirect('front_web:home')
 
 
@@ -289,14 +332,642 @@ def professional_detail(request: HttpRequest, pro_id: int) -> HttpResponse:
     """Display professional profile details"""
     try:
         pro = Professional.objects.select_related('user').prefetch_related('extra').get(id=pro_id)
+        
+        # Prepare services as a list of dictionaries
+        services_list = []
+        if pro.extra and pro.extra.services:
+            if isinstance(pro.extra.services, list):
+                # If it's already a list, process each item
+                for service in pro.extra.services:
+                    if service:
+                        if isinstance(service, dict):
+                            # If it's a dict, extract name, price, duration
+                            service_name = service.get('Name', service.get('name', str(service)))
+                            service_price = service.get('Price', service.get('price', 50))
+                            service_duration = service.get('Duration_Min', service.get('duration', 30))
+                            services_list.append({
+                                'name': str(service_name).strip(),
+                                'price': float(service_price) if service_price else 50,
+                                'duration': int(service_duration) if service_duration else 30
+                            })
+                        else:
+                            # If it's a string, treat as service name
+                            services_list.append({
+                                'name': str(service).strip(),
+                                'price': 50,  # Default price
+                                'duration': 30  # Default duration
+                            })
+            elif isinstance(pro.extra.services, dict):
+                # If it's a dict, extract values
+                for service in pro.extra.services.values():
+                    if service:
+                        if isinstance(service, dict):
+                            service_name = service.get('Name', service.get('name', str(service)))
+                            service_price = service.get('Price', service.get('price', 50))
+                            service_duration = service.get('Duration_Min', service.get('duration', 30))
+                            services_list.append({
+                                'name': str(service_name).strip(),
+                                'price': float(service_price) if service_price else 50,
+                                'duration': int(service_duration) if service_duration else 30
+                            })
+                        else:
+                            services_list.append({
+                                'name': str(service).strip(),
+                                'price': 50,
+                                'duration': 30
+                            })
+            elif isinstance(pro.extra.services, str):
+                # If it's a string, split it
+                for service in pro.extra.services.split(','):
+                    if service.strip():
+                        services_list.append({
+                            'name': service.strip(),
+                            'price': 50,
+                            'duration': 30
+                        })
+            else:
+                # Fallback: convert to string and split
+                for service in str(pro.extra.services).split(','):
+                    if service.strip():
+                        services_list.append({
+                            'name': service.strip(),
+                            'price': 50,
+                            'duration': 30
+                        })
+
+        # Prepare gallery as a list
+        gallery_list = []
+        if pro.extra and pro.extra.gallery:
+            if isinstance(pro.extra.gallery, list):
+                # If it's already a list, use it directly
+                gallery_list = [str(image).strip() for image in pro.extra.gallery if image and str(image).strip()]
+            elif isinstance(pro.extra.gallery, dict):
+                # If it's a dict, extract values
+                gallery_list = [str(image).strip() for image in pro.extra.gallery.values() if image and str(image).strip()]
+            elif isinstance(pro.extra.gallery, str):
+                # If it's a string, split it
+                gallery_list = [image.strip() for image in pro.extra.gallery.split(',') if image.strip()]
+            else:
+                # Fallback: convert to string and split
+                gallery_list = [str(image).strip() for image in str(pro.extra.gallery).split(',') if str(image).strip()]
+
+        # Prepare working days and hours
+        working_days_list = []
+        working_hours_display = ""
+        if pro.extra and pro.extra.working_days:
+            if isinstance(pro.extra.working_days, list):
+                working_days_list = pro.extra.working_days
+            elif isinstance(pro.extra.working_days, str):
+                working_days_list = [day.strip() for day in pro.extra.working_days.split(',') if day.strip()]
+            else:
+                working_days_list = [str(pro.extra.working_days)]
+
+        if pro.extra and pro.extra.working_hours:
+            if isinstance(pro.extra.working_hours, dict):
+                start_time = pro.extra.working_hours.get('start', '08:00')
+                end_time = pro.extra.working_hours.get('end', '18:00')
+                working_hours_display = f"{start_time} - {end_time}"
+            elif isinstance(pro.extra.working_hours, str):
+                working_hours_display = pro.extra.working_hours
+            else:
+                working_hours_display = str(pro.extra.working_hours)
+        
+        # Get reviews for this professional
+        reviews = Review.objects.filter(
+            professional=pro,
+            is_public=True
+        ).order_by('-created_at')[:10]  # Limit to 10 most recent reviews
+        
+        # Check if current user has already reviewed this professional
+        user_has_reviewed = False
+        if request.user.is_authenticated and hasattr(request.user, 'client_profile'):
+            user_has_reviewed = Review.objects.filter(
+                client=request.user,
+                professional=pro
+            ).exists()
+        
         context = {
             'pro': pro,
             'pro_id': pro_id,
+            'services_list': services_list,
+            'gallery_list': gallery_list,
+            'working_days_list': working_days_list,
+            'working_hours_display': working_hours_display,
+            'reviews': reviews,
+            'user_has_reviewed': user_has_reviewed,
         }
         return render(request, 'front_web/professional_detail.html', context)
     except Professional.DoesNotExist:
         messages.error(request, "Professionnel non trouvé.")
         return redirect('front_web:client_dashboard')
+
+
+@login_required
+def book_appointment(request, pro_id):
+    """Handle appointment booking form submission"""
+    if request.method == 'POST':
+        try:
+            pro = Professional.objects.get(id=pro_id)
+            
+            # Get form data
+            service_name = request.POST.get('service_name', 'Service Général')
+            service_price = float(request.POST.get('service_price', 50))
+            service_duration = int(request.POST.get('service_duration', 60))
+            appointment_date = request.POST.get('appointment_date')
+            appointment_time = request.POST.get('appointment_time')
+            client_notes = request.POST.get('client_notes', '')
+            
+            if not appointment_date or not appointment_time:
+                messages.error(request, 'Veuillez sélectionner une date et une heure.')
+                return redirect('front_web:professional_detail', pro_id=pro_id)
+            
+            # Create datetime objects
+            from datetime import datetime, time
+            appointment_datetime = datetime.combine(
+                datetime.strptime(appointment_date, '%Y-%m-%d').date(),
+                datetime.strptime(appointment_time, '%H:%M').time()
+            )
+            
+            # Calculate end time
+            from datetime import timedelta
+            end_datetime = appointment_datetime + timedelta(minutes=service_duration)
+            
+            # VERIFICATION FINALE: Check if slot is still available (anti-collision)
+            conflicting_appointments = Appointment.objects.filter(
+                professional=pro,
+                start__date=appointment_datetime.date(),
+                status__in=['confirmed', 'pending']
+            ).filter(
+                start__time__lt=end_datetime.time(),
+                end__time__gt=appointment_datetime.time()
+            )
+            
+            if conflicting_appointments.exists():
+                messages.error(request, 'Ce créneau n\'est plus disponible. Veuillez choisir un autre horaire.')
+                return redirect('front_web:book_appointment_page', pro_id=pro_id)
+            
+            # Create appointment
+            # Get client profile
+            client_profile = getattr(request.user, 'client_profile', None)
+            if not client_profile:
+                messages.error(request, 'Profil client requis pour réserver un rendez-vous.')
+                return redirect('front_web:professional_detail', pro_id=pro_id)
+            
+            appointment = Appointment.objects.create(
+                professional=pro,
+                client=client_profile,
+                service_name=service_name,
+                price=service_price,
+                start=appointment_datetime,
+                end=end_datetime,
+                status='pending',
+                notes=client_notes
+            )
+            
+            # Notifications and emails are handled by signals automatically
+            
+            messages.success(request, 'Votre demande de rendez-vous a été envoyée avec succès! Vous recevrez une confirmation par email.')
+            return redirect('front_web:client_appointments')
+            
+        except Professional.DoesNotExist:
+            messages.error(request, 'Professionnel non trouvé.')
+            return redirect('front_web:client_dashboard')
+        except Exception as e:
+            messages.error(request, f'Erreur lors de la réservation: {str(e)}')
+            return redirect('front_web:professional_detail', pro_id=pro_id)
+    
+    return redirect('front_web:professional_detail', pro_id=pro_id)
+
+
+@login_required
+def get_available_slots(request, pro_id):
+    """API endpoint to get available time slots for a specific date"""
+    try:
+        from django.http import JsonResponse
+        from datetime import datetime, timedelta
+        
+        pro = Professional.objects.get(id=pro_id)
+        date_str = request.GET.get('date')
+        
+        if not date_str:
+            return JsonResponse({'error': 'Date parameter required'}, status=400)
+        
+        # Parse the requested date
+        try:
+            requested_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+        except ValueError:
+            return JsonResponse({'error': 'Invalid date format'}, status=400)
+        
+        # Get working hours and days from professional profile
+        if pro.extra:
+            working_hours_dict = pro.extra.working_hours if pro.extra.working_hours else {'start': '09:00', 'end': '18:00'}
+            working_days = pro.extra.working_days if pro.extra.working_days else ['mon', 'tue', 'wed', 'thu', 'fri']
+        else:
+            working_hours_dict = {'start': '09:00', 'end': '18:00'}
+            working_days = ['mon', 'tue', 'wed', 'thu', 'fri']
+        
+        # Check if the requested date is a working day
+        day_of_week = requested_date.weekday()  # 0=Monday, 6=Sunday
+        day_names = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
+        day_name = day_names[day_of_week]
+        
+        if day_name not in working_days:
+            return JsonResponse({'slots': [], 'message': 'Centre fermé ce jour'})
+        
+        # Parse working hours from dict format
+        if isinstance(working_hours_dict, dict):
+            start_time_str = working_hours_dict.get('start', '09:00')
+            end_time_str = working_hours_dict.get('end', '18:00')
+        else:
+            # Fallback for string format "09:00-18:00"
+            start_time_str, end_time_str = str(working_hours_dict).split('-') if '-' in str(working_hours_dict) else ('09:00', '18:00')
+        
+        start_hour = int(start_time_str.split(':')[0])
+        end_hour = int(end_time_str.split(':')[0])
+        
+        # Get existing appointments for this date
+        existing_appointments = Appointment.objects.filter(
+            professional=pro,
+            start__date=requested_date,
+            status__in=['confirmed', 'pending']  # Include pending appointments
+        ).values_list('start__time', 'end__time')
+        
+        # Generate available slots
+        available_slots = []
+        for hour in range(start_hour, end_hour):
+            slot_start = f"{hour:02d}:00"
+            slot_end = f"{hour + 1:02d}:00"
+            
+            # Check if this slot conflicts with existing appointments
+            is_available = True
+            for appt_start, appt_end in existing_appointments:
+                appt_start_hour = appt_start.hour
+                appt_end_hour = appt_end.hour
+                
+                # Check for overlap
+                if hour >= appt_start_hour and hour < appt_end_hour:
+                    is_available = False
+                    break
+            
+            if is_available:
+                available_slots.append({
+                    'time': slot_start,
+                    'end_time': slot_end,
+                    'available': True
+                })
+        
+        return JsonResponse({
+            'slots': available_slots,
+            'date': date_str,
+            'working_hours': f"{start_time_str}-{end_time_str}",
+            'working_days': working_days
+        })
+        
+    except Professional.DoesNotExist:
+        return JsonResponse({'error': 'Professionnel non trouvé'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+def book_appointment_page(request, pro_id):
+    """Display booking page with agenda view"""
+    try:
+        pro = Professional.objects.select_related('user').prefetch_related('extra').get(id=pro_id)
+        
+        # Prepare services as a list
+        services_list = []
+        if pro.extra and pro.extra.services:
+            if isinstance(pro.extra.services, list):
+                for service in pro.extra.services:
+                    if isinstance(service, dict):
+                        services_list.append({
+                            'name': str(service.get('Name', service.get('name', str(service)))).strip(),
+                            'price': float(service.get('Price', service.get('price', 50))) if service.get('Price', service.get('price')) else 50,
+                            'duration': int(service.get('Duration_Min', service.get('duration', 30))) if service.get('Duration_Min', service.get('duration')) else 30
+                        })
+                    else:
+                        services_list.append({
+                            'name': str(service).strip(),
+                            'price': 50,
+                            'duration': 30
+                        })
+            elif isinstance(pro.extra.services, str):
+                for service in pro.extra.services.split(','):
+                    if service.strip():
+                        services_list.append({
+                            'name': service.strip(),
+                            'price': 50,
+                            'duration': 30
+                        })
+        
+        if not services_list:
+            services_list = [{'name': 'Service Général', 'price': 50, 'duration': 60}]
+        
+        # Get working hours and days from professional profile
+        if pro.extra:
+            working_hours_dict = pro.extra.working_hours if pro.extra.working_hours else {'start': '09:00', 'end': '18:00'}
+            working_days = pro.extra.working_days if pro.extra.working_days else ['mon', 'tue', 'wed', 'thu', 'fri']
+        else:
+            working_hours_dict = {'start': '09:00', 'end': '18:00'}
+            working_days = ['mon', 'tue', 'wed', 'thu', 'fri']
+        
+        # Convert working hours to string format for template compatibility
+        if isinstance(working_hours_dict, dict):
+            working_hours = f"{working_hours_dict.get('start', '09:00')}-{working_hours_dict.get('end', '18:00')}"
+        else:
+            working_hours = str(working_hours_dict) if working_hours_dict else "09:00-18:00"
+        
+        context = {
+            'pro': pro,
+            'pro_id': pro_id,
+            'services_list': services_list,
+            'working_hours': working_hours,
+            'working_days': working_days,
+        }
+        
+        return render(request, 'front_web/book_appointment.html', context)
+        
+    except Professional.DoesNotExist:
+        messages.error(request, 'Professionnel non trouvé.')
+        return redirect('front_web:client_dashboard')
+
+
+@login_required
+def create_review(request: HttpRequest, pro_id: int) -> HttpResponse:
+    """Afficher le formulaire de création d'avis"""
+    try:
+        pro = Professional.objects.select_related('user').prefetch_related('extra').get(id=pro_id)
+        
+        # Vérifier que l'utilisateur a un profil client
+        if not hasattr(request.user, 'client_profile'):
+            messages.error(request, "Seuls les clients peuvent donner des avis.")
+            return redirect('client_dashboard')
+        
+        # Vérifier s'il y a déjà un avis
+        existing_review = Review.objects.filter(client=request.user, professional=pro).first()
+        
+        context = {
+            'pro': pro,
+            'pro_id': pro_id,
+            'existing_review': existing_review,
+        }
+        return render(request, 'front_web/create_review.html', context)
+        
+    except Professional.DoesNotExist:
+        messages.error(request, "Professionnel non trouvé.")
+        return redirect('client_dashboard')
+    except Exception as e:
+        messages.error(request, f"Une erreur est survenue: {str(e)}")
+        return redirect('client_dashboard')
+
+
+@login_required
+def pro_reviews_management(request: HttpRequest) -> HttpResponse:
+    """Gestion des avis pour les professionnelles"""
+    try:
+        # Vérifier que l'utilisateur est une professionnelle
+        try:
+            pro = Professional.objects.get(user=request.user)
+            extra = pro.extra
+        except Professional.DoesNotExist:
+            messages.error(request, 'Vous devez être une professionnelle pour accéder à cette page.')
+            return redirect('front_web:pro_dashboard')
+        
+        # Récupérer les paramètres de filtrage
+        search_query = request.GET.get('search', '')
+        rating_filter = request.GET.get('rating', '')
+        status_filter = request.GET.get('status', '')
+        sort_by = request.GET.get('sort', 'newest')
+        
+        # Construire la requête de base
+        reviews = Review.objects.filter(professional=pro).select_related('client', 'professional')
+        
+        # Appliquer les filtres
+        if search_query:
+            reviews = reviews.filter(
+                Q(comment__icontains=search_query) |
+                Q(client__first_name__icontains=search_query) |
+                Q(client__last_name__icontains=search_query)
+            )
+        
+        if rating_filter:
+            reviews = reviews.filter(rating=rating_filter)
+        
+        if status_filter == 'verified':
+            reviews = reviews.filter(is_verified=True)
+        elif status_filter == 'unverified':
+            reviews = reviews.filter(is_verified=False)
+        elif status_filter == 'public':
+            reviews = reviews.filter(is_public=True)
+        elif status_filter == 'private':
+            reviews = reviews.filter(is_public=False)
+        
+        # Appliquer le tri
+        if sort_by == 'newest':
+            reviews = reviews.order_by('-created_at')
+        elif sort_by == 'oldest':
+            reviews = reviews.order_by('created_at')
+        elif sort_by == 'rating_high':
+            reviews = reviews.order_by('-rating', '-created_at')
+        elif sort_by == 'rating_low':
+            reviews = reviews.order_by('rating', '-created_at')
+        
+        # Pagination
+        paginator = Paginator(reviews, 10)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        
+        # Statistiques
+        total_reviews = reviews.count()
+        verified_reviews = reviews.filter(is_verified=True).count()
+        public_reviews = reviews.filter(is_public=True).count()
+        avg_rating = reviews.aggregate(avg_rating=Avg('rating'))['avg_rating'] or 0
+        
+        # Distribution des notes avec pourcentages
+        rating_distribution = {}
+        for i in range(1, 6):
+            count = reviews.filter(rating=i).count()
+            percentage = (count * 100 / total_reviews) if total_reviews > 0 else 0
+            rating_distribution[i] = {
+                'count': count,
+                'percentage': round(percentage, 1)
+            }
+        
+        # Choix pour les filtres
+        rating_choices = [
+            ('', 'Toutes les notes'),
+            ('5', '5 étoiles'),
+            ('4', '4 étoiles'),
+            ('3', '3 étoiles'),
+            ('2', '2 étoiles'),
+            ('1', '1 étoile'),
+        ]
+        
+        status_choices = [
+            ('', 'Tous les statuts'),
+            ('verified', 'Vérifiés'),
+            ('unverified', 'Non vérifiés'),
+            ('public', 'Publics'),
+            ('private', 'Privés'),
+        ]
+        
+        sort_choices = [
+            ('newest', 'Plus récents'),
+            ('oldest', 'Plus anciens'),
+            ('rating_high', 'Note élevée'),
+            ('rating_low', 'Note faible'),
+        ]
+        
+        context = {
+            'pro': pro,
+            'extra': extra,
+            'page_obj': page_obj,
+            'reviews': page_obj.object_list,
+            'search_query': search_query,
+            'rating_filter': rating_filter,
+            'status_filter': status_filter,
+            'sort_by': sort_by,
+            'rating_choices': rating_choices,
+            'status_choices': status_choices,
+            'sort_choices': sort_choices,
+            'statistics': {
+                'total_reviews': total_reviews,
+                'verified_reviews': verified_reviews,
+                'public_reviews': public_reviews,
+                'avg_rating': round(avg_rating, 1),
+                'rating_distribution': rating_distribution,
+            }
+        }
+        
+        return render(request, 'front_web/pro_reviews_management.html', context)
+        
+    except Professional.DoesNotExist:
+        messages.error(request, 'Vous devez être une professionnelle pour accéder à cette page.')
+        return redirect('client_dashboard')
+    except Exception as e:
+        messages.error(request, f'Une erreur est survenue: {str(e)}')
+        return redirect('front_web:pro_dashboard')
+
+
+@login_required
+@require_POST
+def pro_review_response(request: HttpRequest, review_id: int) -> HttpResponse:
+    """Permettre aux professionnelles de répondre aux avis"""
+    try:
+        pro = Professional.objects.get(user=request.user)
+        review = Review.objects.get(id=review_id, professional=pro)
+        
+        response_text = request.POST.get('response_text', '').strip()
+        
+        if not response_text:
+            return JsonResponse({'success': False, 'message': 'Le texte de réponse ne peut pas être vide.'})
+        
+        # Ajouter la réponse à l'avis (nous devons d'abord ajouter ce champ au modèle)
+        # Pour l'instant, nous allons stocker dans un champ JSON
+        if not hasattr(review, 'professional_response'):
+            # Si le champ n'existe pas encore, nous allons l'ajouter via une migration
+            pass
+        
+        # Mettre à jour l'avis avec la réponse
+        review.professional_response = response_text
+        review.professional_response_date = timezone.now()
+        review.save()
+        
+        return JsonResponse({
+            'success': True, 
+            'message': 'Réponse ajoutée avec succès!',
+            'response_text': response_text,
+            'response_date': review.professional_response_date.strftime('%d %b %Y à %H:%M')
+        })
+        
+    except Professional.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Accès non autorisé.'})
+    except Review.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Avis non trouvé.'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': f'Erreur: {str(e)}'})
+
+
+@login_required
+@require_POST
+def pro_toggle_review_visibility(request: HttpRequest, review_id: int) -> HttpResponse:
+    """Permettre aux professionnelles de basculer la visibilité de leurs avis"""
+    try:
+        pro = Professional.objects.get(user=request.user)
+        review = Review.objects.get(id=review_id, professional=pro)
+        
+        # Basculer la visibilité
+        review.is_public = not review.is_public
+        review.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Avis {"publié" if review.is_public else "masqué"} avec succès!',
+            'is_public': review.is_public
+        })
+        
+    except Professional.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Accès non autorisé.'})
+    except Review.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Avis non trouvé.'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': f'Erreur: {str(e)}'})
+
+
+@login_required
+@require_POST
+def submit_review(request: HttpRequest, pro_id: int) -> HttpResponse:
+    """Soumettre un avis"""
+    try:
+        pro = Professional.objects.get(id=pro_id)
+        
+        # Vérifier que l'utilisateur a un profil client
+        if not hasattr(request.user, 'client_profile'):
+            messages.error(request, "Seuls les clients peuvent donner des avis.")
+            return redirect('front_web:client_dashboard')
+        
+        rating = int(request.POST.get('rating', 0))
+        comment = request.POST.get('comment', '').strip()
+        
+        if not (1 <= rating <= 5):
+            messages.error(request, "Veuillez sélectionner une note entre 1 et 5 étoiles.")
+            return redirect('front_web:create_review', pro_id=pro_id)
+        
+        # Vérifier s'il y a déjà un avis
+        existing_review = Review.objects.filter(client=request.user, professional=pro).first()
+        
+        if existing_review:
+            # Mettre à jour l'avis existant
+            existing_review.rating = rating
+            existing_review.comment = comment
+            existing_review.save()
+            messages.success(request, "Votre avis a été mis à jour avec succès.")
+        else:
+            # Créer un nouvel avis
+            Review.objects.create(
+                client=request.user,
+                professional=pro,
+                rating=rating,
+                comment=comment
+            )
+            messages.success(request, "Votre avis a été enregistré avec succès.")
+        
+        # Mettre à jour les statistiques du professionnel
+        from reviews.views import update_professional_rating
+        update_professional_rating(pro)
+        
+        return redirect('front_web:professional_detail', pro_id=pro_id)
+        
+    except Professional.DoesNotExist:
+        messages.error(request, "Professionnel non trouvé.")
+        return redirect('front_web:client_dashboard')
+    except ValueError:
+        messages.error(request, "Note invalide.")
+        return redirect('front_web:create_review', pro_id=pro_id)
+    except Exception as e:
+        messages.error(request, f"Erreur lors de l'enregistrement de l'avis: {str(e)}")
+        return redirect('front_web:create_review', pro_id=pro_id)
 
 
 @login_required
@@ -311,8 +982,31 @@ def pro_dashboard(request: HttpRequest) -> HttpResponse:
             _ = pro.extra
         except ProfessionalProfileExtra.DoesNotExist:
             return redirect('front_web:pro_onboarding')
-        # Pass full pro object for template parity with admin view
-        return render(request, 'front_web/pro_dashboard.html', { 'pro': pro, 'pro_id': pro.id })
+        
+        # Récupérer les statistiques de rendez-vous pour l'analytique
+        total_appointments = Appointment.objects.filter(professional=pro).count()
+        pending_appointments = Appointment.objects.filter(professional=pro, status='pending').count()
+        confirmed_appointments = Appointment.objects.filter(professional=pro, status='confirmed').count()
+        completed_appointments = Appointment.objects.filter(professional=pro, status='completed').count()
+        
+        # Revenus total (confirmés + complétés)
+        from django.db.models import Sum
+        total_revenue = Appointment.objects.filter(
+            professional=pro, 
+            status__in=['confirmed', 'completed']
+        ).aggregate(total=Sum('price'))['total'] or 0
+        
+        context = { 
+            'pro': pro, 
+            'pro_id': pro.id,
+            'total_appointments': total_appointments,
+            'pending_appointments': pending_appointments,
+            'confirmed_appointments': confirmed_appointments,
+            'completed_appointments': completed_appointments,
+            'total_revenue': float(total_revenue),
+        }
+        
+        return render(request, 'front_web/pro_dashboard.html', context)
     except Exception:
         return redirect('front_web:home')
 
@@ -477,28 +1171,128 @@ def booking_page(request: HttpRequest) -> HttpResponse:
 @login_required
 def client_appointments(request):
     """Page des rendez-vous du client"""
-    try:
-        # Récupérer les rendez-vous du client
-        client_profile = getattr(request.user, 'client_profile', None)
-        if not client_profile:
-            messages.error(request, "Profil client non trouvé.")
+    # Récupérer les rendez-vous du client
+    client_profile = getattr(request.user, 'client_profile', None)
+    if not client_profile:
+        try:
+            from users.models import Client as ClientModel
+            client_profile, _ = ClientModel.objects.get_or_create(
+                user=request.user,
+                defaults={'phone_number': '', 'address': '', 'city': ''}
+            )
+        except Exception as e:
+            messages.error(request, f"Erreur lors de la création du profil client: {str(e)}")
             return redirect('front_web:client_dashboard')
+
+    appts_qs = (
+        Appointment.objects.select_related('professional__user')
+        .filter(client=client_profile)
+        .order_by('-start')[:200]
+    ) if client_profile else []
+
+    pending, confirmed, cancelled = [], [], []
+    from urllib.parse import quote_plus
+    
+    for a in appts_qs:
+        # Récupération complète des informations professionnel
+        pro_info = {
+            'center_name': 'Centre',
+            'professional_name': 'Professionnel',
+            'first_name': '',
+            'last_name': '',
+            'email': '',
+            'phone': '',
+            'address': '',
+            'business_name': '',
+            'latitude': None,
+            'longitude': None,
+        }
         
-        # TODO: Récupérer les rendez-vous depuis la base de données
-        appointments = []  # Placeholder pour les rendez-vous
+        try:
+            if a.professional and a.professional.user:
+                user = a.professional.user
+                pro_info.update({
+                    'first_name': user.first_name or '',
+                    'last_name': user.last_name or '',
+                    'email': user.email or '',
+                    'professional_name': user.get_full_name() or f"{user.first_name} {user.last_name}".strip() or user.username,
+                    'business_name': a.professional.business_name or '',
+                })
+                
+                # Le nom du centre est soit business_name soit le nom du professionnel
+                pro_info['center_name'] = a.professional.business_name or pro_info['professional_name']
+                
+                # Récupérer infos supplémentaires depuis ProfessionalProfileExtra
+                if hasattr(a.professional, 'extra') and a.professional.extra:
+                    extra = a.professional.extra
+                    if hasattr(extra, 'phone_number') and extra.phone_number:
+                        pro_info['phone'] = extra.phone_number
+                    if hasattr(extra, 'address') and extra.address:
+                        pro_info['address'] = extra.address
+                    if hasattr(extra, 'latitude') and extra.latitude is not None:
+                        pro_info['latitude'] = extra.latitude
+                    if hasattr(extra, 'longitude') and extra.longitude is not None:
+                        pro_info['longitude'] = extra.longitude
+        except Exception:
+            # En cas d'erreur, garder les valeurs par défaut et continuer
+            pass
         
-        return render(request, 'front_web/client_appointments.html', {
-            'appointments': appointments,
-            'client_profile': client_profile
-        })
-    except Exception as e:
-        messages.error(request, f"Erreur lors du chargement des rendez-vous: {str(e)}")
-        return redirect('front_web:client_dashboard')
+        # Construire l'URL Google Maps
+        map_url = ''
+        try:
+            if pro_info.get('latitude') is not None and pro_info.get('longitude') is not None:
+                map_url = f"https://www.google.com/maps?q={pro_info['latitude']},{pro_info['longitude']}"
+            elif pro_info.get('address'):
+                map_url = f"https://www.google.com/maps/search/?api=1&query={quote_plus(pro_info['address'])}"
+        except Exception:
+            # En cas d'erreur avec l'URL, continuer sans map_url
+            pass
+        
+        try:
+            row = {
+                'id': a.id,
+                'service_name': a.service_name,
+                'price': float(a.price or 0),
+                'start': a.start,
+                'end': a.end,
+                'status': a.status,
+                'center_name': pro_info['center_name'],
+                'professional_name': pro_info['professional_name'],
+                'professional_first_name': pro_info['first_name'],
+                'professional_last_name': pro_info['last_name'],
+                'professional_email': pro_info['email'],
+                'professional_phone': pro_info['phone'],
+                'professional_address': pro_info['address'],
+                'business_name': pro_info['business_name'],
+                'map_url': map_url,
+                'notes': a.notes or '',
+            }
+            
+            if a.status == 'confirmed':
+                confirmed.append(row)
+            elif a.status == 'pending':
+                pending.append(row)
+            else:
+                cancelled.append(row)
+        except Exception:
+            # En cas d'erreur lors de la création du row, continuer avec le prochain rendez-vous
+            continue
+
+    return render(request, 'front_web/client_appointments.html', {
+        'pending': pending,
+        'confirmed': confirmed,
+        'cancelled': cancelled,
+        'client_profile': client_profile,
+        'total_count': len(pending) + len(confirmed) + len(cancelled),
+        'confirmed_count': len(confirmed),
+        'pending_count': len(pending),
+        'cancelled_count': len(cancelled),
+    })
 
 
 @login_required
 def client_calendar(request):
-    """Page calendrier du client"""
+    """Page calendrier du client - N'affiche que les rendez-vous CONFIRMÉS"""
     try:
         # Récupérer le profil client
         client_profile = getattr(request.user, 'client_profile', None)
@@ -506,14 +1300,130 @@ def client_calendar(request):
             messages.error(request, "Profil client non trouvé.")
             return redirect('front_web:client_dashboard')
         
-        # TODO: Récupérer les rendez-vous pour le calendrier
-        appointments = []  # Placeholder pour les rendez-vous
+        # Récupérer UNIQUEMENT les rendez-vous confirmés pour le calendrier
+        confirmed_appointments = Appointment.objects.select_related('professional__user').filter(
+            client=client_profile,
+            status='confirmed'  # IMPORTANT: Seulement les RDV acceptés par le professionnel
+        ).order_by('start')
+        
+        # Préparer les données pour le calendrier
+        calendar_events = []
+        for appt in confirmed_appointments:
+            try:
+                center_name = appt.professional.business_name or appt.professional.user.get_full_name()
+            except Exception:
+                center_name = "Centre"
+            
+            calendar_events.append({
+                'id': appt.id,
+                'title': f"{appt.service_name}",
+                'start': appt.start.isoformat(),
+                'end': appt.end.isoformat(),
+                'center_name': center_name,
+                'price': float(appt.price or 0),
+                'status': appt.status,
+                'professional_name': appt.professional.user.get_full_name(),
+                'notes': appt.notes or '',
+            })
+        
+        # Statistiques pour le client
+        total_confirmed = confirmed_appointments.count()
+        total_pending = Appointment.objects.filter(client=client_profile, status='pending').count()
+        total_spent = sum(float(appt.price or 0) for appt in confirmed_appointments)
         
         return render(request, 'front_web/client_calendar.html', {
-            'appointments': appointments,
-            'client_profile': client_profile
+            'appointments': calendar_events,
+            'client_profile': client_profile,
+            'total_confirmed': total_confirmed,
+            'total_pending': total_pending,
+            'total_spent': total_spent,
         })
     except Exception as e:
         messages.error(request, f"Erreur lors du chargement du calendrier: {str(e)}")
         return redirect('front_web:client_dashboard')
+
+
+@login_required
+def pro_appointments(request: HttpRequest) -> HttpResponse:
+    """Liste des demandes et rendez-vous confirmés pour la professionnelle avec notifications."""
+    try:
+        try:
+            pro = request.user.professional_profile
+        except AttributeError:
+            messages.error(request, "Vous devez être une professionnelle.")
+            return redirect('front_web:home')
+
+        appts = (
+            Appointment.objects.select_related('client__user')
+            .filter(professional=pro)
+            .order_by('-start')[:300]
+        )
+        pending, confirmed = [], []
+        for a in appts:
+            # Récupération complète des informations client
+            client_info = {
+                'name': 'Client',
+                'first_name': '',
+                'last_name': '',
+                'email': '',
+                'phone': '',
+                'full_name': 'Client'
+            }
+            
+            try:
+                if a.client and a.client.user:
+                    user = a.client.user
+                    client_info.update({
+                        'first_name': user.first_name or '',
+                        'last_name': user.last_name or '',
+                        'email': user.email or '',
+                        'full_name': user.get_full_name() or f"{user.first_name} {user.last_name}".strip() or user.username,
+                    })
+                    
+                    # Récupérer le téléphone depuis le profil client
+                    if hasattr(a.client, 'phone_number') and a.client.phone_number:
+                        client_info['phone'] = a.client.phone_number
+                        
+            except Exception as e:
+                pass  # Garder les valeurs par défaut
+            
+            row = {
+                'id': a.id,
+                'service_name': a.service_name,
+                'price': float(a.price or 0),
+                'start': a.start,
+                'end': a.end,
+                'status': a.status,
+                'client_name': client_info['full_name'],
+                'client_first_name': client_info['first_name'],
+                'client_last_name': client_info['last_name'],
+                'client_email': client_info['email'],
+                'client_phone': client_info['phone'],
+                'notes': a.notes or '',
+            }
+            if a.status == 'pending':
+                pending.append(row)
+            elif a.status == 'confirmed':
+                confirmed.append(row)
+
+        # Get recent notifications
+        from appointments.models import Notification
+        recent_notifications = Notification.objects.filter(
+            professional=pro
+        ).order_by('-created_at')[:15]
+        
+        # Count unread notifications
+        unread_count = Notification.objects.filter(professional=pro, is_read=False).count()
+
+        context = {
+            'pending': pending,
+            'confirmed': confirmed,
+            'pro': pro,
+            'recent_notifications': recent_notifications,
+            'unread_count': unread_count,
+        }
+        return render(request, 'front_web/pro_appointments.html', context)
+    except Exception as e:
+        messages.error(request, f"Erreur: {str(e)}")
+        return redirect('front_web:pro_dashboard')
 

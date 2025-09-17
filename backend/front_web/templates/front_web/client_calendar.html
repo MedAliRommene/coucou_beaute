@@ -136,6 +136,36 @@
 
         <!-- Panneau latéral -->
         <div class="space-y-6">
+            <!-- Statistiques -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Mes statistiques</h3>
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="check-circle" class="w-4 h-4 text-green-500"></i>
+                            <span class="text-sm text-gray-600">RDV confirmés</span>
+                        </div>
+                        <span class="font-semibold text-green-600">{{ total_confirmed }}</span>
+                    </div>
+                    {% if total_pending > 0 %}
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="clock" class="w-4 h-4 text-yellow-500"></i>
+                            <span class="text-sm text-gray-600">En attente</span>
+                        </div>
+                        <span class="font-semibold text-yellow-600">{{ total_pending }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="banknote" class="w-4 h-4 text-blue-500"></i>
+                            <span class="text-sm text-gray-600">Total dépensé</span>
+                        </div>
+                        <span class="font-semibold text-blue-600">{{ total_spent }} DT</span>
+                    </div>
+                </div>
+            </div>
+
             <!-- Rendez-vous du jour sélectionné -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Rendez-vous du jour</h3>
@@ -187,42 +217,27 @@
 </div>
 
 <script>
-    // Données des rendez-vous (à remplacer par des données réelles)
-    const appointments = {
-        '2024-01-15': [
-            {
-                id: 1,
-                time: '14:30',
-                duration: '1h30',
-                professional: 'Sarah Martinez',
-                service: 'Coiffure et maquillage',
-                price: '120 DT',
-                status: 'confirmed'
-            }
-        ],
-        '2024-01-18': [
-            {
-                id: 2,
-                time: '10:00',
-                duration: '1h30',
-                professional: 'Marie Dubois',
-                service: 'Manucure et soins',
-                price: '80 DT',
-                status: 'confirmed'
-            }
-        ],
-        '2024-01-22': [
-            {
-                id: 3,
-                time: '16:00',
-                duration: '2h',
-                professional: 'Sophie Laurent',
-                service: 'Soins du visage',
-                price: '150 DT',
-                status: 'pending'
-            }
-        ]
-    };
+    // Données des rendez-vous confirmés depuis le backend
+    const appointments = {};
+
+    // Charger les rendez-vous confirmés depuis Django
+    {% for appointment in appointments %}
+    const appointmentDate = '{{ appointment.start|date:"Y-m-d" }}';
+    if (!appointments[appointmentDate]) {
+        appointments[appointmentDate] = [];
+    }
+    appointments[appointmentDate].push({
+        id: {{ appointment.id }},
+        time: '{{ appointment.start|date:"H:i" }}',
+        duration: '{{ appointment.start|timesince:appointment.end }}',
+        professional: '{{ appointment.professional_name|escapejs }}',
+        service: '{{ appointment.title|escapejs }}',
+        price: '{{ appointment.price }} DT',
+        status: '{{ appointment.status }}',
+        center_name: '{{ appointment.center_name|escapejs }}',
+        notes: '{{ appointment.notes|escapejs }}'
+    });
+    {% endfor %}
 
     let currentDate = new Date();
     let selectedDate = null;

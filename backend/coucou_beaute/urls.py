@@ -15,6 +15,7 @@ urlpatterns = [
     # API
     path('api/', include('users.urls')),
     path('api/appointments/', include('appointments.urls', namespace='appointments')),
+    path('api/reviews/', include('reviews.urls', namespace='reviews')),
 ]
 
 if settings.DEBUG:
