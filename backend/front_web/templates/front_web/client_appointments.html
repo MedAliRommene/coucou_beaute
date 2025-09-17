@@ -308,17 +308,17 @@
                             </div>
                             <p class="text-gray-600 mb-3">{{ a.center_name }}</p>
                             <div class="flex items-center gap-6 text-sm">
-                                <div class="appointment-time"><i data-lucide="calendar" class="w-4 h-4 mr-1"></i>{{
-                                    a.start|date:"d/m/Y" }}</div>
-                                <div class="appointment-time"><i data-lucide="clock" class="w-4 h-4 mr-1"></i>{{
-                                    a.start|date:"H:i" }} - {{ a.end|date:"H:i" }}</div>
-                                <div class="appointment-price"><i data-lucide="banknote" class="w-4 h-4 mr-1"></i>{{
-                                    a.price }} DT</div>
+                                <div class="appointment-time"><i data-lucide="calendar" class="w-4 h-4 mr-1"></i>
+                                    {{ a.start|date:"d/m/Y" }}</div>
+                                <div class="appointment-time"><i data-lucide="clock" class="w-4 h-4 mr-1"></i>
+                                    {{ a.start|date:"H:i" }} </div>
+                                <div class="appointment-price"><i data-lucide="banknote" class="w-4 h-4 mr-1"></i>
+                                    {{a.price }} DT</div>
                             </div>
                         </div>
                     </div>
-                    {% if a.professional_email or a.professional_phone or a.professional_address or a.business_name or
-                    a.map_url %}
+                    {% if a.professional_email or a.professional_phone or a.professional_address or a.business_name or a.map_url %}
+                    
 
                     <div class="professional-info ml-4">
                         <div class="flex items-center gap-2 mb-2"><i data-lucide="user-check"
@@ -360,12 +360,12 @@
                             </div>
                             <p class="text-gray-600 mb-3">{{ a.center_name }}</p>
                             <div class="flex items-center gap-6 text-sm">
-                                <div class="appointment-time"><i data-lucide="calendar" class="w-4 h-4 mr-1"></i>{{
-                                    a.start|date:"d/m/Y" }}</div>
-                                <div class="appointment-time"><i data-lucide="clock" class="w-4 h-4 mr-1"></i>{{
-                                    a.start|date:"H:i" }} - {{ a.end|date:"H:i" }}</div>
-                                <div class="appointment-price"><i data-lucide="banknote" class="w-4 h-4 mr-1"></i>{{
-                                    a.price }} DT</div>
+                                <div class="appointment-time"><i data-lucide="calendar" class="w-4 h-4 mr-1"></i>
+                                    {{a.start|date:"d/m/Y" }}</div>
+                                <div class="appointment-time"><i data-lucide="clock" class="w-4 h-4 mr-1"></i>
+                                    {{ a.start|date:"H:i" }} </div>
+                                <div class="appointment-price"><i data-lucide="banknote" class="w-4 h-4 mr-1"></i>
+                                    {{a.price }} DT</div>
                             </div>
                         </div>
                     </div>
@@ -392,12 +392,12 @@
                             </div>
                             <p class="text-gray-600 mb-3">{{ a.center_name }}</p>
                             <div class="flex items-center gap-6 text-sm">
-                                <div class="appointment-time"><i data-lucide="calendar" class="w-4 h-4 mr-1"></i>{{
-                                    a.start|date:"d/m/Y" }}</div>
-                                <div class="appointment-time"><i data-lucide="clock" class="w-4 h-4 mr-1"></i>{{
-                                    a.start|date:"H:i" }} - {{ a.end|date:"H:i" }}</div>
-                                <div class="appointment-price"><i data-lucide="banknote" class="w-4 h-4 mr-1"></i>{{
-                                    a.price }} DT</div>
+                                <div class="appointment-time"><i data-lucide="calendar" class="w-4 h-4 mr-1"></i>
+                                    {{a.start|date:"d/m/Y" }}</div>
+                                <div class="appointment-time"><i data-lucide="clock" class="w-4 h-4 mr-1"></i>
+                                    {{ a.start|date:"H:i" }} - {{ a.end|date:"H:i" }}</div>
+                                <div class="appointment-price"><i data-lucide="banknote" class="w-4 h-4 mr-1"></i>
+                                    {{ a.price }} DT</div>
                             </div>
                         </div>
                     </div>
