@@ -506,14 +506,6 @@
             </div>
         </div>
 
-        <!-- Debug Info (only in development) -->
-        <div id="debugInfo" class="glass rounded-2xl p-6 mb-8 hidden">
-            <div class="flex items-center gap-3 mb-4">
-                <i data-lucide="bug" class="w-5 h-5 text-rosePastel"></i>
-                <h4 class="font-semibold text-gray-900">Informations de Debug</h4>
-            </div>
-            <div id="debugContent" class="text-sm text-gray-600 bg-gray-50 rounded-xl p-4"></div>
-        </div>
     </div>
 
     <!-- Floating Action Button -->
@@ -644,19 +636,6 @@
             // Afficher les statistiques dans la console
             if (data.debug) {
                 console.log(`📊 Statistiques: ${data.debug.with_coordinates || 0} professionnels avec coordonnées sur ${data.debug.total_professionals || 0} total`);
-
-                // Afficher les infos de debug dans l'interface
-                const debugInfo = document.getElementById('debugInfo');
-                const debugContent = document.getElementById('debugContent');
-                if (debugInfo && debugContent) {
-                    debugInfo.classList.remove('hidden');
-                    debugContent.innerHTML = `
-                        <p><strong>Total professionnels:</strong> ${data.debug.total_professionals || 0}</p>
-                        <p><strong>Avec coordonnées:</strong> ${data.debug.with_coordinates || 0}</p>
-                        <p><strong>Sans coordonnées:</strong> ${data.debug.without_coordinates || 0}</p>
-                        <p><strong>Retournés par l'API:</strong> ${data.count || 0}</p>
-                    `;
-                }
             }
 
             // Appliquer les filtres côté client
