@@ -19,6 +19,10 @@ from django.core.cache import cache
 from users.serializers import ProfessionalApplicationSerializer
 from django.db.models import Q, Avg, Count
 from django.core.paginator import Paginator
+from django.core.files.base import ContentFile
+from django.core.files import File
+from django.conf import settings
+import base64
 from reviews.views import update_professional_rating
 
 
@@ -1032,6 +1036,7 @@ def pro_onboarding(request: HttpRequest) -> HttpResponse:
             extra_hint = {
                 'bio': e.bio or '',
                 'city': e.city or '',
+                'phone_number': e.phone_number or getattr(pro.user, 'phone', '') or '',
                 'social_instagram': e.social_instagram or '',
                 'social_facebook': e.social_facebook or '',
                 'social_tiktok': e.social_tiktok or '',
@@ -1040,6 +1045,11 @@ def pro_onboarding(request: HttpRequest) -> HttpResponse:
                 'working_hours': e.working_hours or {},
                 'gallery': e.gallery or [],
             }
+            try:
+                if getattr(e, 'profile_photo', None):
+                    extra_hint['profile_photo_url'] = e.profile_photo.url
+            except Exception:
+                pass
         except ProfessionalProfileExtra.DoesNotExist:
             extra_hint = {}
         
@@ -1075,6 +1085,68 @@ def pro_onboarding(request: HttpRequest) -> HttpResponse:
     return render(request, 'front_web/pro_onboarding.html', { 'prefill': json.dumps(prefill) })
 
 
+@login_required
+def pro_profile(request: HttpRequest) -> HttpResponse:
+    """Page profil professionnel (édition après onboarding).
+
+    Réutilise le même préremplissage et le même endpoint de sauvegarde que l'onboarding.
+    """
+    app_hint = None
+    extra_hint = None
+    try:
+        pro = request.user.professional_profile
+        try:
+            e = pro.extra
+            extra_hint = {
+                'bio': e.bio or '',
+                'city': e.city or '',
+                'phone_number': getattr(e, 'phone_number', '') or getattr(pro.user, 'phone', '') or '',
+                'social_instagram': e.social_instagram or '',
+                'social_facebook': e.social_facebook or '',
+                'social_tiktok': e.social_tiktok or '',
+                'services': e.services or [],
+                'working_days': e.working_days or [],
+                'working_hours': e.working_hours or {},
+                'gallery': e.gallery or [],
+            }
+            try:
+                if getattr(e, 'profile_photo', None):
+                    extra_hint['profile_photo_url'] = e.profile_photo.url
+            except Exception:
+                pass
+        except ProfessionalProfileExtra.DoesNotExist:
+            extra_hint = {}
+
+        # Inclure business_name pour préremplir le nom du centre
+        extra_hint['business_name'] = getattr(pro, 'business_name', '') or ''
+
+    except Exception:
+        extra_hint = {}
+
+    try:
+        app = ProfessionalApplication.objects.filter(email__iexact=request.user.email, is_approved=True).order_by('-created_at').first() or \
+              ProfessionalApplication.objects.filter(email__iexact=request.user.email).order_by('-created_at').first()
+        if app:
+            app_hint = {
+                'first_name': app.first_name or '',
+                'last_name': app.last_name or '',
+                'activity_category': app.activity_category or '',
+                'service_type': app.service_type or '',
+                'address': app.address or '',
+                'latitude': app.latitude,
+                'longitude': app.longitude,
+                'email': app.email or '',
+                'phone_number': app.phone_number or '',
+                'salon_name': app.salon_name or '',
+                'profile_photo': app.profile_photo or '',
+                'id_document': app.id_document or '',
+                'created_at': app.created_at.isoformat() if getattr(app, 'created_at', None) else None,
+            }
+    except Exception:
+        app_hint = {}
+
+    prefill = { 'application_hint': app_hint or {}, 'extra': extra_hint or {} }
+    return render(request, 'front_web/profil_professionnelle.html', { 'prefill': json.dumps(prefill) })
 @login_required
 @require_POST
 def save_professional_extras_web(request: HttpRequest) -> HttpResponse:
@@ -1144,6 +1216,36 @@ def save_professional_extras_web(request: HttpRequest) -> HttpResponse:
     extra, _ = ProfessionalProfileExtra.objects.get_or_create(professional=pro)
     extra.bio = clean_str(payload.get('bio') or '', 1000)
     extra.city = clean_str(payload.get('city') or '', 120)
+    # Téléphone: enregistrer sur User et sur Extra (pour compatibilité)
+    phone_raw = clean_str(payload.get('phone') or '', 32)
+    try:
+        if hasattr(pro.user, 'phone'):
+            pro.user.phone = phone_raw
+            pro.user.save(update_fields=['phone'])
+    except Exception:
+        pass
+    extra.phone_number = phone_raw
+    # Nom du centre: enregistrer sur Professional
+    business_raw = clean_str(payload.get('business') or '', 255)
+    try:
+        pro.business_name = business_raw
+        pro.save(update_fields=['business_name'])
+    except Exception:
+        pass
+    # Photo de profil
+    try:
+        photo_src = payload.get('profile_photo') or ''
+        if photo_src:
+            if isinstance(photo_src, str) and photo_src.startswith('data:image'):
+                header, b64data = photo_src.split(',', 1)
+                ext = 'png'
+                if 'jpeg' in header or 'jpg' in header:
+                    ext = 'jpg'
+                content = ContentFile(base64.b64decode(b64data))
+                extra.profile_photo.save(f"professionals/avatars/pro_{pro.id}.{ext}", content, save=False)
+            # else: if it's already a URL in MEDIA, we leave as is (client sends base64 normally)
+    except Exception:
+        pass
     extra.social_instagram = clean_url(payload.get('social_instagram') or '')
     extra.social_facebook = clean_url(payload.get('social_facebook') or '')
     extra.social_tiktok = clean_url(payload.get('social_tiktok') or '')

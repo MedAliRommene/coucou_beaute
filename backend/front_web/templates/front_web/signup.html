@@ -151,6 +151,10 @@
                     <label class="flex items-center gap-2"><input type="radio" name="role" value="professional">
                         Professionnel</label>
                 </div>
+                <div id="proNotice"
+                    class="hidden mt-2 text-sm bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-xl px-3 py-2">
+                    Votre demande professionnelle sera analysée. Vous recevrez un e‑mail lorsqu'elle sera acceptée.
+                </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
                         <label class="block text-sm text-textMuted mb-1">Prénom</label>
@@ -390,6 +394,8 @@
 
             if (profileFile) { profileFile.required = isPro; profileFile.disabled = !isPro; if (!isPro) profileFile.value = ''; }
             if (idDocFile) { idDocFile.required = isPro; idDocFile.disabled = !isPro; if (!isPro) idDocFile.value = ''; }
+            const notice = document.getElementById('proNotice');
+            if (notice) notice.classList.toggle('hidden', !isPro);
         }
 
         document.querySelectorAll('input[name="role"]').forEach(r => r.addEventListener('change', sync));

@@ -15,6 +15,7 @@ urlpatterns = [
     path('pro/appointments/', views.pro_appointments, name='pro_appointments'),
     path('pro/onboarding/', views.pro_onboarding, name='pro_onboarding'),
     path('pro/onboarding/save/', views.save_professional_extras_web, name='pro_onboarding_save'),
+    path('pro/profile/', views.pro_profile, name='pro_profile'),
     path('booking/', views.booking_page, name='booking'),
     path('professional/<int:pro_id>/', views.professional_detail, name='professional_detail'),
     path('professional/<int:pro_id>/book/', views.book_appointment, name='book_appointment'),

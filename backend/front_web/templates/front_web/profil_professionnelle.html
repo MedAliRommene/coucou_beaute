@@ -1,22 +1,23 @@
 {% extends 'front_web/base_prof.html' %}
 {% load static %}
 
-{% block title %}Compléter mon profil - Coucou Beauté{% endblock %}
+{% block title %}Mon profil - Coucou Beauté{% endblock %}
 
 {% block content %}
 <div class="max-w-4xl mx-auto p-6">
     <div class="flex items-center justify-between mb-4">
-        <h1 class="text-2xl font-bold">Compléter mon profil</h1>
-        <div class="text-xs text-gray-500">Vos informations seront visibles par les clients</div>
+        <h1 class="text-2xl font-bold">Mon profil</h1>
+        <div class="text-xs text-gray-500">Modifiez vos informations professionnelles</div>
     </div>
     <div class="mb-6 rounded-2xl border bg-white/70 p-4 flex items-center gap-3">
-        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-100 to-blue-100 flex items-center justify-center"
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-100 to-blue-100 flex items-center justify-center overflow-hidden"
             id="iconWrap">
-            <i data-lucide="sparkles" class="w-6 h-6 text-pink-500"></i>
+            <i data-lucide="user-round" class="w-6 h-6 text-pink-500"></i>
         </div>
         <img id="headAvatar" src="" alt="Profil" class="w-12 h-12 rounded-full object-cover hidden" />
-        <div class="text-sm text-gray-600">Ajoutez une bio, vos réseaux, des photos et vos services pour attirer plus de
-            clients.</div>
+        <div class="text-sm text-gray-600">Mettez à jour votre bio, vos réseaux, vos photos et vos services.</div>
+        <button id="btnPickPhoto" class="ml-auto btn-secondary-glass text-sm">Changer la photo</button>
+        <input id="filePhoto" type="file" accept="image/*" class="hidden" />
     </div>
 
     <div id="app" class="space-y-4" data-prefill='{{ prefill|default:"{}"|safe }}'>
@@ -51,7 +52,7 @@
                     <option value="massage">Massage</option>
                     <option value="other">Autre</option>
                 </select>
-                <div class="text-xs text-gray-500 mt-1">Préfilié depuis l'inscription, modifiable ici.</div>
+                <div class="text-xs text-gray-500 mt-1">Prérempli depuis vos données, modifiable ici.</div>
             </div>
             <div>
                 <label class="block text-sm text-gray-600 mb-1">Type de service</label>
@@ -161,7 +162,6 @@
             if (extra.social_instagram) document.getElementById('ig').value = extra.social_instagram;
             if (extra.social_facebook) document.getElementById('fb').value = extra.social_facebook;
             if (extra.social_tiktok) document.getElementById('tt').value = extra.social_tiktok;
-            // Prefill working days and hours
             (extra.working_days || []).forEach(code => {
                 const el = document.querySelector('#days input[value="' + code + '"]');
                 if (el) el.checked = true;
@@ -173,14 +173,11 @@
             const gallery = extra.gallery || []; if (gallery.length) { gallery.forEach(url => addThumb(url)); galleryData = gallery.slice(0); }
             const app = (data.application_hint || {});
             if (!document.getElementById('city').value && app.address) document.getElementById('city').value = app.address;
-            if (app.salon_name) document.getElementById('business').value = app.salon_name;
-            if (app.phone_number) document.getElementById('phone').value = app.phone_number;
+            if (!document.getElementById('business').value && app.salon_name) document.getElementById('business').value = app.salon_name;
+            if (!document.getElementById('phone').value && app.phone_number) document.getElementById('phone').value = app.phone_number;
             if (app.email) document.getElementById('email').value = app.email;
-            if (app.profile_photo) {
-                const img = document.getElementById('headAvatar');
-                img.src = app.profile_photo; img.classList.remove('hidden');
-                document.getElementById('iconWrap').classList.add('hidden');
-            }
+            if (extra.profile_photo_url) { const img = document.getElementById('headAvatar'); img.src = extra.profile_photo_url; img.classList.remove('hidden'); document.getElementById('iconWrap').classList.add('hidden'); }
+            else if (app.profile_photo) { const img = document.getElementById('headAvatar'); img.src = app.profile_photo; img.classList.remove('hidden'); document.getElementById('iconWrap').classList.add('hidden'); }
             if (app.activity_category) document.getElementById('activity_category').value = app.activity_category;
             if (app.service_type) document.getElementById('service_type').value = app.service_type;
         } catch (e) { }
@@ -195,9 +192,7 @@
     drop.addEventListener('dragleave', () => drop.classList.remove('bg-blue-50'));
     drop.addEventListener('drop', (e) => { e.preventDefault(); drop.classList.remove('bg-blue-50'); if (e.dataTransfer.files?.length) { handleFiles(e.dataTransfer.files); } });
     gInput.addEventListener('change', (e) => { if (e.target.files?.length) { handleFiles(e.target.files); } });
-    function handleFiles(fileList) {
-        [...fileList].slice(0, 20).forEach(f => toBase64(f).then(b64 => { galleryData.push(b64); addThumb(b64); }));
-    }
+    function handleFiles(fileList) { [...fileList].slice(0, 20).forEach(f => toBase64(f).then(b64 => { galleryData.push(b64); addThumb(b64); })); }
     function addThumb(src) {
         const box = document.createElement('div'); box.className = 'relative';
         box.innerHTML = `<img src="${src}" class="w-24 h-24 object-cover rounded-lg border"/>
@@ -224,12 +219,9 @@
         return bio && days.length && hasService;
     }
 
-    // replace previous validateForm watchers
     document.getElementById('bio').addEventListener('input', validateFormInline);
     document.getElementById('days').addEventListener('click', validateFormInline);
     document.getElementById('services').addEventListener('input', validateFormInline);
-
-    // initial inline state
     validateFormInline();
 
     document.getElementById('save').addEventListener('click', async () => {
@@ -254,101 +246,27 @@
             if (!n.value.trim()) return null;
             return { name: n.value.trim(), duration_min: parseInt(d.value || '0'), price: parseFloat(p.value || '0') };
         }).filter(Boolean);
-        // Simplified Validation: only Bio, Days, Services
         const errors = [];
-        let firstInvalid = null; const setFirst = (el) => { if (!firstInvalid && el) firstInvalid = el; };
-        const markInvalid = (id, bad) => { const el = typeof id === 'string' ? document.getElementById(id) : id; if (!el) return; el.classList.toggle('ring-1', bad); el.classList.toggle('ring-red-300', bad); el.classList.toggle('border-red-500', bad); };
-        if (!bio) { errors.push('Bio requise'); markInvalid('bio', true); setFirst(document.getElementById('bio')); } else { markInvalid('bio', false); }
-        if (!days.length) { errors.push('Sélectionnez au moins un jour'); markInvalid('days', true); setFirst(document.getElementById('days')); } else { markInvalid('days', false); }
-        const hasService = [...document.querySelectorAll('#services .grid')].some(row => {
-            const [n, p] = [row.querySelectorAll('input')[0]?.value.trim(), row.querySelectorAll('input')[2]?.value.trim()];
-            return n && p;
-        });
-        if (!hasService) { errors.push('Ajoutez au moins un service (nom et prix)'); markInvalid('services', true); setFirst(document.getElementById('services')); } else { markInvalid('services', false); }
-        if (errors.length) { alert(errors.join('\n')); if (firstInvalid) firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
+        const hasService = services.length > 0;
+        if (!bio) errors.push('Bio requise');
+        if (!days.length) errors.push('Sélectionnez au moins un jour');
+        if (!hasService) errors.push('Ajoutez au moins un service (nom et prix)');
+        if (errors.length) { alert(errors.join('\n')); return; }
         const payload = { bio, city, phone, business, social_instagram, social_facebook, social_tiktok, services, working_days: days, working_hours: { start, end }, gallery: galleryData };
-        const res = await fetch('/pro/onboarding/save/', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') }, body: JSON.stringify(payload) });
-        if (res.ok) { window.location.href = '/pro/'; }
-        else { alert('Échec de l\'enregistrement'); }
+        const avatar = document.getElementById('headAvatar');
+        if (avatar && avatar.dataset && avatar.dataset.b64) { payload.profile_photo = avatar.dataset.b64; }
+        const res = await fetch("{% url 'front_web:pro_onboarding_save' %}", { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') }, body: JSON.stringify(payload) });
+        if (res.ok) { window.location.href = "{% url 'front_web:pro_dashboard' %}"; }
+        else { alert("Échec de l'enregistrement"); }
     });
 
-    // Modern pills + predefined time selects
-    const dayMap = [
-        { code: 'mon', label: 'Lun' }, { code: 'tue', label: 'Mar' }, { code: 'wed', label: 'Mer' },
-        { code: 'thu', label: 'Jeu' }, { code: 'fri', label: 'Ven' }, { code: 'sat', label: 'Sam' }, { code: 'sun', label: 'Dim' }
-    ];
-    function buildDayPills() {
-        const container = document.getElementById('days'); if (!container) return; container.innerHTML = '';
-        const current = new Set([...document.querySelectorAll('#days input:checked')].map(x => x.value));
-        // Grouped modern pills
-        const group = document.createElement('div'); group.className = 'flex flex-wrap gap-2';
-        dayMap.forEach(d => {
-            const pill = document.createElement('label'); pill.className = 'inline-flex items-center gap-2 px-3 py-1 rounded-full border bg-white/70';
-            pill.innerHTML = `<input type="checkbox" value="${d.code}" class="accent-pink-500" /> ${d.label}`;
-            pill.addEventListener('click', () => {
-                pill.querySelector('input').checked = !pill.querySelector('input').checked;
-                pill.classList.toggle('bg-pink-500'); pill.classList.toggle('text-white'); pill.classList.toggle('border-pink-500');
-            });
-            group.appendChild(pill);
-        });
-        container.appendChild(group);
-    }
-    function getSelectedDays() {
-        const sel = []; document.querySelectorAll('#days input:checked').forEach(b => { sel.push(b.value); }); return sel;
-    }
-    function buildTimeSelects() {
-        const s = document.getElementById('startTime'); const e = document.getElementById('endTime'); if (!s || !e) return;
-        const options = []; for (let h = 6; h <= 22; h++) { for (let m of [0, 30]) { const hh = String(h).padStart(2, '0'); const mm = m === 0 ? '00' : '30'; options.push(`${hh}:${mm}`); } }
-        s.innerHTML = ''; e.innerHTML = ''; options.forEach(v => { const o = document.createElement('option'); o.value = v; o.textContent = v; s.appendChild(o.cloneNode(true)); e.appendChild(o); });
-    }
-
-    // Presets
-    document.getElementById('presetWeek').addEventListener('click', () => {
-        setDays(['mon', 'tue', 'wed', 'thu', 'fri']);
-        document.getElementById('startSel').value = '09:00';
-        document.getElementById('endSel').value = '18:00';
-        validateForm();
+    function getSelectedDays() { const sel = []; document.querySelectorAll('#days input:checked').forEach(b => { sel.push(b.value); }); return sel; }
+    document.getElementById('btnPickPhoto').addEventListener('click', () => document.getElementById('filePhoto').click());
+    document.getElementById('filePhoto').addEventListener('change', (e) => {
+        const f = e.target.files && e.target.files[0]; if (!f) return;
+        const reader = new FileReader();
+        reader.onload = () => { const img = document.getElementById('headAvatar'); img.src = reader.result; img.classList.remove('hidden'); document.getElementById('iconWrap').classList.add('hidden'); img.dataset.b64 = reader.result; };
+        reader.readAsDataURL(f);
     });
-    document.getElementById('presetDaily').addEventListener('click', () => {
-        setDays(['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']);
-        document.getElementById('startSel').value = '10:00';
-        document.getElementById('endSel').value = '20:00';
-        validateForm();
-    });
-    document.getElementById('presetClear').addEventListener('click', () => {
-        setDays([]);
-        document.getElementById('startSel').value = '09:00';
-        document.getElementById('endSel').value = '18:00';
-        validateForm();
-    });
-    function setDays(list) {
-        document.querySelectorAll('#days input:checked').forEach(b => {
-            b.checked = false;
-        });
-        list.forEach(code => {
-            const el = document.querySelector(`#days input[value="${code}"]`);
-            if (el) el.checked = true;
-        });
-    }
-
-    // Enable/disable save button based on form completeness
-    const inputsToWatch = ['bio'];
-    inputsToWatch.forEach(id => document.getElementById(id)?.addEventListener('input', validateForm));
-    document.getElementById('days').addEventListener('click', validateForm);
-    document.getElementById('services').addEventListener('input', validateForm);
-    function validateForm() {
-        const bio = document.getElementById('bio').value.trim();
-        const days = getSelectedDays();
-        const hasService = [...document.querySelectorAll('#services .grid')].some(row => {
-            const [n, p] = [row.querySelectorAll('input')[0]?.value.trim(), row.querySelectorAll('input')[2]?.value.trim()];
-            return n && p;
-        });
-        const ok = bio && days.length && hasService;
-        const btn = document.getElementById('save'); const hint = document.getElementById('hint');
-        btn.disabled = !ok; btn.classList.toggle('opacity-60', !ok); btn.classList.toggle('cursor-not-allowed', !ok);
-        if (hint) hint.textContent = ok ? '' : 'Remplissez la bio, sélectionnez des jours et ajoutez au moins un service.';
-    }
-    // initial
-    validateForm();
 </script>
 {% endblock %}
