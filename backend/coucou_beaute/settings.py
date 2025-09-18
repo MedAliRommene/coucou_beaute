@@ -168,3 +168,23 @@ if not DEBUG:
 	SECURE_BROWSER_XSS_FILTER = True
 	SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', 'False') == 'True'
 	CSRF_TRUSTED_ORIGINS = [u for u in os.getenv('CSRF_TRUSTED_ORIGINS','').split(',') if u]
+else:
+	# Configuration CSRF pour le développement
+	CSRF_COOKIE_SECURE = False
+	SESSION_COOKIE_SECURE = False
+
+# Configuration CSRF globale
+CSRF_COOKIE_HTTPONLY = False
+CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_USE_SESSIONS = False
+CSRF_COOKIE_AGE = 31449600
+CSRF_FAILURE_VIEW = 'django.views.csrf.csrf_failure'
+
+# Configuration CSRF pour résoudre l'erreur 403
+CSRF_COOKIE_SECURE = False  # Temporaire pour HTTP
+CSRF_TRUSTED_ORIGINS = [
+    'http://196.203.120.35',
+    'http://196.203.120.35:8000',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+]
