@@ -1273,7 +1273,7 @@ def booking_page(request: HttpRequest) -> HttpResponse:
 @login_required
 def client_appointments(request):
     """Page des rendez-vous du client"""
-    # Récupérer les rendez-vous du client
+    # Récupérer les rendez-vous du client (ne pas rediriger si profil manquant)
     client_profile = getattr(request.user, 'client_profile', None)
     if not client_profile:
         try:
@@ -1283,8 +1283,9 @@ def client_appointments(request):
                 defaults={'phone_number': '', 'address': '', 'city': ''}
             )
         except Exception as e:
-            messages.error(request, f"Erreur lors de la création du profil client: {str(e)}")
-            return redirect('front_web:client_dashboard')
+            # Afficher quand même la page vide si création impossible
+            messages.error(request, f"Profil client introuvable: {str(e)}")
+            client_profile = None
 
     appts_qs = (
         Appointment.objects.select_related('professional__user')
@@ -1396,21 +1397,28 @@ def client_appointments(request):
 def client_calendar(request):
     """Page calendrier du client - N'affiche que les rendez-vous CONFIRMÉS"""
     try:
-        # Récupérer le profil client
+        # Récupérer/créer le profil client au besoin (ne pas rediriger)
         client_profile = getattr(request.user, 'client_profile', None)
         if not client_profile:
-            messages.error(request, "Profil client non trouvé.")
-            return redirect('front_web:client_dashboard')
+            try:
+                from users.models import Client as ClientModel
+                client_profile, _ = ClientModel.objects.get_or_create(
+                    user=request.user,
+                    defaults={'phone_number': '', 'address': '', 'city': ''}
+                )
+            except Exception:
+                messages.error(request, "Profil client non trouvé.")
+                return redirect('front_web:client_dashboard')
         
-        # Récupérer UNIQUEMENT les rendez-vous confirmés pour le calendrier
-        confirmed_appointments = Appointment.objects.select_related('professional__user').filter(
+        # Récupérer les rendez-vous pour le calendrier (confirmés ET en attente)
+        calendar_qs = Appointment.objects.select_related('professional__user').filter(
             client=client_profile,
-            status='confirmed'  # IMPORTANT: Seulement les RDV acceptés par le professionnel
+            status__in=['confirmed', 'pending']
         ).order_by('start')
         
         # Préparer les données pour le calendrier
         calendar_events = []
-        for appt in confirmed_appointments:
+        for appt in calendar_qs:
             try:
                 center_name = appt.professional.business_name or appt.professional.user.get_full_name()
             except Exception:
@@ -1429,9 +1437,9 @@ def client_calendar(request):
             })
         
         # Statistiques pour le client
-        total_confirmed = confirmed_appointments.count()
+        total_confirmed = Appointment.objects.filter(client=client_profile, status='confirmed').count()
         total_pending = Appointment.objects.filter(client=client_profile, status='pending').count()
-        total_spent = sum(float(appt.price or 0) for appt in confirmed_appointments)
+        total_spent = sum(float(appt.price or 0) for appt in calendar_qs if appt.status == 'confirmed')
         
         return render(request, 'front_web/client_calendar.html', {
             'appointments': calendar_events,
@@ -1441,8 +1449,18 @@ def client_calendar(request):
             'total_spent': total_spent,
         })
     except Exception as e:
-        messages.error(request, f"Erreur lors du chargement du calendrier: {str(e)}")
-        return redirect('front_web:client_dashboard')
+        # Ne pas rediriger: afficher un calendrier vide avec un message d'erreur doux
+        try:
+            messages.error(request, f"Erreur lors du chargement du calendrier: {str(e)}")
+        except Exception:
+            pass
+        return render(request, 'front_web/client_calendar.html', {
+            'appointments': [],
+            'client_profile': getattr(request.user, 'client_profile', None),
+            'total_confirmed': 0,
+            'total_pending': 0,
+            'total_spent': 0,
+        })
 
 
 @login_required

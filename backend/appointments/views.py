@@ -145,8 +145,6 @@ def analytics_overview(request):
     - Returns counts by weekday (Mon..Sun) and service_name distribution (last 90 days if no range).
     """
     pro_id = request.query_params.get("pro_id")
-    if not pro_id:
-        return Response({"detail": "pro_id requis"}, status=status.HTTP_400_BAD_REQUEST)
 
     # Date range
     from_str = request.query_params.get("from")
@@ -167,7 +165,17 @@ def analytics_overview(request):
     end_dt_naive = datetime(d_to.year, d_to.month, d_to.day) + timedelta(days=1)
     end_dt = tz.make_aware(end_dt_naive, tz.get_current_timezone()) if tz.is_naive(end_dt_naive) else end_dt_naive
 
-    qs = Appointment.objects.filter(professional_id=int(pro_id), start__lt=end_dt, end__gte=start_dt)
+    # Scope: specific professional or ALL professionals when pro_id missing/empty
+    if pro_id:
+        try:
+            pro_id_int = int(pro_id)
+        except Exception:
+            pro_id_int = None
+    else:
+        pro_id_int = None
+
+    qs_base = Appointment.objects.filter(start__lt=end_dt, end__gte=start_dt)
+    qs = qs_base.filter(professional_id=pro_id_int) if pro_id_int else qs_base
     # Weekly reservations Mon..Sun
     week = [0, 0, 0, 0, 0, 0, 0]  # Mon..Sun
     status_counts = {"pending": 0, "confirmed": 0, "cancelled": 0, "completed": 0}
@@ -208,7 +216,9 @@ def analytics_overview(request):
 
     # Service distribution last 90 days within range
     dist_start = tz.now() - timedelta(days=90)
-    dist_qs = Appointment.objects.filter(professional_id=int(pro_id), start__gte=dist_start)
+    dist_qs = Appointment.objects.filter(start__gte=dist_start)
+    if pro_id_int:
+        dist_qs = dist_qs.filter(professional_id=pro_id_int)
     service_counts = {}
     for a in dist_qs.only("service_name"):
         key = (a.service_name or "Service").strip() or "Service"
@@ -236,10 +246,11 @@ def analytics_overview(request):
     )
     returning_clients = 0
     if unique_client_ids:
+        earlier_qs = Appointment.objects.filter(client_id__in=unique_client_ids, start__lt=start_dt)
+        if pro_id_int:
+            earlier_qs = earlier_qs.filter(professional_id=pro_id_int)
         earlier_ids = (
-            Appointment.objects.filter(
-                professional_id=int(pro_id), client_id__in=unique_client_ids, start__lt=start_dt
-            )
+            earlier_qs
             .values_list("client_id", flat=True)
             .distinct()
         )
@@ -259,7 +270,9 @@ def analytics_overview(request):
     prev_start = tz.make_aware(prev_start_naive, tz.get_current_timezone()) if tz.is_naive(prev_start_naive) else prev_start_naive
     prev_end_naive = datetime(prev_d_to.year, prev_d_to.month, prev_d_to.day) + timedelta(days=1)
     prev_end = tz.make_aware(prev_end_naive, tz.get_current_timezone()) if tz.is_naive(prev_end_naive) else prev_end_naive
-    qs_prev = Appointment.objects.filter(professional_id=int(pro_id), start__lt=prev_end, end__gte=prev_start)
+    qs_prev = Appointment.objects.filter(start__lt=prev_end, end__gte=prev_start)
+    if pro_id_int:
+        qs_prev = qs_prev.filter(professional_id=pro_id_int)
     revenue_prev_total = 0.0
     for a in qs_prev.only("status", "price", "start"):
         if a.status in ("confirmed", "completed"):

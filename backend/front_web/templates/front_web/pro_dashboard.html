@@ -2,6 +2,201 @@
 
 {% block title %}Détail du Professionnel - Coucou Beauté{% endblock %}
 
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+    .animate-pulse-slow {
+        animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    .animate-fade-in {
+        animation: fadeIn 0.6s ease-out;
+    }
+
+    .animate-slide-up {
+        animation: slideUp 0.4s ease-out;
+    }
+
+    .animate-bounce-in {
+        animation: bounceIn 0.5s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes bounceIn {
+        0% {
+            opacity: 0;
+            transform: scale(0.3);
+        }
+
+        50% {
+            opacity: 1;
+            transform: scale(1.05);
+        }
+
+        70% {
+            transform: scale(0.9);
+        }
+
+        100% {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    .schedule-card {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .schedule-card:hover {
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    }
+
+    .schedule-card.confirmed {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        box-shadow: 0 8px 32px rgba(239, 68, 68, 0.3);
+    }
+
+    .schedule-card.pending {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        box-shadow: 0 8px 32px rgba(245, 158, 11, 0.3);
+    }
+
+    .schedule-card.completed {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        box-shadow: 0 8px 32px rgba(16, 185, 129, 0.3);
+    }
+
+    .schedule-card.cancelled {
+        background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+        box-shadow: 0 8px 32px rgba(107, 114, 128, 0.3);
+    }
+
+    .schedule-card.available {
+        background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
+        border: 2px dashed #9ca3af;
+    }
+
+    .schedule-card.available:hover {
+        background: linear-gradient(135deg, #d1d5db 0%, #9ca3af 100%);
+        border-color: #6b7280;
+    }
+
+    .glassmorphism {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+
+    .particle-bg {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .particle-bg::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.1) 0%, transparent 50%);
+        animation: float 6s ease-in-out infinite;
+    }
+
+    @keyframes float {
+
+        0%,
+        100% {
+            transform: translateY(0px) rotate(0deg);
+        }
+
+        33% {
+            transform: translateY(-10px) rotate(1deg);
+        }
+
+        66% {
+            transform: translateY(5px) rotate(-1deg);
+        }
+    }
+
+    .status-indicator {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 8px;
+        animation: pulse 2s infinite;
+    }
+
+    .status-indicator.confirmed {
+        background-color: #ef4444;
+    }
+
+    .status-indicator.pending {
+        background-color: #f59e0b;
+    }
+
+    .status-indicator.completed {
+        background-color: #10b981;
+    }
+
+    .status-indicator.cancelled {
+        background-color: #6b7280;
+    }
+
+    .time-slot {
+        font-family: 'Inter', sans-serif;
+        font-weight: 500;
+    }
+
+    .service-name {
+        font-family: 'Inter', sans-serif;
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+
+    .client-name {
+        font-family: 'Inter', sans-serif;
+        font-weight: 400;
+        font-size: 0.75rem;
+        opacity: 0.9;
+    }
+
+    .duration-badge {
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(5px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="p-6 space-y-6">
     <div class="flex items-center justify-between gap-3">
@@ -98,10 +293,7 @@
                     <p class="text-gray-600">Gérez et répondez aux avis de vos clients</p>
                 </div>
             </div>
-            <a href="{% url 'front_web:pro_reviews_management' %}" class="btn-modern">
-                <i class="fas fa-star me-2"></i>
-                Gérer les avis
-            </a>
+
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -178,15 +370,34 @@
         </div>
     </div>
     <div class="glass p-6">
-        <div class="flex items-center justify-between mb-3">
-            <h2 class="text-xl font-semibold text-gray-900">Agenda du jour</h2>
-            <div class="flex items-center gap-2">
-                <input id="dayPicker" type="date" class="border rounded-lg px-2 py-1" />
-                <button class="btn-secondary-glass" onclick="reloadAgenda()">Charger</button>
+        <div class="flex items-center justify-between mb-6">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900 mb-1">Agenda du jour</h2>
+                <p class="text-gray-600 text-sm">Gestion des créneaux horaires en temps réel</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="relative">
+                    <input id="dayPicker" type="date"
+                        class="bg-white/80 backdrop-blur-sm border-2 border-gray-200 rounded-xl px-4 py-2.5 text-gray-700 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all duration-200 shadow-sm hover:shadow-md" />
+                    <i data-lucide="calendar"
+                        class="w-5 h-5 text-gray-400 absolute right-3 top-3 pointer-events-none"></i>
+                </div>
+                <button onclick="reloadAgenda()"
+                    class="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-2.5 rounded-xl font-medium shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 flex items-center gap-2 animate-pulse-slow">
+                    <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                    Charger
+                </button>
             </div>
         </div>
-        <div id="timeline" class="relative">
-            <!-- timeline rendered here -->
+
+        <!-- Modern Timeline Container -->
+        <div id="timeline"
+            class="relative bg-gradient-to-br from-gray-50 to-blue-50 rounded-2xl p-4 border border-gray-100 shadow-inner particle-bg">
+            <!-- Compact Layout - Only Schedule Slots -->
+            <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Créneaux horaires</div>
+            <div id="scheduleGrid" class="relative space-y-2">
+                <!-- Schedule slots will be rendered here -->
+            </div>
         </div>
     </div>
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -229,7 +440,7 @@
                     <div class="flex items-center justify-between">
                         <div class="text-xs text-gray-500 flex items-center gap-2"><i data-lucide="user-round"
                                 class="w-4 h-4"></i> Biographie</div>
-                        <button class="btn-secondary-glass" onclick="openModal('modalBio')">Modifier</button>
+
                     </div>
                     <div id="bioText" class="text-gray-900 mt-1">{{ pro.extra.bio|default:'—' }}</div>
                 </div>
@@ -249,10 +460,11 @@
                     <div class="flex items-center justify-between">
                         <div class="text-xs text-gray-500 flex items-center gap-2"><i data-lucide="clock-8"
                                 class="w-4 h-4"></i> Horaires</div>
-                        <button class="btn-secondary-glass" onclick="openModal('modalHours')">Modifier</button>
+
                     </div>
-                    <div id="hoursText" class="text-gray-900 mt-1">{{ pro.extra.working_hours.start }} - {{ pro.extra.working_hours.end }}</div>
-                       
+                    <div id="hoursText" class="text-gray-900 mt-1">{{ pro.extra.working_hours.start }} - {{
+                        pro.extra.working_hours.end }}</div>
+
 
 
 
@@ -262,7 +474,7 @@
                     <div class="flex items-center justify-between">
                         <div class="text-xs text-gray-500 flex items-center gap-2"><i data-lucide="share-2"
                                 class="w-4 h-4"></i> Réseaux sociaux</div>
-                        <button class="btn-secondary-glass" onclick="openModal('modalSocials')">Modifier</button>
+
                     </div>
                     <div class="text-gray-900 mt-1 space-y-1">
                         <div class="flex items-center gap-2"><i data-lucide="instagram"
@@ -282,7 +494,7 @@
                     <div class="flex items-center justify-between">
                         <div class="text-xs text-gray-500 flex items-center gap-2"><i data-lucide="sparkles"
                                 class="w-4 h-4"></i> Services proposés</div>
-                        <button class="btn-secondary-glass" onclick="openModal('modalServices')">Modifier</button>
+
                     </div>
                     <div class="mt-2 grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
                         {% for s in pro.extra.services %}
@@ -305,7 +517,7 @@
                     <div class="flex items-center justify-between">
                         <div class="text-xs text-gray-500 flex items-center gap-2"><i data-lucide="images"
                                 class="w-4 h-4"></i> Galerie</div>
-                        <button class="btn-secondary-glass" onclick="openModal('modalGallery')">Ajouter</button>
+
                     </div>
                     <div class="mt-2 flex flex-wrap gap-3">
                         {% for g in pro.extra.gallery %}
@@ -333,18 +545,17 @@
     <!-- Modals -->
     <div id="modalBio" class="hidden fixed inset-0 bg-black/40 z-50 items-center justify-center">
         <div class="bg-white rounded-2xl p-6 w-full max-w-lg">
-            <h3 class="text-lg font-semibold mb-3">Modifier la biographie</h3>
-            <textarea id="inputBio" rows="5" class="w-full border rounded-xl p-3" placeholder="Biographie"></textarea>
-            <div class="mt-4 flex justify-end gap-2">
-                <button class="btn-secondary-glass" onclick="closeModal('modalBio')">Annuler</button>
-                <button class="btn-glass"
-                    onclick="saveExtras({bio: document.getElementById('inputBio').value})">Enregistrer</button>
-            </div>
+            < <textarea id="inputBio" rows="5" class="w-full border rounded-xl p-3" placeholder="Biographie"></textarea>
+                <div class="mt-4 flex justify-end gap-2">
+                    <button class="btn-secondary-glass" onclick="closeModal('modalBio')">Annuler</button>
+                    <button class="btn-glass"
+                        onclick="saveExtras({bio: document.getElementById('inputBio').value})">Enregistrer</button>
+                </div>
         </div>
     </div>
     <div id="modalHours" class="hidden fixed inset-0 bg-black/40 z-50 items-center justify-center">
         <div class="bg-white rounded-2xl p-6 w-full max-w-lg">
-            <h3 class="text-lg font-semibold mb-3">Modifier les horaires</h3>
+
             <div class="grid grid-cols-2 gap-3">
                 <input id="inputStart" class="border rounded-xl p-3" placeholder="Début (HH:MM)" />
                 <input id="inputEnd" class="border rounded-xl p-3" placeholder="Fin (HH:MM)" />
@@ -480,54 +691,131 @@
     function statusColor(s) { if (s === 'confirmed') return 'bg-red-500'; if (s === 'pending') return 'bg-amber-400'; return 'bg-emerald-500'; }
 
     function renderTimeline(items) {
-        const container = document.getElementById('timeline');
-        container.innerHTML = '';
-        const grid = document.createElement('div');
-        grid.className = 'grid grid-cols-12 gap-2';
-        // Left hours column
-        const left = document.createElement('div');
-        left.className = 'col-span-2 space-y-2';
-        for (let h = 8; h <= 20; h++) {
-            const row = document.createElement('div');
-            row.className = 'text-xs text-gray-500 h-10 flex items-start';
-            row.textContent = hourLabel(h);
-            left.appendChild(row);
-        }
-        grid.appendChild(left);
+        const container = document.getElementById('scheduleGrid');
 
-        // Right timeline column
-        const right = document.createElement('div');
-        right.className = 'col-span-10 relative border rounded-lg bg-white/50';
-        // hour rows
+        // Clear container
+        if (container) container.innerHTML = '';
+
+        // Create time slots from 8:00 to 20:00
+        const timeSlots = [];
         for (let h = 8; h <= 20; h++) {
-            const line = document.createElement('div');
-            line.className = 'border-b last:border-b-0 h-10';
-            right.appendChild(line);
+            timeSlots.push({
+                hour: h,
+                start: `${h.toString().padStart(2, '0')}:00`,
+                end: `${(h + 1).toString().padStart(2, '0')}:00`,
+                hasAppointment: false,
+                appointment: null
+            });
         }
-        // events
-        const startMinute = 8 * 60; const endMinute = 20 * 60; const total = endMinute - startMinute;
-        for (const it of items) {
-            const s = new Date(it.start); const e = new Date(it.end);
-            const sm = s.getHours() * 60 + s.getMinutes();
-            const em = e.getHours() * 60 + e.getMinutes();
-            const top = ((sm - startMinute) / total) * (13 * 40); // 13 rows * 40px
-            const height = Math.max(28, ((em - sm) / total) * (13 * 40));
-            const block = document.createElement('div');
-            block.className = `absolute left-2 right-2 ${statusColor(it.status)}/80 text-white rounded-md shadow px-2 py-1`;
-            block.style.top = `${top}px`; block.style.height = `${height}px`;
-            block.innerHTML = `<div class='text-xs font-semibold truncate'>${it.service_name}</div><div class='text-[11px] opacity-90 truncate'>${it.client_name || ''}</div>`;
-            right.appendChild(block);
+
+        // Map appointments to time slots
+        items.forEach(appointment => {
+            const startTime = new Date(appointment.start);
+            const hour = startTime.getHours();
+            if (hour >= 8 && hour <= 20) {
+                const slotIndex = hour - 8;
+                if (timeSlots[slotIndex]) {
+                    timeSlots[slotIndex].hasAppointment = true;
+                    timeSlots[slotIndex].appointment = appointment;
+                }
+            }
+        });
+
+        // Render time slots as ultra-compact cards
+        if (container) {
+            timeSlots.forEach((slot, index) => {
+                const slotCard = document.createElement('div');
+                slotCard.className = `schedule-card rounded-lg p-2 mb-1 animate-slide-up`;
+                slotCard.style.animationDelay = `${index * 0.03}s`;
+
+                if (slot.hasAppointment && slot.appointment) {
+                    const appointment = slot.appointment;
+                    const startTime = new Date(appointment.start);
+                    const endTime = new Date(appointment.end);
+                    const duration = Math.round((endTime - startTime) / (1000 * 60)); // duration in minutes
+
+                    slotCard.className += ` ${appointment.status}`;
+                    slotCard.innerHTML = `
+                        <div class="flex items-center justify-between mb-1">
+                            <div class="flex items-center">
+                                <span class="status-indicator ${appointment.status}"></span>
+                                <span class="time-slot text-white font-semibold text-xs">${slot.start} - ${slot.end}</span>
+                            </div>
+                            <div class="duration-badge px-1.5 py-0.5 rounded-full text-xs text-white font-medium">
+                                ${duration}min
+                            </div>
+                        </div>
+                        <div class="space-y-0.5">
+                            <div class="service-name text-white text-xs">${appointment.service_name || 'Service'}</div>
+                            <div class="client-name text-white/90 flex items-center gap-1 text-xs">
+                                <i data-lucide="user" class="w-3 h-3"></i>
+                                ${appointment.client_name || 'Client non spécifié'}
+                            </div>
+                            ${appointment.notes ? `<div class="text-xs text-white/80 mt-1 p-1.5 bg-white/10 rounded">
+                                <i data-lucide="message-square" class="w-3 h-3 inline mr-1"></i>
+                                ${appointment.notes}
+                            </div>` : ''}
+                        </div>
+                        <div class="mt-1 flex items-center justify-between">
+                            <div class="flex items-center gap-1">
+                                <i data-lucide="calendar" class="w-3 h-3 text-white/70"></i>
+                                <span class="text-xs text-white/70">${startTime.toLocaleDateString('fr-FR')}</span>
+                            </div>
+                            <div class="flex gap-1">
+                                <button class="p-0.5 rounded bg-white/20 hover:bg-white/30 transition-colors" 
+                                        onclick="editAppointment('${appointment.id}')" 
+                                        title="Modifier">
+                                    <i data-lucide="edit" class="w-3 h-3 text-white"></i>
+                                </button>
+                                <button class="p-0.5 rounded bg-white/20 hover:bg-white/30 transition-colors" 
+                                        onclick="viewAppointment('${appointment.id}')" 
+                                        title="Voir détails">
+                                    <i data-lucide="eye" class="w-3 h-3 text-white"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    slotCard.className += ' available';
+                    slotCard.innerHTML = `
+                        <div class="flex items-center justify-between mb-1">
+                            <div class="flex items-center">
+                                <i data-lucide="clock" class="w-3 h-3 text-gray-500 mr-1"></i>
+                                <span class="time-slot text-gray-700 font-semibold text-xs">${slot.start} - ${slot.end}</span>
+                            </div>
+                            <span class="text-xs text-gray-500 font-medium">Disponible</span>
+                        </div>
+                        <div class="text-center py-1">
+                            <div class="text-gray-500 text-xs mb-1">Créneau libre</div>
+                            <button class="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors text-xs font-medium"
+                                    onclick="bookSlot('${slot.start}', '${slot.end}')">
+                                <i data-lucide="plus" class="w-3 h-3 inline mr-1"></i>
+                                Réserver
+                            </button>
+                        </div>
+                    `;
+                }
+
+                container.appendChild(slotCard);
+            });
+
+            // Add empty state if no appointments
+            if (items.length === 0) {
+                const emptyState = document.createElement('div');
+                emptyState.className = 'text-center py-6 animate-fade-in';
+                emptyState.innerHTML = `
+                    <div class="w-10 h-10 mx-auto mb-2 bg-gray-100 rounded-full flex items-center justify-center">
+                        <i data-lucide="calendar-x" class="w-5 h-5 text-gray-400"></i>
+                    </div>
+                    <h3 class="text-sm font-semibold text-gray-700 mb-1">Aucun rendez-vous</h3>
+                    <p class="text-gray-500 text-xs mb-2">Aucun rendez-vous n'est programmé pour cette date.</p>
+                  
+                `;
+                container.appendChild(emptyState);
+            }
         }
-        grid.appendChild(right);
-        container.appendChild(grid);
     }
 
-    async function reloadAgenda() {
-        const d = document.getElementById('dayPicker').value || fmt(new Date());
-        const res = await fetch(`/api/appointments/agenda/day/?pro_id={{ pro.id }}&date=${d}`);
-        if (!res.ok) return; const data = await res.json();
-        renderTimeline(data.results || []);
-    }
 
     // Init defaults on load
     (function init() {
@@ -564,5 +852,72 @@
         await saveExtras({ gallery: list });
     }
     function toBase64(file) { return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(file); }); }
+
+    // Modern agenda utility functions
+    function editAppointment(appointmentId) {
+        // TODO: Implement edit appointment modal
+        console.log('Edit appointment:', appointmentId);
+        alert('Fonctionnalité de modification en cours de développement');
+    }
+
+    function viewAppointment(appointmentId) {
+        // TODO: Implement view appointment details modal
+        console.log('View appointment:', appointmentId);
+        alert('Fonctionnalité de visualisation en cours de développement');
+    }
+
+    function bookSlot(startTime, endTime) {
+        // TODO: Implement book slot functionality
+        console.log('Book slot:', startTime, 'to', endTime);
+        alert(`Réserver le créneau de ${startTime} à ${endTime}`);
+    }
+
+    function bookNewAppointment() {
+        // TODO: Implement new appointment booking
+        console.log('Book new appointment');
+        alert('Fonctionnalité de réservation en cours de développement');
+    }
+
+    // Enhanced reload with loading state
+    async function reloadAgenda() {
+        const button = document.querySelector('button[onclick="reloadAgenda()"]');
+        const originalText = button.innerHTML;
+
+        // Show loading state
+        button.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Chargement...';
+        button.disabled = true;
+
+        try {
+            const d = document.getElementById('dayPicker').value || fmt(new Date());
+            const res = await fetch(`/api/appointments/agenda/day/?pro_id={{ pro.id }}&date=${d}`);
+            if (!res.ok) throw new Error('Erreur de chargement');
+            const data = await res.json();
+            renderTimeline(data.results || []);
+        } catch (error) {
+            console.error('Error loading agenda:', error);
+            // Show error state
+            const container = document.getElementById('scheduleGrid');
+            if (container) {
+                container.innerHTML = `
+                    <div class="text-center py-6 animate-fade-in">
+                        <div class="w-10 h-10 mx-auto mb-2 bg-red-100 rounded-full flex items-center justify-center">
+                            <i data-lucide="alert-circle" class="w-5 h-5 text-red-500"></i>
+                        </div>
+                        <h3 class="text-sm font-semibold text-gray-700 mb-1">Erreur de chargement</h3>
+                        <p class="text-gray-500 text-xs mb-2">Impossible de charger l'agenda pour cette date.</p>
+                        <button class="px-3 py-1.5 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors text-xs font-medium"
+                                onclick="reloadAgenda()">
+                            <i data-lucide="refresh-cw" class="w-3 h-3 inline mr-1"></i>
+                            Réessayer
+                        </button>
+                    </div>
+                `;
+            }
+        } finally {
+            // Restore button state
+            button.innerHTML = originalText;
+            button.disabled = false;
+        }
+    }
 </script>
 {% endblock %}

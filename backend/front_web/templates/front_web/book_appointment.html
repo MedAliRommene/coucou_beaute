@@ -1,6 +1,7 @@
 {% extends 'front_web/base_client.html' %}
 {% load static %}
-{% block title %}Prendre rendez-vous - {{ pro.business_name|default:pro.user.get_full_name }} - Coucou Beauté{%endblock%}
+{% block title %}Prendre rendez-vous - {{ pro.business_name|default:pro.user.get_full_name }} - Coucou
+Beauté{%endblock%}
 
 
 
@@ -12,12 +13,14 @@
         font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial;
     }
 
-    /* Beautiful background like login page */
+    /* Ultra-modern animated gradient background */
     #three-bg {
         position: fixed;
         inset: 0;
         z-index: -1;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: radial-gradient(1200px 800px at 20% 10%, rgba(242, 139, 178, 0.25), transparent 60%),
+            radial-gradient(1200px 800px at 80% 30%, rgba(108, 169, 224, 0.25), transparent 60%),
+            linear-gradient(135deg, #3a1c71 0%, #d76d77 50%, #6eacd8 100%);
         overflow: hidden;
     }
 
@@ -65,9 +68,11 @@
 
     .glass {
         backdrop-filter: blur(20px);
-        background: rgba(255, 255, 255, 0.85);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        -webkit-backdrop-filter: blur(20px);
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.82));
+        box-shadow: 0 18px 48px rgba(16, 24, 40, 0.18);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        border-radius: 18px;
     }
 
     .text-rosePastel {
@@ -78,32 +83,105 @@
         color: #6CA9E0;
     }
 
-    .calendar-day {
-        min-height: 120px;
-        transition: all 0.3s ease;
+    /* Horizontal swipeable calendar carousel */
+    .calendar-wrap {
+        position: relative;
+        perspective: 800px;
     }
 
-    .calendar-day:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 25px rgba(108, 169, 224, 0.2);
+    .calendar-track {
+        display: flex;
+        gap: 12px;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        padding-bottom: 6px;
+        -webkit-overflow-scrolling: touch;
     }
 
-    .calendar-day.selected {
+    .calendar-card {
+        scroll-snap-align: start;
+        min-width: 86px;
+        min-height: 110px;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+        transform-style: preserve-3d;
+    }
+
+    .calendar-card:hover {
+        transform: translateY(-3px) rotateX(6deg);
+        box-shadow: 0 18px 38px rgba(108, 169, 224, 0.28);
+    }
+
+    .calendar-card[aria-selected="true"],
+    .calendar-card.selected {
         background: linear-gradient(135deg, #F28BB2 0%, #6CA9E0 100%);
-        color: white;
+        color: #fff;
+        border-color: transparent;
+        box-shadow: 0 14px 32px rgba(242, 139, 178, 0.35);
+        transform: translateY(-2px) rotateX(0);
     }
 
+    .cal-nav {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 5;
+    }
+
+    .cal-nav button {
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        background: rgba(255, 255, 255, 0.75);
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        box-shadow: 0 10px 24px rgba(16, 24, 40, .18);
+    }
+
+    .cal-nav.prev {
+        left: -8px;
+    }
+
+    .cal-nav.next {
+        right: -8px;
+    }
+
+    /* Time slots as interactive cards */
     .time-slot {
-        transition: all 0.3s ease;
+        transition: all 0.25s ease;
+        border-radius: 14px;
     }
 
     .time-slot:hover {
-        transform: scale(1.05);
+        transform: translateY(-3px);
+        box-shadow: 0 14px 30px rgba(16, 24, 40, .15);
+    }
+
+    .time-slot .meta {
+        opacity: 0;
+        transform: translateY(6px);
+        transition: .2s ease;
+        font-size: 11px;
+    }
+
+    .time-slot:hover .meta {
+        opacity: 1;
+        transform: translateY(0);
     }
 
     .time-slot.selected {
         background: linear-gradient(90deg, #F28BB2 0%, #6CA9E0 100%);
-        color: white;
+        color: #fff;
+        border-color: transparent;
     }
 
     .service-card {
@@ -172,6 +250,103 @@
     .time-slot.updated {
         animation: pulse 1s ease-out;
     }
+
+    /* Floating label form control */
+    .float-field {
+        position: relative;
+    }
+
+    .float-field>input,
+    .float-field>textarea {
+        width: 100%;
+        padding: 14px 14px 14px 12px;
+        border-radius: 12px;
+        border: 1px solid rgba(226, 232, 240, 1);
+        background: rgba(255, 255, 255, 0.9);
+        transition: border-color .2s ease, box-shadow .2s ease;
+    }
+
+    .float-field>label {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6B7280;
+        pointer-events: none;
+        transition: .2s ease;
+        background: transparent;
+        padding: 0 4px;
+    }
+
+    .float-field>input:focus,
+    .float-field>textarea:focus {
+        outline: none;
+        border-color: #F28BB2;
+        box-shadow: 0 0 0 3px rgba(242, 139, 178, 0.15);
+    }
+
+    .float-field>input:not(:placeholder-shown)+label,
+    .float-field>textarea:not(:placeholder-shown)+label,
+    .float-field>input:focus+label,
+    .float-field>textarea:focus+label {
+        top: 0;
+        transform: translateY(-50%) scale(.85);
+        color: #F28BB2;
+        background: #fff;
+        border-radius: 6px;
+    }
+
+    /* CTA glowing button */
+    .cta-glow {
+        position: relative;
+        isolation: isolate;
+        background: linear-gradient(90deg, #F28BB2, #6CA9E0);
+        box-shadow: 0 10px 30px rgba(242, 139, 178, .35), inset 0 0 0 1px rgba(255, 255, 255, .4);
+    }
+
+    .cta-glow::after {
+        content: '';
+        position: absolute;
+        inset: -8px;
+        z-index: -1;
+        filter: blur(16px);
+        background: radial-gradient(closest-side, rgba(242, 139, 178, .45), transparent), radial-gradient(closest-side, rgba(108, 169, 224, .45), transparent);
+        opacity: .8;
+        animation: glow 2.4s ease-in-out infinite alternate;
+    }
+
+    @keyframes glow {
+        from {
+            opacity: .6;
+            transform: scale(.98);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1.02);
+        }
+    }
+
+    /* Steps progress indicator */
+    .steps {
+        display: grid;
+        grid-auto-flow: column;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .steps .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 9999px;
+        background: #e5e7eb;
+        transition: .2s;
+    }
+
+    .steps .dot.active {
+        background: linear-gradient(135deg, #F28BB2, #6CA9E0);
+        box-shadow: 0 0 0 4px rgba(242, 139, 178, .15);
+    }
 </style>
 {% endblock %}
 
@@ -189,10 +364,7 @@
                     <i data-lucide="arrow-left" class="w-4 h-4"></i>
                     Retour au profil
                 </a>
-                <div class="glass px-6 py-3 rounded-xl">
-                    <h1 class="text-xl font-bold text-gray-800">Prendre rendez-vous</h1>
-                    <p class="text-sm text-gray-600">{{ pro.business_name|default:pro.user.get_full_name }}</p>
-                </div>
+
             </div>
         </div>
     </div>
@@ -223,8 +395,11 @@
 
                     <div class="space-y-4">
                         {% for service in services_list %}
-                        <div class="service-card glass rounded-2xl p-4 border-2 border-transparent"
-                            onclick="selectService('{{ service.name }}', {{ service.price }}, {{ service.duration }})">
+                        <div class="service-card glass rounded-2xl p-4 border-2 border-transparent" role="button"
+                            tabindex="0"
+                            aria-label="Service {{ service.name }} {{ service.duration }} minutes {{ service.price }} dinars"
+                            onclick="selectService('{{ service.name }}', {{ service.price }}, {{ service.duration }})"
+                            onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectService('{{ service.name }}', {{ service.price }}, {{ service.duration }});}">
                             <div class="flex items-center justify-between">
                                 <div>
                                     <h3 class="font-semibold text-gray-900">{{ service.name }}</h3>
@@ -249,9 +424,16 @@
                         <h2 class="text-xl font-bold text-gray-900">Choisir la date</h2>
                     </div>
 
-                    <!-- Calendar -->
-                    <div id="calendar" class="grid grid-cols-7 gap-2 mb-4">
-                        <!-- Calendar will be generated by JavaScript -->
+                    <!-- Horizontal Calendar Carousel -->
+                    <div class="calendar-wrap mb-4">
+                        <div class="cal-nav prev"><button type="button" aria-label="Dates précédentes"
+                                onclick="scrollCalendar(-1)"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
+                        </div>
+                        <div id="calendarTrack" class="calendar-track" role="listbox" aria-label="Dates disponibles"
+                            tabindex="0"></div>
+                        <div class="cal-nav next"><button type="button" aria-label="Dates suivantes"
+                                onclick="scrollCalendar(1)"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
+                        </div>
                     </div>
 
                     <div class="text-center">
@@ -269,7 +451,7 @@
                         <h2 class="text-xl font-bold text-gray-900">Choisir l'heure</h2>
                     </div>
 
-                    <div id="timeSlots" class="grid grid-cols-2 gap-3">
+                    <div id="timeSlots" class="grid grid-cols-2 gap-3" role="list" aria-label="Créneaux horaires">
                         <div class="col-span-2 text-center text-gray-500 py-8">
                             Choisissez d'abord une date
                         </div>
@@ -300,19 +482,16 @@
                 </div>
 
                 <!-- Notes -->
-                <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        <i data-lucide="message-circle" class="w-4 h-4 inline mr-1"></i>
-                        Notes additionnelles (optionnel)
-                    </label>
-                    <textarea name="client_notes" rows="3"
-                        class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all"
-                        placeholder="Décrivez vos besoins spécifiques..."></textarea>
+                <div class="mb-6 float-field">
+                    <textarea name="client_notes" aria-label="Notes additionnelles" rows="3" placeholder=" "
+                        class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all"></textarea>
+                    <label><i data-lucide="message-circle" class="w-4 h-4 inline mr-1"></i> Notes additionnelles
+                        (optionnel)</label>
                 </div>
 
                 <div class="flex justify-center">
-                    <button type="submit" id="submitBtn" disabled
-                        class="grad-btn text-white px-8 py-3 rounded-xl font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 transition-transform">
+                    <button type="submit" id="submitBtn" disabled aria-label="Confirmer la réservation"
+                        class="cta-glow text-white px-10 py-4 rounded-2xl font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 transition-transform">
                         <i data-lucide="calendar-check" class="w-5 h-5 mr-2"></i>
                         Confirmer la demande
                     </button>
@@ -391,29 +570,21 @@
         checkFormComplete();
     }
 
-    // Generate calendar
+    // Generate horizontal calendar
     function generateCalendar() {
-        const calendar = document.getElementById('calendar');
+        const track = document.getElementById('calendarTrack');
         const today = new Date();
         const currentMonth = today.getMonth();
         const currentYear = today.getFullYear();
 
-        // Days of week header
-        const daysOfWeek = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
-        daysOfWeek.forEach(day => {
-            const dayHeader = document.createElement('div');
-            dayHeader.className = 'text-center text-sm font-medium text-gray-600 py-2';
-            dayHeader.textContent = day;
-            calendar.appendChild(dayHeader);
-        });
-
-        // Generate next 30 days
+        // Generate next 30 days as swipeable cards
         for (let i = 0; i < 30; i++) {
             const date = new Date(today);
             date.setDate(today.getDate() + i);
 
             const dayDiv = document.createElement('div');
-            dayDiv.className = 'calendar-day glass rounded-xl p-3 text-center cursor-pointer border border-gray-200';
+            dayDiv.className = 'calendar-card text-center cursor-pointer';
+            dayDiv.setAttribute('role', 'option');
 
             const dayOfWeek = date.getDay();
             const dayName = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'][dayOfWeek];
@@ -422,19 +593,27 @@
             if (workingDays.includes(dayName)) {
                 dayDiv.innerHTML = `
                     <div class="text-lg font-bold">${date.getDate()}</div>
-                    <div class="text-xs text-gray-600">${date.toLocaleDateString('fr-FR', { month: 'short' })}</div>
+                    <div class="text-xs ${i === 0 ? 'text-rosePastel' : 'text-gray-600'}">${date.toLocaleDateString('fr-FR', { month: 'short' })}</div>
                 `;
                 dayDiv.onclick = () => selectDate(date, dayDiv);
+                dayDiv.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectDate(date, dayDiv); } };
             } else {
-                dayDiv.className += ' opacity-50 cursor-not-allowed';
+                dayDiv.classList.add('opacity-50');
                 dayDiv.innerHTML = `
                     <div class="text-lg font-bold text-gray-400">${date.getDate()}</div>
                     <div class="text-xs text-gray-400">Fermé</div>
                 `;
             }
 
-            calendar.appendChild(dayDiv);
+            track.appendChild(dayDiv);
         }
+    }
+
+    // Scroll the calendar by cards
+    function scrollCalendar(dir) {
+        const track = document.getElementById('calendarTrack');
+        const step = 6 * 98; // approx 6 cards width
+        track.scrollBy({ left: dir * step, behavior: 'smooth' });
     }
 
     // Date selection
@@ -442,10 +621,12 @@
         selectedDate = date;
 
         // Update UI
-        document.querySelectorAll('.calendar-day').forEach(day => {
+        document.querySelectorAll('.calendar-card').forEach(day => {
             day.classList.remove('selected');
+            day.setAttribute('aria-selected', 'false');
         });
         element.classList.add('selected');
+        element.setAttribute('aria-selected', 'true');
 
         // Update hidden field
         document.getElementById('selectedDate').value = date.toISOString().split('T')[0];
@@ -524,7 +705,9 @@
             if (data.slots && data.slots.length > 0) {
                 data.slots.forEach((slot, index) => {
                     const timeSlot = document.createElement('div');
-                    timeSlot.className = 'time-slot glass rounded-xl p-3 text-center cursor-pointer border border-gray-200 hover:border-green-300 transition-all';
+                    timeSlot.className = 'time-slot glass p-3 text-center cursor-pointer border border-gray-200 hover:border-green-300 transition-all';
+                    timeSlot.setAttribute('role', 'button');
+                    timeSlot.setAttribute('tabindex', '0');
 
                     // Add pulse animation for new slots
                     const isNewSlot = lastSlotsData && lastSlotTimes.length > 0 && !lastSlotTimes.includes(slot.time);
@@ -534,12 +717,13 @@
 
                     timeSlot.innerHTML = `
                         <div class="font-semibold">${slot.time}</div>
-                        <div class="text-xs text-green-600 mt-1">
+                    <div class="meta text-green-600 mt-1">
                             <i data-lucide="check-circle" class="w-3 h-3 inline mr-1"></i>
                             Disponible
                         </div>
                     `;
                     timeSlot.onclick = () => selectTime(slot.time, timeSlot);
+                    timeSlot.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectTime(slot.time, timeSlot); } };
                     timeSlotsContainer.appendChild(timeSlot);
                 });
 
@@ -594,9 +778,21 @@
         const submitBtn = document.getElementById('submitBtn');
         if (selectedService && selectedDate && selectedTime) {
             submitBtn.disabled = false;
+            updateProgress(3);
         } else {
             submitBtn.disabled = true;
+            if (selectedService && selectedDate) updateProgress(2); else if (selectedService) updateProgress(1); else updateProgress(0);
         }
+    }
+
+    function updateProgress(step) {
+        const d1 = document.getElementById('stepDot1');
+        const d2 = document.getElementById('stepDot2');
+        const d3 = document.getElementById('stepDot3');
+        if (!d1 || !d2 || !d3) return;
+        d1.classList.toggle('active', step >= 1);
+        d2.classList.toggle('active', step >= 2);
+        d3.classList.toggle('active', step >= 3);
     }
 
     // Auto-refresh function to keep slots synchronized
@@ -639,6 +835,7 @@
     // Initialize calendar on page load
     document.addEventListener('DOMContentLoaded', () => {
         generateCalendar();
+        updateProgress(0);
     });
 
     // Clean up on page unload

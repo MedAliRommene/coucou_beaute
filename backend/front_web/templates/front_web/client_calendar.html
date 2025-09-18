@@ -177,39 +177,18 @@
                 </div>
             </div>
 
-            <!-- Statistiques rapides -->
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Ce mois</h3>
-                <div class="space-y-3">
-                    <div class="flex justify-between items-center">
-                        <span class="text-gray-600">Rendez-vous total</span>
-                        <span class="font-semibold text-gray-900">5</span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-gray-600">Dépenses</span>
-                        <span class="font-semibold text-rosePastel">450 DT</span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-gray-600">Professionnels</span>
-                        <span class="font-semibold text-gray-900">3</span>
-                    </div>
-                </div>
-            </div>
-
             <!-- Actions rapides -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Actions rapides</h3>
-                <div class="space-y-3">
-                    <button
-                        class="w-full px-4 py-3 bg-rosePastel text-white rounded-lg hover:bg-opacity-80 transition-colors flex items-center justify-center gap-2">
-                        <i data-lucide="plus" class="w-4 h-4"></i>
-                        Nouveau rendez-vous
-                    </button>
-                    <button
-                        class="w-full px-4 py-3 bg-blueLight text-white rounded-lg hover:bg-opacity-80 transition-colors flex items-center justify-center gap-2">
-                        <i data-lucide="search" class="w-4 h-4"></i>
-                        Rechercher un pro
-                    </button>
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Ce mois</h3>
+                <div class="space-y-3 text-sm text-gray-600">
+                    <div class="flex justify-between items-center">
+                        <span>Rendez-vous confirmés</span>
+                        <span class="font-semibold text-gray-900">{{ total_confirmed }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span>Rendez-vous en attente</span>
+                        <span class="font-semibold text-gray-900">{{ total_pending }}</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -217,59 +196,56 @@
 </div>
 
 <script>
-    // Données des rendez-vous confirmés depuis le backend
-    const appointments = {};
-
-    // Charger les rendez-vous confirmés depuis Django
-    {% for appointment in appointments %}
-    const appointmentDate = '{{ appointment.start|date:"Y-m-d" }}';
-    if (!appointments[appointmentDate]) {
-        appointments[appointmentDate] = [];
-    }
-    appointments[appointmentDate].push({
-        id: {{ appointment.id }},
-        time: '{{ appointment.start|date:"H:i" }}',
-        duration: '{{ appointment.start|timesince:appointment.end }}',
-        professional: '{{ appointment.professional_name|escapejs }}',
-        service: '{{ appointment.title|escapejs }}',
-        price: '{{ appointment.price }} DT',
+    // Données des rendez-vous depuis Django
+    const appointmentsList = [
+        {% for appointment in appointments %}
+    {
+        id: { { appointment.id } },
+        date: '{{ appointment.start|date:"Y-m-d" }}',
+            time: '{{ appointment.start|date:"H:i" }}',
+                endTime: '{{ appointment.end|date:"H:i" }}',
+                    duration: '{{ appointment.start|timesince:appointment.end }}',
+                        professional: '{{ appointment.professional_name|escapejs }}',
+                            service: '{{ appointment.title|escapejs }}',
+                                price: { { appointment.price } },
         status: '{{ appointment.status }}',
-        center_name: '{{ appointment.center_name|escapejs }}',
-        notes: '{{ appointment.notes|escapejs }}'
-    });
+            center_name: '{{ appointment.center_name|escapejs }}',
+                notes: '{{ appointment.notes|escapejs }}'
+    } {% if not forloop.last %}, {% endif %}
     {% endfor %}
+    ];
+
+    // Index par date -> tableau de rendez-vous
+    const appointmentsByDate = {};
+    appointmentsList.forEach(a => {
+        if (!appointmentsByDate[a.date]) appointmentsByDate[a.date] = [];
+        appointmentsByDate[a.date].push(a);
+    });
 
     let currentDate = new Date();
     let selectedDate = null;
 
-    // Initialiser le calendrier
     function initCalendar() {
         updateCalendar();
         setupEventListeners();
     }
 
-    // Mettre à jour l'affichage du calendrier
     function updateCalendar() {
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth();
 
-        // Mettre à jour le titre
-        const monthNames = [
-            'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
-            'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
-        ];
+        const monthNames = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
         document.getElementById('currentMonth').textContent = `${monthNames[month]} ${year}`;
 
-        // Générer la grille du calendrier
         const firstDay = new Date(year, month, 1);
         const lastDay = new Date(year, month + 1, 0);
         const startDate = new Date(firstDay);
-        startDate.setDate(startDate.getDate() - firstDay.getDay() + 1); // Commencer par lundi
+        const weekday = firstDay.getDay() === 0 ? 7 : firstDay.getDay();
+        startDate.setDate(startDate.getDate() - (weekday - 1));
 
         const calendarGrid = document.getElementById('calendarGrid');
         calendarGrid.innerHTML = '';
 
-        // Générer 42 jours (6 semaines)
         for (let i = 0; i < 42; i++) {
             const date = new Date(startDate);
             date.setDate(startDate.getDate() + i);
@@ -278,25 +254,20 @@
             dayElement.className = 'calendar-day';
             dayElement.textContent = date.getDate();
 
-            // Marquer le jour actuel
             const today = new Date();
             if (date.toDateString() === today.toDateString()) {
                 dayElement.classList.add('today');
             }
 
-            // Marquer les jours avec des rendez-vous
             const dateString = date.toISOString().split('T')[0];
-            if (appointments[dateString]) {
+            if (appointmentsByDate[dateString]) {
                 dayElement.classList.add('has-appointment');
                 const dot = document.createElement('div');
                 dot.className = 'appointment-dot';
-                if (dayElement.classList.contains('today')) {
-                    dot.classList.add('today');
-                }
+                if (dayElement.classList.contains('today')) dot.classList.add('today');
                 dayElement.appendChild(dot);
             }
 
-            // Gérer la sélection
             dayElement.addEventListener('click', () => {
                 selectedDate = dateString;
                 updateDayAppointments(dateString);
@@ -307,30 +278,23 @@
         }
     }
 
-    // Mettre à jour la sélection des jours
     function updateDaySelection() {
-        document.querySelectorAll('.calendar-day').forEach(day => {
-            day.classList.remove('selected');
+        document.querySelectorAll('.calendar-day').forEach(day => day.classList.remove('selected'));
+        if (!selectedDate) return;
+        const dayElements = document.querySelectorAll('.calendar-day');
+        dayElements.forEach(day => {
+            const dayDate = new Date(selectedDate);
+            if (day.textContent == dayDate.getDate() && dayDate.getMonth() === currentDate.getMonth()) {
+                day.classList.add('selected');
+            }
         });
-
-        if (selectedDate) {
-            const dayElements = document.querySelectorAll('.calendar-day');
-            dayElements.forEach(day => {
-                const dayDate = new Date(selectedDate);
-                if (day.textContent == dayDate.getDate() &&
-                    dayDate.getMonth() === currentDate.getMonth()) {
-                    day.classList.add('selected');
-                }
-            });
-        }
     }
 
-    // Mettre à jour les rendez-vous du jour sélectionné
     function updateDayAppointments(dateString) {
         const dayAppointments = document.getElementById('dayAppointments');
-        const dayAppointmentsData = appointments[dateString] || [];
+        const list = appointmentsByDate[dateString] || [];
 
-        if (dayAppointmentsData.length === 0) {
+        if (list.length === 0) {
             dayAppointments.innerHTML = `
                 <div class="text-center py-8 text-gray-500">
                     <i data-lucide="calendar" class="w-12 h-12 mx-auto mb-2 text-gray-300"></i>
@@ -338,43 +302,38 @@
                 </div>
             `;
         } else {
-            dayAppointments.innerHTML = dayAppointmentsData.map(apt => `
+            dayAppointments.innerHTML = list.map(apt => `
                 <div class="appointment-card">
                     <div class="flex items-center justify-between mb-2">
                         <span class="font-semibold text-gray-900">${apt.time}</span>
-                        <span class="px-2 py-1 text-xs rounded-full ${apt.status === 'confirmed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                }">
+                        <span class="px-2 py-1 text-xs rounded-full ${apt.status === 'confirmed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">
                             ${apt.status === 'confirmed' ? 'Confirmé' : 'En attente'}
                         </span>
                     </div>
                     <h4 class="font-medium text-gray-900">${apt.professional}</h4>
                     <p class="text-sm text-gray-600">${apt.service}</p>
-                    <p class="text-sm text-rosePastel font-medium">${apt.price}</p>
+                    <p class="text-sm text-rosePastel font-medium">${apt.price} DT</p>
+                    ${apt.notes ? `<p class="mt-2 text-xs text-gray-500">${apt.notes}</p>` : ''}
                 </div>
             `).join('');
         }
-
-        // Réinitialiser les icônes
-        lucide.createIcons();
+        if (window.lucide) lucide.createIcons();
     }
 
-    // Configurer les événements
     function setupEventListeners() {
         document.getElementById('prevMonth').addEventListener('click', () => {
             currentDate.setMonth(currentDate.getMonth() - 1);
             updateCalendar();
         });
-
         document.getElementById('nextMonth').addEventListener('click', () => {
             currentDate.setMonth(currentDate.getMonth() + 1);
             updateCalendar();
         });
     }
 
-    // Initialiser le calendrier au chargement de la page
     document.addEventListener('DOMContentLoaded', () => {
         initCalendar();
-        lucide.createIcons();
+        if (window.lucide) lucide.createIcons();
     });
 </script>
 {% endblock %}

@@ -836,51 +836,95 @@ def simple_professionals_api(request):
         
         results = []
         skipped_no_coords = 0
-        
+        skipped_no_extra = 0
+
         for pro in professionals:
             try:
-                # Get extra profile
-                extra = pro.extra
-                
-                # Skip if no coordinates
-                if not extra.latitude or not extra.longitude:
+                # Extra (peut être absent)
+                try:
+                    extra = pro.extra
+                except Exception:
+                    extra = None
+                    skipped_no_extra += 1
+
+                # Coordonnées (facultatives)
+                lat_val = float(extra.latitude) if (extra and extra.latitude is not None) else None
+                lng_val = float(extra.longitude) if (extra and extra.longitude is not None) else None
+
+                # Si manquantes, essayer via la dernière application
+                if (lat_val is None or lng_val is None):
+                    app = ProfessionalApplication.objects.filter(email__iexact=pro.user.email).order_by('-created_at').first()
+                    try:
+                        if app and app.latitude is not None and app.longitude is not None:
+                            lat_val = float(app.latitude)
+                            lng_val = float(app.longitude)
+                    except Exception:
+                        pass
+
+                # Fallback par ville (Hammamet Est etc.) sans confondre "Tunisie"
+                if (lat_val is None or lng_val is None) and extra and getattr(extra, 'city', None):
+                    import re, unicodedata
+                    def normalize(s: str) -> str:
+                        return ''.join(c for c in unicodedata.normalize('NFD', s) if unicodedata.category(c) != 'Mn').lower()
+                    city_map = [
+                        ('hammamet', (36.4008, 10.6149)),
+                        ('nabeul', (36.4515, 10.7353)),
+                        ('tunis', (36.8065, 10.1815)),
+                        ('sousse', (35.8256, 10.6360)),
+                        ('sfax', (34.7406, 10.7603)),
+                        ('bizerte', (37.2746, 9.8739)),
+                        ('gabes', (33.8815, 10.0982)),
+                        ('gafsa', (34.4250, 8.7842)),
+                        ('kairouan', (35.6781, 10.0963)),
+                        ('monastir', (35.7770, 10.8262)),
+                        ('medenine', (33.3547, 10.5055)),
+                        ('tozeur', (33.9197, 8.1335)),
+                    ]
+                    city_norm = normalize(str(extra.city or ''))
+                    tokens = set(filter(None, re.split(r'[^a-z]+', city_norm)))
+                    for key, coords in city_map:
+                        if key in tokens:
+                            lat_val, lng_val = coords
+                            break
+                if lat_val is None or lng_val is None:
                     skipped_no_coords += 1
-                    print(f"⚠️  Professionnel {pro.id} ({pro.business_name}) sans coordonnées")
-                    continue
-                
-                # Calculate distance
-                center_lat = float(request.GET.get('center_lat', 36.4515))  # Nabeul par défaut
-                center_lng = float(request.GET.get('center_lng', 10.7353))
-                distance = calculate_distance(center_lat, center_lng, extra.latitude, extra.longitude)
-                
-                # Construire le nom
+
+                # Distance si possible
+                distance = None
+                try:
+                    if lat_val is not None and lng_val is not None:
+                        center_lat = float(request.GET.get('center_lat', 36.4515))
+                        center_lng = float(request.GET.get('center_lng', 10.7353))
+                        distance = calculate_distance(center_lat, center_lng, lat_val, lng_val)
+                except Exception:
+                    distance = None
+
+                # Nom affiché
                 name = pro.business_name
                 if not name:
                     first_name = pro.user.first_name or ""
                     last_name = pro.user.last_name or ""
-                    name = f"{first_name} {last_name}".strip()
-                if not name:
-                    name = "Professionnel"
-                
-                # Construire l'adresse complète
+                    name = f"{first_name} {last_name}".strip() or "Professionnel"
+
+                # Adresse
                 address_parts = []
-                if extra.address:
+                if extra and extra.address:
                     address_parts.append(extra.address)
-                if extra.city:
+                if extra and extra.city:
                     address_parts.append(extra.city)
                 full_address = ", ".join(address_parts) if address_parts else "Adresse non disponible"
-                
-                # Construire l'URL de la photo de profil
-                profile_photo_url = None
-                if extra.profile_photo:
-                    try:
-                        profile_photo_url = extra.profile_photo.url
-                    except:
-                        profile_photo_url = None
 
-                # Construire les services
+                # Photo
+                profile_photo_url = None
+                try:
+                    if extra and getattr(extra, 'profile_photo', None):
+                        profile_photo_url = extra.profile_photo.url
+                except Exception:
+                    profile_photo_url = None
+
+                # Services
                 services_list = []
-                if extra.services:
+                if extra and extra.services:
                     if isinstance(extra.services, list):
                         services_list = extra.services
                     elif isinstance(extra.services, str):
@@ -888,62 +932,68 @@ def simple_professionals_api(request):
                     elif isinstance(extra.services, dict):
                         services_list = list(extra.services.values())
 
-                # Construire les langues parlées
+                # Langues
                 languages_list = []
-                if extra.spoken_languages:
+                if extra and extra.spoken_languages:
                     if isinstance(extra.spoken_languages, list):
                         languages_list = extra.spoken_languages
                     elif isinstance(extra.spoken_languages, str):
                         languages_list = [l.strip() for l in extra.spoken_languages.split(',') if l.strip()]
 
+                # Préparer valeurs sécurisées (évite erreurs lorsque extra est None)
+                rating_val = round(float(extra.rating), 1) if (extra and extra.rating) else 4.0
+                price_val = int(extra.price) if (extra and extra.price) else 50
+                price_range_val = f"{price_val} - {int(price_val * 1.5)} DT"
+
                 result = {
                     'id': pro.id,
                     'name': name,
-                    'service': extra.primary_service or 'Service',
+                    'service': (extra.primary_service if (extra and getattr(extra, 'primary_service', None)) else 'Service'),
                     'services': services_list,
-                    'rating': round(float(extra.rating), 1) if extra.rating else 4.0,
-                    'reviews': int(extra.reviews) if extra.reviews else 0,
-                    'price': int(extra.price) if extra.price else 50,
-                    'price_range': f"{int(extra.price) if extra.price else 50} - {int(extra.price * 1.5) if extra.price else 75} DT",
-                    'lat': float(extra.latitude),
-                    'lng': float(extra.longitude),
-                    'distanceKm': round(distance, 1),
-                    'phone': extra.phone_number or '',
+                    'rating': rating_val,
+                    'reviews': int(extra.reviews) if (extra and extra.reviews) else 0,
+                    'price': price_val,
+                    'price_range': price_range_val,
+                    'lat': lat_val,
+                    'lng': lng_val,
+                    'distanceKm': round(distance, 1) if distance is not None else None,
+                    'phone': (extra.phone_number if (extra and extra.phone_number) else ''),
                     'email': pro.user.email,
                     'address': full_address,
-                    'city': extra.city or '',
+                    'city': (extra.city if (extra and extra.city) else ''),
                     'profile_photo': profile_photo_url,
-                    'bio': extra.bio or '',
+                    'bio': (extra.bio if (extra and extra.bio) else ''),
                     'spoken_languages': languages_list,
-                    'working_days': extra.working_days or [],
-                    'working_hours': extra.working_hours or {'start': '09:00', 'end': '18:00'},
-                    'social_instagram': extra.social_instagram or '',
-                    'social_facebook': extra.social_facebook or '',
-                    'social_tiktok': extra.social_tiktok or '',
-                    'gallery': extra.gallery or [],
+                    'working_days': (extra.working_days if (extra and extra.working_days) else []),
+                    'working_hours': (extra.working_hours if (extra and extra.working_hours) else {'start': '09:00', 'end': '18:00'}),
+                    'social_instagram': (extra.social_instagram if (extra and extra.social_instagram) else ''),
+                    'social_facebook': (extra.social_facebook if (extra and extra.social_facebook) else ''),
+                    'social_tiktok': (extra.social_tiktok if (extra and extra.social_tiktok) else ''),
+                    'gallery': (extra.gallery if (extra and extra.gallery) else []),
                     'is_verified': pro.is_verified,
                     'created_at': pro.created_at.isoformat() if pro.created_at else None
                 }
-                
+
                 results.append(result)
                 print(f"✅ Professionnel ajouté: {name} - {result['service']} - {result['distanceKm']}km")
-                
+
             except Exception as e:
                 print(f"❌ Erreur traitement professionnel {pro.id}: {e}")
                 continue
-        
-        print(f"📈 Résultats: {len(results)} professionnels avec coordonnées, {skipped_no_coords} sans coordonnées")
-        
-        # Sort by distance
-        results.sort(key=lambda x: x['distanceKm'])
-        
+
+        print(f"📈 Résultats: {len(results)} professionnels inclus, {skipped_no_coords} sans coordonnées, {skipped_no_extra} sans extra")
+
+        # Tri: distance d'abord si présente, sinon en fin
+        results.sort(key=lambda x: (x['distanceKm'] is None, x['distanceKm'] if x['distanceKm'] is not None else 1e9))
+
         return Response({
             'results': results,
             'count': len(results),
             'debug': {
                 'total_professionals': professionals.count(),
-                'with_coordinates': len(results),
-                'without_coordinates': skipped_no_coords
+                'with_coordinates': sum(1 for r in results if r.get('lat') and r.get('lng')),
+                'without_coordinates': skipped_no_coords,
+                'without_extra': skipped_no_extra,
             }
         })
         

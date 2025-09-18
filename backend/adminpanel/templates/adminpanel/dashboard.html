@@ -135,111 +135,22 @@
                 </select>
             </div>
 
-            <!-- Status Filter -->
-            <div class="flex items-center gap-2">
-                <label class="text-sm text-gray-600">Statut:</label>
-                <div class="flex gap-2">
-                    <label class="flex items-center gap-2">
-                        <input type="checkbox" class="rounded text-pink-500 focus:ring-pink-200">
-                        <span class="text-sm">Confirmé</span>
-                    </label>
-                    <label class="flex items-center gap-2">
-                        <input type="checkbox" class="rounded text-blue-500 focus:ring-blue-200">
-                        <span class="text-sm">En attente</span>
-                    </label>
-                    <label class="flex items-center gap-2">
-                        <input type="checkbox" class="rounded text-green-500 focus:ring-green-200">
-                        <span class="text-sm">Terminé</span>
-                    </label>
-                </div>
-            </div>
 
             <!-- Search Filter -->
-            <div class="flex items-center gap-2">
-                <input type="text" placeholder="Recherche client..."
-                    class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-pink-200 w-48">
-            </div>
+
         </div>
     </div>
 
-    <!-- KPI Cards Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <!-- Revenue KPI -->
-        <div class="kpi-card bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-xl">
-            <div class="flex items-center justify-between mb-4">
-                <div class="w-12 h-12 rounded-xl gradient-bg flex items-center justify-center">
-                    <i data-lucide="trending-up" class="w-6 h-6 text-white"></i>
-                </div>
-                <span class="text-green-500 text-sm font-medium">+12.5%</span>
-            </div>
-            <h3 id="kpiRevenueValue" class="text-2xl font-bold text-gray-900 mb-1">€0</h3>
-            <p class="text-gray-600 text-sm">Chiffre d'affaires</p>
-            <div class="mt-4 flex items-center text-sm">
-                <span class="text-green-500">↗</span>
-                <span class="text-gray-600 ml-1">vs mois précédent</span>
-            </div>
-        </div>
 
-        <!-- Appointments KPI -->
-        <div class="kpi-card bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-xl">
-            <div class="flex items-center justify-between mb-4">
-                <div class="w-12 h-12 rounded-xl rose-gradient flex items-center justify-center">
-                    <i data-lucide="calendar" class="w-6 h-6 text-white"></i>
-                </div>
-                <span class="text-blue-500 text-sm font-medium">+8.2%</span>
-            </div>
-            <h3 id="kpiAppointmentsValue" class="text-2xl font-bold text-gray-900 mb-1">0</h3>
-            <p class="text-gray-600 text-sm">Rendez-vous</p>
-            <div class="mt-4 flex items-center text-sm">
-                <span class="text-blue-500">↗</span>
-                <span class="text-gray-600 ml-1">ce mois</span>
-            </div>
-        </div>
 
-        <!-- Client Retention KPI -->
-        <div class="kpi-card bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-xl">
-            <div class="flex items-center justify-between mb-4">
-                <div class="w-12 h-12 rounded-xl blue-gradient flex items-center justify-center">
-                    <i data-lucide="users" class="w-6 h-6 text-white"></i>
-                </div>
-                <span class="text-green-500 text-sm font-medium">+5.7%</span>
-            </div>
-            <h3 id="kpiRetentionValue" class="text-2xl font-bold text-gray-900 mb-1">0%</h3>
-            <p class="text-gray-600 text-sm">Fidélisation clients</p>
-            <div class="mt-4 flex items-center text-sm">
-                <span class="text-green-500">↗</span>
-                <span class="text-gray-600 ml-1">taux de retour</span>
-            </div>
-        </div>
-
-        <!-- Profit Margin KPI -->
-        <div class="kpi-card bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-xl">
-            <div class="flex items-center justify-between mb-4">
-                <div class="w-12 h-12 rounded-xl green-gradient flex items-center justify-center">
-                    <i data-lucide="pie-chart" class="w-6 h-6 text-white"></i>
-                </div>
-                <span class="text-green-500 text-sm font-medium">+2.1%</span>
-            </div>
-            <h3 id="kpiMarginValue" class="text-2xl font-bold text-gray-900 mb-1">0%</h3>
-            <p class="text-gray-600 text-sm">Marge bénéficiaire</p>
-            <div class="mt-4 flex items-center text-sm">
-                <span class="text-green-500">↗</span>
-                <span class="text-gray-600 ml-1">vs objectif</span>
-            </div>
-        </div>
-    </div>
-
+ 
     <!-- Charts Section -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Revenue Trend Chart -->
         <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
             <div class="flex items-center justify-between mb-6">
                 <h3 class="text-lg font-semibold text-gray-900">Évolution des Revenus</h3>
-                <div class="flex items-center gap-2">
-                    <button class="text-xs px-3 py-1 rounded-lg bg-pink-100 text-pink-600">7J</button>
-                    <button class="text-xs px-3 py-1 rounded-lg bg-gray-100 text-gray-600">30J</button>
-                    <button class="text-xs px-3 py-1 rounded-lg bg-gray-100 text-gray-600">90J</button>
-                </div>
+
             </div>
             <div class="chart-container">
                 <canvas id="revenueChart"></canvas>
@@ -250,7 +161,7 @@
         <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
             <div class="flex items-center justify-between mb-6">
                 <h3 class="text-lg font-semibold text-gray-900">Répartition des Services</h3>
-                <button class="text-pink-500 hover:text-pink-600 text-sm">Voir détails</button>
+
             </div>
             <div class="chart-container">
                 <canvas id="serviceChart"></canvas>
@@ -260,10 +171,10 @@
 
     <!-- Advanced Analytics Section -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Geographic Heatmap -->
+        <!-- Active clients by day chart -->
         <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm lg:col-span-2">
             <div class="flex items-center justify-between mb-6">
-                <h3 class="text-lg font-semibold text-gray-900">Répartition Géographique</h3>
+                <h3 class="text-lg font-semibold text-gray-900">Clients actifs par jour</h3>
                 <div class="flex items-center gap-2 text-sm text-gray-600">
                     <div class="flex items-center gap-1">
                         <div class="w-3 h-3 bg-green-400 rounded"></div>
@@ -284,137 +195,21 @@
             </div>
         </div>
 
-        <!-- Top Clients Widget -->
+        <!-- Status breakdown + Top services -->
         <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
             <div class="flex items-center justify-between mb-6">
-                <h3 class="text-lg font-semibold text-gray-900">Top Clients</h3>
-                <button class="text-pink-500 hover:text-pink-600 text-sm">Voir tous</button>
+                <h3 class="text-lg font-semibold text-gray-900">Répartition par statut</h3>
             </div>
-            <div class="space-y-4">
-                <div class="flex items-center gap-3 p-3 rounded-lg bg-gray-50">
-                    <div
-                        class="w-8 h-8 rounded-full bg-gradient-to-r from-pink-400 to-blue-400 flex items-center justify-center text-white text-sm font-medium">
-                        M</div>
-                    <div class="flex-1">
-                        <p class="font-medium text-gray-900">Marie Dubois</p>
-                        <p class="text-sm text-gray-600">€2,450 ce mois</p>
-                    </div>
-                    <span class="text-green-500 text-sm">+15%</span>
-                </div>
-                <div class="flex items-center gap-3 p-3 rounded-lg bg-gray-50">
-                    <div
-                        class="w-8 h-8 rounded-full bg-gradient-to-r from-blue-400 to-purple-400 flex items-center justify-center text-white text-sm font-medium">
-                        S</div>
-                    <div class="flex-1">
-                        <p class="font-medium text-gray-900">Sophie Martin</p>
-                        <p class="text-sm text-gray-600">€1,890 ce mois</p>
-                    </div>
-                    <span class="text-green-500 text-sm">+8%</span>
-                </div>
-                <div class="flex items-center gap-3 p-3 rounded-lg bg-gray-50">
-                    <div
-                        class="w-8 h-8 rounded-full bg-gradient-to-r from-green-400 to-teal-400 flex items-center justify-center text-white text-sm font-medium">
-                        A</div>
-                    <div class="flex-1">
-                        <p class="font-medium text-gray-900">Anne Leroy</p>
-                        <p class="text-sm text-gray-600">€1,650 ce mois</p>
-                    </div>
-                    <span class="text-blue-500 text-sm">+12%</span>
-                </div>
+            <div class="chart-container mb-6"><canvas id="statusChart"></canvas></div>
+            <div>
+                <h4 class="text-sm font-semibold text-gray-700 mb-2">Top services</h4>
+                <div id="topServices" class="space-y-2 text-sm"></div>
             </div>
         </div>
     </div>
 
     <!-- Data Table Section -->
-    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div class="p-6 border-b border-gray-100">
-            <div class="flex items-center justify-between">
-                <h3 class="text-lg font-semibold text-gray-900">Rendez-vous Récents</h3>
-                <div class="flex items-center gap-3">
-                    <button class="text-sm text-gray-600 hover:text-gray-900">Filtrer</button>
-                    <button class="text-sm text-gray-600 hover:text-gray-900">Trier</button>
-                    <button class="bg-pink-500 text-white px-4 py-2 rounded-lg hover:bg-pink-600 transition-colors">
-                        <i data-lucide="plus" class="w-4 h-4 inline mr-2"></i>Nouveau
-                    </button>
-                </div>
-            </div>
-        </div>
-        <div class="overflow-x-auto">
-            <table class="w-full">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Client</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Service</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Professionnel</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Statut</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Montant</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    <tr class="hover:bg-gray-50 transition-colors">
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center">
-                                <div
-                                    class="w-8 h-8 rounded-full bg-gradient-to-r from-pink-400 to-blue-400 flex items-center justify-center text-white text-sm font-medium">
-                                    M</div>
-                                <div class="ml-3">
-                                    <div class="text-sm font-medium text-gray-900">Marie Dubois</div>
-                                    <div class="text-sm text-gray-500">marie@email.com</div>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Coupe + Brushing</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Sarah Coiffure</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">15 Jan 2025</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span
-                                class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Confirmé</span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">€85</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <button class="text-pink-600 hover:text-pink-900 mr-3">Modifier</button>
-                            <button class="text-gray-600 hover:text-gray-900">Voir</button>
-                        </td>
-                    </tr>
-                    <tr class="hover:bg-gray-50 transition-colors">
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center">
-                                <div
-                                    class="w-8 h-8 rounded-full bg-gradient-to-r from-blue-400 to-purple-400 flex items-center justify-center text-white text-sm font-medium">
-                                    S</div>
-                                <div class="ml-3">
-                                    <div class="text-sm font-medium text-gray-900">Sophie Martin</div>
-                                    <div class="text-sm text-gray-500">sophie@email.com</div>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Manucure + Vernis</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Emma Nails</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">16 Jan 2025</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span
-                                class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">En
-                                attente</span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">€45</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <button class="text-pink-600 hover:text-pink-900 mr-3">Modifier</button>
-                            <button class="text-gray-600 hover:text-gray-900">Voir</button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
+
 </div>
 {% endblock %}
 
@@ -422,7 +217,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        let revenueChart, serviceChart, geoChart;
+        let revenueChart, serviceChart, geoChart, statusChart;
         const revenueCtx = document.getElementById('revenueChart').getContext('2d');
         const serviceCtx = document.getElementById('serviceChart').getContext('2d');
         const geoCtx = document.getElementById('geoChart').getContext('2d');
@@ -455,6 +250,11 @@
             if (!revenueChart) revenueChart = new Chart(revenueCtx, { type: 'line', data: { labels: [], datasets: [{ label: 'Revenus (€)', data: [], borderColor: 'rgb(236, 72, 153)', backgroundColor: 'rgba(236,72,153,0.12)', borderWidth: 2, fill: true, tension: 0.35 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } } });
             if (!serviceChart) serviceChart = new Chart(serviceCtx, { type: 'doughnut', data: { labels: [], datasets: [{ data: [], backgroundColor: ['rgba(236,72,153,0.8)', 'rgba(108,169,224,0.8)', 'rgba(34,197,94,0.8)', 'rgba(251,146,60,0.8)', 'rgba(168,85,247,0.8)', 'rgba(14,165,233,0.8)'], borderWidth: 2 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } } });
             if (!geoChart) geoChart = new Chart(geoCtx, { type: 'bar', data: { labels: [], datasets: [{ label: 'Clients actifs', data: [], backgroundColor: 'rgba(108,169,224,0.6)', borderRadius: 8 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } } });
+            if (!statusChart) statusChart = new Chart(document.getElementById('statusChart').getContext('2d'), {
+                type: 'doughnut',
+                data: { labels: ['En attente', 'Confirmé', 'Annulé', 'Terminé'], datasets: [{ data: [0, 0, 0, 0], backgroundColor: ['#FDE68A', '#60A5FA', '#FCA5A5', '#34D399'] }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+            });
         }
 
         async function loadProfessionals() {
@@ -478,8 +278,9 @@
             const period = document.getElementById('filterPeriod').value || 'Cette semaine';
             const { from, to } = parsePeriod(period);
             const proId = document.getElementById('filterPro').value;
-            if (!proId) return; // wait for selection
-            const q = new URLSearchParams({ pro_id: proId, from, to });
+            // When no professional selected, load ALL centers
+            const q = new URLSearchParams({ from, to });
+            if (proId) q.set('pro_id', proId);
             const r = await fetch('/api/appointments/analytics/overview/?' + q.toString(), { headers: { 'Accept': 'application/json' }, credentials: 'same-origin' });
             if (!r.ok) return;
             const data = await r.json();
@@ -496,6 +297,23 @@
             serviceChart.data.datasets[0].data = dist.map(x => x.value);
             serviceChart.update();
 
+            // Status breakdown
+            const sb = data.status_breakdown || { pending: 0, confirmed: 0, cancelled: 0, completed: 0 };
+            statusChart.data.datasets[0].data = [sb.pending || 0, sb.confirmed || 0, sb.cancelled || 0, sb.completed || 0];
+            statusChart.update();
+
+            // Top services list (textual)
+            const topWrap = document.getElementById('topServices');
+            if (topWrap) {
+                topWrap.innerHTML = '';
+                dist.slice(0, 5).forEach(d => {
+                    const row = document.createElement('div');
+                    row.className = 'flex items-center justify-between';
+                    row.innerHTML = `<span>${d.label}</span><span class="text-gray-600">${d.value}</span>`;
+                    topWrap.appendChild(row);
+                });
+            }
+
             // Geo placeholder: use city counts from professionals search (admin may not have geodata here). For now map weekday counts as bars.
             const weekdays = data.reservations_by_weekday || [];
             geoChart.data.labels = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
@@ -507,8 +325,7 @@
         document.getElementById('filterPro').addEventListener('change', refreshAnalytics);
 
         loadProfessionals().then(() => {
-            const sel = document.getElementById('filterPro');
-            if (sel.options.length > 1) sel.selectedIndex = 1;
+            // Default to ALL centers (no selection)
             refreshAnalytics();
         });
 
@@ -580,8 +397,21 @@
             setKpiById('kpiRevenueValue', formatMoney(sum.revenue_total || 0));
             setKpiById('kpiAppointmentsValue', String(sum.reservations_total || 0));
             const retention = Math.round(((sum.retention_rate || 0) * 100));
-            setKpiById('kpiRetentionValue', `${retention}%`);
             setKpiById('kpiMarginValue', `${sum.margin_pct || 0}%`);
+            // Variations
+            try {
+                const prev = sum.previous || {};
+                const rVar = (sum.revenue_total || 0) - (prev.revenue_total || 0);
+                const rPct = (prev.revenue_total || 0) ? Math.round((rVar / prev.revenue_total) * 100) : 0;
+                const aVar = (sum.reservations_total || 0) - (prev.reservations_total || 0);
+                const aPct = (prev.reservations_total || 0) ? Math.round((aVar / prev.reservations_total) * 100) : 0;
+                const elRV = document.getElementById('kpiRevenueVar'); if (elRV) { elRV.textContent = `${rPct >= 0 ? '+' : ''}${rPct}%`; elRV.className = rPct >= 0 ? 'text-green-500 text-sm font-medium' : 'text-red-500 text-sm font-medium'; }
+                const elAV = document.getElementById('kpiAppointmentsVar'); if (elAV) { elAV.textContent = `${aPct >= 0 ? '+' : ''}${aPct}%`; elAV.className = aPct >= 0 ? 'text-green-500 text-sm font-medium' : 'text-red-500 text-sm font-medium'; }
+                const elMV = document.getElementById('kpiMarginVar'); if (elMV) { elMV.textContent = `${sum.margin_pct || 0}%`; }
+                // Summary revenue card
+                const elRT = document.getElementById('adminRevenueTotal'); if (elRT) elRT.textContent = formatMoney(sum.revenue_total || 0);
+                const elRV2 = document.getElementById('adminRevenueVar'); if (elRV2) { elRV2.textContent = `${rPct >= 0 ? '+' : ''}${rPct}%`; elRV2.className = rPct >= 0 ? 'text-green-600 text-sm font-medium' : 'text-red-600 text-sm font-medium'; }
+            } catch { }
         }
 
         // Patch refreshAnalytics to also fill KPI cards and geo with real city counts
@@ -615,6 +445,15 @@
 
             // KPI cards values
             updateDashboardKpisFromAnalytics(data);
+
+            // Additional KPIs
+            const sum = (data.summary || {});
+            const total = sum.reservations_total || 0;
+            const confirmed = (data.status_breakdown || {}).confirmed || 0;
+            const rate = total ? Math.round((confirmed / total) * 100) : 0;
+            const avgTicket = confirmed ? (sum.revenue_total || 0) / confirmed : 0;
+            const elRate = document.getElementById('kpiConfirmRate'); if (elRate) elRate.textContent = `${rate}%`;
+            const elAvg = document.getElementById('kpiAvgTicket'); if (elAvg) elAvg.textContent = formatMoney(avgTicket);
         }
     });
 </script>
