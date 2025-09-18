@@ -28,3 +28,4 @@ sshpass -p "$SERVER_PASSWORD" ssh -o StrictHostKeyChecking=no "$SERVER_USER@$SER
 "
 
 echo "🎉 Configuration SSH terminée !"
+## fsdf
