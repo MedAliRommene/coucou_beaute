@@ -38,6 +38,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
 	'corsheaders.middleware.CorsMiddleware',
 	'django.middleware.security.SecurityMiddleware',
+	'whitenoise.middleware.WhiteNoiseMiddleware',  # Pour servir les fichiers statiques en production
 	'django.contrib.sessions.middleware.SessionMiddleware',
 	'django.middleware.common.CommonMiddleware',
 	'django.middleware.csrf.CsrfViewMiddleware',
@@ -98,13 +99,16 @@ STATICFILES_DIRS = [
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+# Configuration Whitenoise pour la production
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'users.User'
 
 # Auth redirects
 LOGIN_URL = '/login/'
-LOGIN_REDIRECT_URL = '/dashboard/'
+LOGIN_REDIRECT_URL = '/client/'  # Redirection par défaut vers client
 LOGOUT_REDIRECT_URL = '/login/'
 
 REST_FRAMEWORK = {
@@ -134,7 +138,8 @@ SIMPLE_JWT = {
 }
 
 CORS_ALLOWED_ORIGINS = [u for u in os.getenv('DJANGO_CORS_ORIGINS', '').split(',') if u]
-CORS_ALLOW_ALL_ORIGINS = not CORS_ALLOWED_ORIGINS
+# Sécurité : ne jamais autoriser toutes les origines en production
+CORS_ALLOW_ALL_ORIGINS = DEBUG and not CORS_ALLOWED_ORIGINS
 
 # --- Email settings (ENV‑driven; console backend by default in DEBUG) ---
 if DEBUG:
@@ -158,11 +163,12 @@ if os.getenv('AWS_STORAGE_BUCKET_NAME'):
 
 # --- Security headers & cookies in production ---
 if not DEBUG:
-	CSRF_COOKIE_SECURE = True
-	SESSION_COOKIE_SECURE = True
-	SECURE_HSTS_SECONDS = int(os.getenv('SECURE_HSTS_SECONDS', '31536000'))
-	SECURE_HSTS_INCLUDE_SUBDOMAINS = os.getenv('SECURE_HSTS_INCLUDE_SUBDOMAINS', 'True') == 'True'
-	SECURE_HSTS_PRELOAD = os.getenv('SECURE_HSTS_PRELOAD', 'True') == 'True'
+	# Configuration sécurisée pour HTTPS
+	CSRF_COOKIE_SECURE = os.getenv('CSRF_COOKIE_SECURE', 'False') == 'True'
+	SESSION_COOKIE_SECURE = os.getenv('SESSION_COOKIE_SECURE', 'False') == 'True'
+	SECURE_HSTS_SECONDS = int(os.getenv('SECURE_HSTS_SECONDS', '0'))
+	SECURE_HSTS_INCLUDE_SUBDOMAINS = os.getenv('SECURE_HSTS_INCLUDE_SUBDOMAINS', 'False') == 'True'
+	SECURE_HSTS_PRELOAD = os.getenv('SECURE_HSTS_PRELOAD', 'False') == 'True'
 	SECURE_REFERRER_POLICY = os.getenv('SECURE_REFERRER_POLICY', 'strict-origin-when-cross-origin')
 	SECURE_CONTENT_TYPE_NOSNIFF = True
 	SECURE_BROWSER_XSS_FILTER = True
@@ -180,11 +186,4 @@ CSRF_USE_SESSIONS = False
 CSRF_COOKIE_AGE = 31449600
 CSRF_FAILURE_VIEW = 'django.views.csrf.csrf_failure'
 
-# Configuration CSRF pour résoudre l'erreur 403
-CSRF_COOKIE_SECURE = False  # Temporaire pour HTTP
-CSRF_TRUSTED_ORIGINS = [
-    'http://196.203.120.35',
-    'http://196.203.120.35:8000',
-    'http://localhost:8000',
-    'http://127.0.0.1:8000',
-]
+# CSRF_TRUSTED_ORIGINS est maintenant géré par les variables d'environnement (ligne 176)

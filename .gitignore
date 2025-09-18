@@ -1,0 +1,139 @@
+# ===========================================
+# COUCOU BEAUTÉ - GITIGNORE
+# ===========================================
+
+# ===========================================
+# FICHIERS D'ENVIRONNEMENT (CRITIQUE)
+# ===========================================
+# Ne jamais commiter les fichiers d'environnement
+.env
+.env.*
+!.env.example
+env.local
+env.prod
+env.development
+env.production
+
+# ===========================================
+# PYTHON
+# ===========================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# ===========================================
+# DJANGO
+# ===========================================
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
+static/
+
+# ===========================================
+# ENVIRONNEMENTS VIRTUELS
+# ===========================================
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# ===========================================
+# IDE & ÉDITEURS
+# ===========================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ===========================================
+# SYSTÈME
+# ===========================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ===========================================
+# DOCKER
+# ===========================================
+.dockerignore
+
+# ===========================================
+# FLUTTER/MOBILE
+# ===========================================
+coucou_beaute_mobile/build/
+coucou_beaute_mobile/.dart_tool/
+coucou_beaute_mobile/.packages
+coucou_beaute_mobile/.pub-cache/
+coucou_beaute_mobile/.pub/
+coucou_beaute_mobile/pubspec.lock
+
+# ===========================================
+# BACKUPS & TEMPORAIRES
+# ===========================================
+*.backup
+*.bak
+*.tmp
+*.temp
+
+# ===========================================
+# CI/CD & DÉPLOIEMENT
+# ===========================================
+# Garder les workflows GitHub Actions
+!.github/workflows/
+
+# Exclure les logs de déploiement
+deploy.log
+deployment.log
+
+# Exclure les fichiers de configuration locale
+.env.local
+.env.development
+.env.production
+
+# ===========================================
+# MONITORING & LOGS
+# ===========================================
+logs/
+*.log
+monitoring/prometheus_data/
+monitoring/grafana_data/
+
+# ===========================================
+# SSL & CERTIFICATS
+# ===========================================
+ssl/
+*.pem
+*.key
+*.crt
+*.p12
