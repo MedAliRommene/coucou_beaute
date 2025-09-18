@@ -43,7 +43,7 @@ jobs:
         python manage.py check --deploy
 
   # ===========================================
-  # JOB 2: BUILD ET PUSH DOCKER
+  # JOB 2: BUILD ET PUSH DOCKER (TEMPORAIREMENT DÉSACTIVÉ)
   # ===========================================
   build:
     name: 🐳 Build & Push Docker
