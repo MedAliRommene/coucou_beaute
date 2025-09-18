@@ -17,7 +17,7 @@ import threading
 from typing import Optional
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .models import ProfessionalApplication, Professional, User, ProfessionalApplicationAction
+from .models import ProfessionalApplication, Professional, User, ProfessionalApplicationAction, ProfessionalProfileExtra
 from .serializers import ProfessionalApplicationSerializer, ProfessionalListItemSerializer
 
 

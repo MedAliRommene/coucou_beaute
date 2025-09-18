@@ -1,0 +1,31 @@
+[flake8]
+# Ignorer les erreurs des dépendances
+exclude = 
+    .venv,
+    venv,
+    __pycache__,
+    migrations,
+    .git,
+    .tox,
+    dist,
+    docs,
+    *.egg,
+    .eggs,
+    build
+
+# Ignorer les erreurs spécifiques des dépendances
+ignore = 
+    F821,  # undefined name (dans les dépendances)
+    F824,  # unused global/nonlocal (dans les dépendances)
+    E501,  # line too long
+    W503,  # line break before binary operator
+
+# Limiter la longueur des lignes
+max-line-length = 120
+
+# Ignorer les erreurs dans les fichiers de dépendances
+per-file-ignores =
+    # Ignorer tous les fichiers dans .venv
+    .venv/*:F821,F824,E501,W503
+    # Ignorer les migrations
+    */migrations/*:F821,F824,E501,W503
