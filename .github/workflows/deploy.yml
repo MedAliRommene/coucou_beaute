@@ -86,14 +86,64 @@ jobs:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
       continue-on-error: true
         
+    - name: 🌐 Test Network Connectivity
+      run: |
+        echo "Testing network connectivity to ${{ secrets.SERVER_HOST }}..."
+        
+        # Test de ping
+        if ping -c 3 -W 10 ${{ secrets.SERVER_HOST }}; then
+          echo "✅ Ping réussi vers ${{ secrets.SERVER_HOST }}"
+        else
+          echo "❌ Ping échoué vers ${{ secrets.SERVER_HOST }}"
+          exit 1
+        fi
+        
+        # Test du port SSH
+        if timeout 10 bash -c "</dev/tcp/${{ secrets.SERVER_HOST }}/22"; then
+          echo "✅ Port SSH (22) accessible sur ${{ secrets.SERVER_HOST }}"
+        else
+          echo "❌ Port SSH (22) non accessible sur ${{ secrets.SERVER_HOST }}"
+          exit 1
+        fi
+        
     - name: 🔍 Test SSH Connection
       run: |
         echo "Testing SSH connection to ${{ secrets.SERVER_HOST }}..."
-        ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 -o BatchMode=yes ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} 'echo "SSH connection successful"'
+        
+        # Fonction de retry pour la connexion SSH
+        retry_ssh() {
+          local max_attempts=3
+          local attempt=1
+          local delay=10
+          
+          while [ $attempt -le $max_attempts ]; do
+            echo "Tentative $attempt/$max_attempts..."
+            
+            if ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 -o ServerAliveInterval=10 -o ServerAliveCountMax=3 -o BatchMode=yes ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} 'echo "SSH connection successful"'; then
+              echo "✅ Connexion SSH réussie à la tentative $attempt"
+              return 0
+            else
+              echo "❌ Échec de la tentative $attempt (code: $?)"
+              if [ $attempt -lt $max_attempts ]; then
+                echo "⏳ Attente de ${delay}s avant la prochaine tentative..."
+                sleep $delay
+                delay=$((delay * 2))  # Augmenter le délai exponentiellement
+              fi
+            fi
+            attempt=$((attempt + 1))
+          done
+          
+          echo "❌ Toutes les tentatives de connexion SSH ont échoué"
+          return 1
+        }
+        
+        # Exécuter la fonction de retry
+        retry_ssh
         
     - name: 🚀 Deploy to server
       run: |
-        ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} '
+        echo "🚀 Démarrage du déploiement sur ${{ secrets.SERVER_HOST }}..."
+        ssh -o StrictHostKeyChecking=no -o ConnectTimeout=60 -o ServerAliveInterval=15 -o ServerAliveCountMax=3 -o TCPKeepAlive=yes ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} '
           # Naviguer vers le répertoire du projet
           cd /opt/coucou_beaute
           
