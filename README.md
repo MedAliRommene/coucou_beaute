@@ -45,3 +45,4 @@ flutter run
 - Notifications push via FCM (env `FCM_SERVER_KEY`)
 - Stockage fichiers: `django-storages` (S3) ou local en dev (`MEDIA_ROOT`)
 - Internationalisation mobile: FR/AR/EN, support RTL
+- (test)
