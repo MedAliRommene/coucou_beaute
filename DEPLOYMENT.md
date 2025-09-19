@@ -157,4 +157,4 @@ En cas de problème, vérifiez :
 4. Les permissions de fichiers
 
 
-Le déploiement GitHub Actions devrait maintenant fonctionner
+Le déploiement GitHub Actions devrait maintenant fonctionner..
