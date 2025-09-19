@@ -145,13 +145,46 @@ cd /opt/coucou_beaute
 ## 🔍 Dépannage
 
 ### **Problème de Connexion SSH :**
-```bash
-# Testez la connexion
-ssh -i ~/.ssh/id_rsa root@196.203.120.35
 
-# Vérifiez les permissions
-chmod 600 ~/.ssh/id_rsa
+#### **Diagnostic :**
+```bash
+# Testez la connectivité réseau
+ping 196.203.120.35
+
+# Testez le port SSH
+telnet 196.203.120.35 22
+
+# Testez la connexion SSH
+ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 vpsuser@196.203.120.35
 ```
+
+#### **Solutions :**
+
+1. **Vérifiez l'utilisateur SSH :**
+   ```bash
+   # L'utilisateur doit être 'vpsuser' (pas 'root')
+   ssh vpsuser@196.203.120.35
+   ```
+
+2. **Configurez le serveur :**
+   ```bash
+   # Exécutez sur le serveur
+   wget https://raw.githubusercontent.com/MedAliRommene/coucou_beaute/main/setup-ssh-server.sh
+   chmod +x setup-ssh-server.sh
+   sudo ./setup-ssh-server.sh
+   ```
+
+3. **Ajoutez votre clé SSH :**
+   ```bash
+   # Sur votre machine locale
+   ssh-copy-id vpsuser@196.203.120.35
+   ```
+
+4. **Vérifiez les permissions :**
+   ```bash
+   chmod 600 ~/.ssh/id_rsa
+   chmod 700 ~/.ssh
+   ```
 
 ### **Problème de Déploiement :**
 ```bash

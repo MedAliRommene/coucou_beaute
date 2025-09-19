@@ -86,9 +86,14 @@ jobs:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
       continue-on-error: true
         
+    - name: 🔍 Test SSH Connection
+      run: |
+        echo "Testing SSH connection to ${{ secrets.SERVER_HOST }}..."
+        ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 -o BatchMode=yes ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} 'echo "SSH connection successful"'
+        
     - name: 🚀 Deploy to server
       run: |
-        ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 vpsuser@196.203.120.35 '
+        ssh -o StrictHostKeyChecking=no -o ConnectTimeout=30 ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} '
           # Naviguer vers le répertoire du projet
           cd /opt/coucou_beaute
           
