@@ -124,8 +124,8 @@ jobs:
         
         # Test du port SSH avec retry
         echo "🔍 Test du port SSH (22) avec retry..."
-        local port_test_attempts=3
-        local port_test_delay=5
+        port_test_attempts=3
+        port_test_delay=5
         
         for i in $(seq 1 $port_test_attempts); do
           echo "Tentative $i/$port_test_attempts pour le port SSH..."
