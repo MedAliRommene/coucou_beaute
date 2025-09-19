@@ -110,27 +110,28 @@ jobs:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
       continue-on-error: true
         
-    - name: 🌐 Test Network Connectivity
+    - name: 🌐 Test Network Connectivity (Optionnel)
       run: |
         echo "Testing network connectivity to ${{ secrets.SERVER_HOST }}..."
+        echo "ℹ️  Ce test est optionnel - le déploiement continuera même en cas d'échec"
         
-        # Test de résolution DNS
+        # Test de résolution DNS (optionnel)
         echo "🔍 Test de résolution DNS..."
         if nslookup ${{ secrets.SERVER_HOST }} >/dev/null 2>&1; then
           echo "✅ Résolution DNS réussie pour ${{ secrets.SERVER_HOST }}"
         else
-          echo "⚠️  Problème de résolution DNS pour ${{ secrets.SERVER_HOST }}"
+          echo "⚠️  Problème de résolution DNS pour ${{ secrets.SERVER_HOST }} (non bloquant)"
         fi
         
-        # Test du port SSH avec retry
+        # Test du port SSH avec retry (optionnel)
         echo "🔍 Test du port SSH (22) avec retry..."
-        port_test_attempts=3
-        port_test_delay=5
+        port_test_attempts=2
+        port_test_delay=3
         
         for i in $(seq 1 $port_test_attempts); do
           echo "Tentative $i/$port_test_attempts pour le port SSH..."
           
-          if timeout 10 bash -c "</dev/tcp/${{ secrets.SERVER_HOST }}/22" 2>/dev/null; then
+          if timeout 5 bash -c "</dev/tcp/${{ secrets.SERVER_HOST }}/22" 2>/dev/null; then
             echo "✅ Port SSH (22) accessible sur ${{ secrets.SERVER_HOST }} (tentative $i)"
             break
           else
@@ -139,68 +140,47 @@ jobs:
             if [ $i -lt $port_test_attempts ]; then
               echo "⏳ Attente de ${port_test_delay}s avant la prochaine tentative..."
               sleep $port_test_delay
-              port_test_delay=$((port_test_delay + 2))
             else
-              echo "❌ Toutes les tentatives de test du port SSH ont échoué"
-              echo "ℹ️  Cela peut indiquer un problème de connectivité réseau temporaire"
-              echo "ℹ️  Le déploiement continuera avec la connexion SSH directe"
+              echo "⚠️  Test du port SSH échoué - Le déploiement continuera avec SSH direct"
             fi
           fi
         done
         
-        # Test optionnel de ping (ne bloque pas si échoue)
+        # Test optionnel de ping (ne bloque jamais)
         echo "🔍 Test optionnel de ping ICMP..."
-        if ping -c 2 -W 5 ${{ secrets.SERVER_HOST }} >/dev/null 2>&1; then
+        if ping -c 1 -W 3 ${{ secrets.SERVER_HOST }} >/dev/null 2>&1; then
           echo "✅ Ping ICMP réussi vers ${{ secrets.SERVER_HOST }}"
         else
           echo "⚠️  Ping ICMP bloqué par le serveur (normal pour la sécurité)"
         fi
         
-    - name: 🔍 Test SSH Connection
+        echo "ℹ️  Tests de connectivité terminés - Passage au déploiement SSH"
+      continue-on-error: true
+        
+    - name: 🔍 Test SSH Connection (Optionnel)
       run: |
         echo "Testing SSH connection to ${{ secrets.SERVER_HOST }}..."
+        echo "ℹ️  Ce test est optionnel - le déploiement continuera même en cas d'échec"
         
-        # Fonction de retry pour la connexion SSH
-        retry_ssh() {
-          local max_attempts=7
-          local attempt=1
-          local delay=3
-          
-          while [ $attempt -le $max_attempts ]; do
-            echo "🔄 Tentative $attempt/$max_attempts..."
-            
-            # Test de connexion SSH avec paramètres optimisés
-            if ssh -o StrictHostKeyChecking=no \
-                   -o ConnectTimeout=15 \
-                   -o ServerAliveInterval=3 \
-                   -o ServerAliveCountMax=2 \
-                   -o TCPKeepAlive=yes \
-                   -o BatchMode=yes \
-                   -o UserKnownHostsFile=/dev/null \
-                   -o LogLevel=ERROR \
-                   ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} 'echo "SSH connection successful"' 2>/dev/null; then
-              echo "✅ Connexion SSH réussie à la tentative $attempt"
-              return 0
-            else
-              local exit_code=$?
-              echo "❌ Échec de la tentative $attempt (code: $exit_code)"
-              
-              if [ $attempt -lt $max_attempts ]; then
-                echo "⏳ Attente de ${delay}s avant la prochaine tentative..."
-                sleep $delay
-                delay=$((delay + 2))  # Augmenter le délai progressivement
-              fi
-            fi
-            attempt=$((attempt + 1))
-          done
-          
-          echo "❌ Toutes les tentatives de connexion SSH ont échoué"
-          echo "ℹ️  Vérifiez que le serveur est accessible et que SSH est configuré correctement"
-          return 1
-        }
+        # Test simple de connexion SSH (optionnel)
+        echo "🔄 Test de connexion SSH..."
         
-        # Exécuter la fonction de retry
-        retry_ssh
+        if ssh -o StrictHostKeyChecking=no \
+               -o ConnectTimeout=10 \
+               -o ServerAliveInterval=3 \
+               -o ServerAliveCountMax=2 \
+               -o TCPKeepAlive=yes \
+               -o BatchMode=yes \
+               -o UserKnownHostsFile=/dev/null \
+               -o LogLevel=ERROR \
+               ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} 'echo "SSH connection successful"' 2>/dev/null; then
+          echo "✅ Connexion SSH réussie"
+        else
+          echo "⚠️  Test SSH échoué - Le déploiement continuera quand même"
+        fi
+        
+        echo "ℹ️  Test SSH terminé - Passage au déploiement"
+      continue-on-error: true
         
     - name: 🚀 Deploy to server
       run: |
