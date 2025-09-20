@@ -65,9 +65,7 @@ jobs:
         
     - name: 🏗️ Build and push Docker images
       run: |
-        docker buildx build --platform linux/amd64 \
-          -t ${{ secrets.DOCKER_USERNAME }}/coucou-beaute:latest \
-          --push ./backend
+        docker buildx build ./backend --platform linux/amd64 -t ${{ secrets.DOCKER_USERNAME }}/coucou-beaute:latest --push
   # ===========================================
   # JOB 3: DÉPLOIEMENT SUR LE SERVEUR
   # ===========================================
