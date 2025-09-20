@@ -163,6 +163,16 @@ jobs:
         # Test simple de connexion SSH (optionnel)
         echo "🔄 Test de connexion SSH..."
         
+        # Afficher les informations de débogage
+        echo "🔍 Informations de débogage :"
+        echo "   - SERVER_HOST: ${{ secrets.SERVER_HOST }}"
+        echo "   - SERVER_USER: ${{ secrets.SERVER_USER }}"
+        echo "   - SSH_AUTH_SOCK: $SSH_AUTH_SOCK"
+        
+        # Lister les clés SSH disponibles
+        echo "🔑 Clés SSH disponibles :"
+        ssh-add -l || echo "Aucune clé SSH chargée"
+        
         if ssh -o StrictHostKeyChecking=no \
                -o ConnectTimeout=10 \
                -o ServerAliveInterval=3 \
@@ -170,8 +180,8 @@ jobs:
                -o TCPKeepAlive=yes \
                -o BatchMode=yes \
                -o UserKnownHostsFile=/dev/null \
-               -o LogLevel=ERROR \
-               ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} 'echo "SSH connection successful"' 2>/dev/null; then
+               -o LogLevel=DEBUG \
+               ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} 'echo "SSH connection successful"' 2>&1; then
           echo "✅ Connexion SSH réussie"
         else
           echo "⚠️  Test SSH échoué - Le déploiement continuera quand même"
