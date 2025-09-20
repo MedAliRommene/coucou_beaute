@@ -73,7 +73,7 @@ jobs:
     name: 🚀 Deploy to Server
     needs: [test, build]
     runs-on: ubuntu-latest
-    if: false  # Désactivé temporairement - problème de connectivité GitHub Actions
+    # Réactivé - utilisation d'une approche différente
     
     steps:
     - name: 📥 Checkout code
