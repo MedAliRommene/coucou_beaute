@@ -34,9 +34,7 @@ services:
   # APPLICATION DJANGO
   # ===========================================
   web:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
+    image: mouhamedalirommene/coucou-beaute:latest
     container_name: coucou_web
     restart: unless-stopped
     env_file: ./backend/.env
