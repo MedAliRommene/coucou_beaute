@@ -73,6 +73,7 @@ jobs:
     name: 🚀 Deploy to Server
     needs: [test, build]
     runs-on: ubuntu-latest
+    if: false  # Désactivé temporairement - problème de connectivité GitHub Actions
     
     steps:
     - name: 📥 Checkout code
@@ -173,18 +174,18 @@ jobs:
         echo "🔑 Clés SSH disponibles :"
         ssh-add -l || echo "Aucune clé SSH chargée"
         
-        if ssh -o StrictHostKeyChecking=no \
-               -o ConnectTimeout=10 \
-               -o ServerAliveInterval=3 \
-               -o ServerAliveCountMax=2 \
-               -o TCPKeepAlive=yes \
-               -o BatchMode=yes \
-               -o UserKnownHostsFile=/dev/null \
-               -o LogLevel=DEBUG \
-               ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} 'echo "SSH connection successful"' 2>&1; then
-          echo "✅ Connexion SSH réussie"
+        # Test de connectivité réseau d'abord
+        echo "🌐 Test de connectivité réseau..."
+        if timeout 10 bash -c "</dev/tcp/${{ secrets.SERVER_HOST }}/22" 2>/dev/null; then
+          echo "✅ Port 22 accessible"
         else
-          echo "⚠️  Test SSH échoué - Le déploiement continuera quand même"
+          echo "❌ Port 22 non accessible - Problème de connectivité réseau"
+          echo "⚠️  Le serveur n'est pas accessible depuis GitHub Actions"
+          echo "ℹ️  Vérifiez :"
+          echo "   - L'IP du serveur est correcte"
+          echo "   - Le port 22 est ouvert"
+          echo "   - Le firewall autorise les connexions SSH"
+          echo "   - Le service SSH fonctionne sur le serveur"
         fi
         
         echo "ℹ️  Test SSH terminé - Passage au déploiement"
