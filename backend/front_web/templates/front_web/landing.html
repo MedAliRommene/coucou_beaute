@@ -1,307 +1,1252 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Coucou Beauté - Accueil{% endblock %}
+{% block title %}Coucou Beauté - Votre Beauté, Notre Passion{% endblock %}
 
 {% block extra_css %}
+<!-- Google Fonts - Typography Premium -->
+<link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+
 <style>
+    :root {
+        /* Palette de couleurs premium harmonisée */
+        --rose-poudre: #F8BBD0;
+        --rose-doux: #FCE4EC;
+        --bleu-clair: #B3E5FC;
+        --bleu-doux: #E1F5FE;
+        --dore-pale: #FBE9E7;
+        --dore-accent: #FFD54F;
+        --blanc-pur: #FFFFFF;
+        --gris-tres-clair: #FAFAFA;
+        --gris-clair: #F5F5F5;
+        --gris-moyen: #E0E0E0;
+        --gris-fonce: #424242;
+        --noir-doux: #212121;
+
+        /* Dégradés premium */
+        --gradient-rose: linear-gradient(135deg, #F8BBD0 0%, #FCE4EC 100%);
+        --gradient-bleu: linear-gradient(135deg, #B3E5FC 0%, #E1F5FE 100%);
+        --gradient-dore: linear-gradient(135deg, #FBE9E7 0%, #FFD54F 100%);
+        --gradient-hero: linear-gradient(135deg, #F8BBD0 0%, #B3E5FC 50%, #FBE9E7 100%);
+        --gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+
+        /* Ombres premium */
+        --shadow-soft: 0 4px 20px rgba(248, 187, 208, 0.15);
+        --shadow-medium: 0 8px 30px rgba(248, 187, 208, 0.2);
+        --shadow-strong: 0 15px 50px rgba(248, 187, 208, 0.25);
+        --shadow-glass: 0 8px 32px rgba(255, 255, 255, 0.1);
+    }
+
+    /* Typography Premium */
+    body {
+        font-family: 'DM Sans', sans-serif;
+        line-height: 1.6;
+        color: var(--noir-doux);
+        background: var(--gris-tres-clair);
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 600;
+        line-height: 1.2;
+    }
+
+    /* Header Sticky avec Glassmorphism */
+    .sticky-header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-bottom: 1px solid rgba(248, 187, 208, 0.2);
+        transition: all 0.3s ease;
+    }
+
+    .sticky-header.scrolled {
+        background: rgba(255, 255, 255, 0.98);
+        box-shadow: var(--shadow-soft);
+    }
+
+    /* Hero Section Premium */
+    .hero-section {
+        background: var(--gradient-hero);
+        position: relative;
+        overflow: hidden;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+    }
+
+    .hero-bg-pattern {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image:
+            radial-gradient(circle at 20% 80%, rgba(248, 187, 208, 0.3) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(179, 229, 252, 0.3) 0%, transparent 50%),
+            radial-gradient(circle at 40% 40%, rgba(251, 233, 231, 0.2) 0%, transparent 50%);
+    }
+
+    /* Glassmorphism Cards */
+    .glass-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 24px;
+        box-shadow: var(--shadow-glass);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .glass-card:hover {
+        transform: translateY(-8px) scale(1.02);
+        background: rgba(255, 255, 255, 0.35);
+        box-shadow: var(--shadow-strong);
+    }
+
+    /* Service Cards Premium */
     .service-card {
-        transition: transform .35s ease, box-shadow .35s ease, background-position .8s ease
+        background: var(--blanc-pur);
+        border-radius: 20px;
+        padding: 2rem;
+        border: 1px solid var(--gris-clair);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .service-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--gradient-rose);
+        transform: scaleX(0);
+        transition: transform 0.4s ease;
+    }
+
+    .service-card:hover::before {
+        transform: scaleX(1);
     }
 
     .service-card:hover {
-        transform: translateY(-6px);
-        box-shadow: 0 20px 40px rgba(108, 169, 224, .18);
-        background-position: right center
+        transform: translateY(-12px);
+        box-shadow: var(--shadow-strong);
+        border-color: var(--rose-poudre);
     }
 
+    /* Professional Cards avec Néomorphisme */
     .pro-card {
-        transition: transform .35s ease, box-shadow .35s ease
+        background: var(--blanc-pur);
+        border-radius: 24px;
+        overflow: hidden;
+        border: 1px solid var(--gris-clair);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.6),
+            0 4px 20px rgba(0, 0, 0, 0.05);
     }
 
     .pro-card:hover {
-        transform: translateY(-6px);
-        box-shadow: 0 20px 40px rgba(242, 139, 178, .18)
+        transform: translateY(-10px) rotateX(5deg);
+        box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.8),
+            0 20px 40px rgba(248, 187, 208, 0.2);
     }
 
     .pro-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(248, 187, 208, 0.95) 0%, rgba(179, 229, 252, 0.95) 100%);
+        backdrop-filter: blur(10px);
         opacity: 0;
-        transform: translateY(8px);
-        transition: all .3s ease
+        transform: translateY(20px);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 2rem;
     }
 
     .pro-card:hover .pro-overlay {
         opacity: 1;
-        transform: translateY(0)
+        transform: translateY(0);
     }
 
+    /* Animations Premium */
+    .fade-in-up {
+        opacity: 0;
+        transform: translateY(30px);
+        transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .fade-in-up.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .fade-in-left {
+        opacity: 0;
+        transform: translateX(-30px);
+        transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .fade-in-left.visible {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    .fade-in-right {
+        opacity: 0;
+        transform: translateX(30px);
+        transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .fade-in-right.visible {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    /* Star Animation Premium */
     .star-anim {
-        animation: twinkle 1.8s ease-in-out infinite
+        animation: twinkle 2s ease-in-out infinite;
+        color: var(--dore-accent);
     }
 
     @keyframes twinkle {
 
         0%,
         100% {
-            transform: scale(1);
-            opacity: .9
+            transform: scale(1) rotate(0deg);
+            opacity: 0.8;
         }
 
         50% {
-            transform: scale(1.15);
-            opacity: 1
+            transform: scale(1.2) rotate(180deg);
+            opacity: 1;
         }
     }
 
-    .carousel {
+    /* Testimonials Carousel 3D */
+    .testimonials-carousel {
+        perspective: 1000px;
+        overflow: hidden;
+        border-radius: 24px;
+    }
+
+    .testimonials-track {
+        display: flex;
+        gap: 2rem;
+        transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        transform-style: preserve-3d;
+    }
+
+    .testimonial-card {
+        background: var(--blanc-pur);
+        border-radius: 20px;
+        padding: 2rem;
+        min-width: 320px;
+        border: 1px solid var(--gris-clair);
+        box-shadow: var(--shadow-soft);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        transform-style: preserve-3d;
+    }
+
+    .testimonial-card:hover {
+        transform: rotateY(5deg) translateZ(20px);
+        box-shadow: var(--shadow-strong);
+    }
+
+    /* Contact Form Premium */
+    .contact-form {
+        background: var(--blanc-pur);
+        border-radius: 24px;
+        padding: 3rem;
+        border: 1px solid var(--gris-clair);
+        box-shadow: var(--shadow-soft);
+    }
+
+    .form-group {
         position: relative;
-        overflow: hidden
+        margin-bottom: 2rem;
     }
 
-    .carousel-track {
-        display: flex;
-        gap: 1rem;
-        transition: transform .7s ease;
-        will-change: transform
+    .form-input {
+        width: 100%;
+        padding: 1rem 1.5rem;
+        border: 2px solid var(--gris-clair);
+        border-radius: 12px;
+        background: var(--gris-tres-clair);
+        font-family: 'DM Sans', sans-serif;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        outline: none;
     }
 
-    .map-iframe {
-        transition: filter .3s ease
+    .form-input:focus {
+        border-color: var(--rose-poudre);
+        background: var(--blanc-pur);
+        box-shadow: 0 0 0 3px rgba(248, 187, 208, 0.1);
     }
 
-    /* Glass modal */
-    .modal {
-        position: fixed;
-        inset: 0;
-        display: none;
-        align-items: center;
-        justify-content: center;
-        background: rgba(0, 0, 0, .45);
-        backdrop-filter: blur(10px);
-        z-index: 60;
+    .form-label {
+        position: absolute;
+        top: 1rem;
+        left: 1.5rem;
+        color: var(--gris-fonce);
+        font-family: 'DM Sans', sans-serif;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        pointer-events: none;
+        background: var(--gris-tres-clair);
+        padding: 0 0.5rem;
     }
 
-    .modal.open {
-        display: flex;
+    .form-input:focus+.form-label,
+    .form-input:not(:placeholder-shown)+.form-label {
+        top: -0.5rem;
+        left: 1rem;
+        font-size: 0.875rem;
+        color: var(--rose-poudre);
+        background: var(--blanc-pur);
+    }
+
+    /* Buttons Premium */
+    .btn-primary {
+        background: var(--gradient-rose);
+        color: var(--blanc-pur);
+        padding: 1rem 2rem;
+        border-radius: 12px;
+        border: none;
+        font-family: 'Poppins', sans-serif;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: var(--shadow-soft);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-primary::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .btn-primary:hover::before {
+        left: 100%;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-medium);
+    }
+
+    .btn-secondary {
+        background: var(--gradient-bleu);
+        color: var(--blanc-pur);
+        padding: 1rem 2rem;
+        border-radius: 12px;
+        border: none;
+        font-family: 'Poppins', sans-serif;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: var(--shadow-soft);
+    }
+
+    .btn-secondary:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-medium);
+    }
+
+    /* Footer Premium */
+    .footer {
+        background: var(--noir-doux);
+        color: var(--blanc-pur);
+        padding: 4rem 0 2rem;
+        margin-top: 6rem;
+    }
+
+    .footer-content {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 3rem;
+        margin-bottom: 3rem;
+    }
+
+    .footer-section h3 {
+        color: var(--rose-poudre);
+        margin-bottom: 1.5rem;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .footer-section a {
+        color: var(--gris-clair);
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    .footer-section a:hover {
+        color: var(--rose-poudre);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .hero-section {
+            min-height: 80vh;
+            padding: 2rem 0;
+        }
+
+        .service-card,
+        .pro-card {
+            margin-bottom: 1.5rem;
+        }
+
+        .testimonial-card {
+            min-width: 280px;
+        }
+
+        .contact-form {
+            padding: 2rem;
+        }
     }
 
     /* Hide dark mode toggle on landing */
     #themeToggle {
-        display: none !important
+        display: none !important;
+    }
+
+    /* Loading Animation */
+    .loading-spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid var(--gris-clair);
+        border-top: 4px solid var(--rose-poudre);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<section class="relative overflow-hidden">
-    <div class="absolute inset-0 bg-gradient-to-br from-pink-100 via-white to-blue-100"></div>
-    <div class="absolute -top-24 -right-24 w-80 h-80 rounded-full bg-pink-200/50 blur-3xl"></div>
-    <div class="absolute -bottom-24 -left-24 w-80 h-80 rounded-full bg-blue-200/50 blur-3xl"></div>
-    <canvas id="hero3d" class="absolute inset-0 pointer-events-none" style="z-index:-1"></canvas>
-    <div class="relative max-w-7xl mx-auto px-6 py-16">
-        <!-- header provided by base; keep spacing only -->
-        <div class="h-2"></div>
-
-        <div class="mt-14 grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
-            <div>
-                <h1 class="text-4xl md:text-5xl font-extrabold leading-tight"><span id="typewriter"></span></h1>
-                <p class="mt-4 text-gray-600">Trouvez des professionnelles près de chez vous, consultez leurs profils,
-                    disponibilités et réservez en quelques clics.</p>
-                <div class="mt-6 flex gap-3">
-                    <a href="/login/"
-                        class="px-5 py-3 rounded-xl bg-pink-500 text-white hover:bg-pink-600 shadow-sm">Commencer</a>
-                    <a href="/signup/"
-                        class="px-5 py-3 rounded-xl bg-[#86C5FF] text-white hover:brightness-95 shadow-sm">S'inscrire</a>
-                    <a href="#services" class="px-5 py-3 rounded-xl bg-white border hover:bg-white">Découvrir</a>
+<!-- Sticky Header -->
+<header class="sticky-header" id="stickyHeader">
+    <div class="max-w-7xl mx-auto px-6 py-4">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <div
+                    class="w-10 h-10 rounded-full bg-gradient-to-r from-pink-400 to-blue-400 flex items-center justify-center">
+                    <i data-lucide="sparkles" class="w-6 h-6 text-white"></i>
                 </div>
-                <div class="mt-8 grid grid-cols-3 gap-4">
-                    <div class="glass rounded-xl p-4 border tilt gradient-border">
-                        <div class="flex items-center gap-2 text-2xl font-bold"><i data-lucide="star"
-                                class="w-5 h-5 text-yellow-500"></i>4.8</div>
+                <span class="text-2xl font-bold"
+                    style="font-family: 'Poppins', sans-serif; color: var(--noir-doux);">Coucou Beauté</span>
+            </div>
+            <nav class="hidden md:flex items-center space-x-8">
+                <a href="#services" class="text-gray-700 hover:text-pink-500 transition-colors">Services</a>
+                <a href="#professionals" class="text-gray-700 hover:text-pink-500 transition-colors">Professionnels</a>
+                <a href="#testimonials" class="text-gray-700 hover:text-pink-500 transition-colors">Témoignages</a>
+                <a href="#contact" class="text-gray-700 hover:text-pink-500 transition-colors">Contact</a>
+            </nav>
+            <div class="flex items-center space-x-4">
+                <a href="/login/" class="text-gray-700 hover:text-pink-500 transition-colors">Connexion</a>
+                <a href="/signup/" class="btn-primary">S'inscrire</a>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Hero Section Premium -->
+<section class="hero-section">
+    <div class="hero-bg-pattern"></div>
+    <canvas id="hero3d" class="absolute inset-0 pointer-events-none" style="z-index: 1;"></canvas>
+
+    <div class="relative max-w-7xl mx-auto px-6 py-20" style="z-index: 2;">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <!-- Hero Content -->
+            <div class="fade-in-left">
+                <div
+                    class="inline-flex items-center px-4 py-2 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 mb-6">
+                    <i data-lucide="sparkles" class="w-4 h-4 text-pink-500 mr-2"></i>
+                    <span class="text-sm font-medium text-gray-700">Votre beauté, notre passion</span>
+                </div>
+
+                <h1 class="text-5xl md:text-6xl font-bold leading-tight mb-6"
+                    style="font-family: 'Poppins', sans-serif;">
+                    <span
+                        class="bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent">
+                        Réservez vos soins
+                    </span>
+                    <br>
+                    <span class="text-gray-800">beauté en toute simplicité</span>
+                </h1>
+
+                <p class="text-xl text-gray-600 mb-8 leading-relaxed">
+                    Découvrez des professionnelles qualifiées près de chez vous, consultez leurs profils détaillés et
+                    réservez vos rendez-vous en quelques clics. Une expérience beauté sur mesure qui vous ressemble.
+                </p>
+
+                <div class="flex flex-col sm:flex-row gap-4 mb-12">
+                    <a href="/signup/" class="btn-primary text-center">
+                        <i data-lucide="calendar-plus" class="w-5 h-5 inline mr-2"></i>
+                        Réserver maintenant
+                    </a>
+                    <a href="#services" class="btn-secondary text-center">
+                        <i data-lucide="eye" class="w-5 h-5 inline mr-2"></i>
+                        Découvrir nos services
+                    </a>
+                </div>
+
+                <!-- Stats Premium -->
+                <div class="grid grid-cols-3 gap-6">
+                    <div class="glass-card p-6 text-center">
+                        <div class="flex items-center justify-center gap-2 text-3xl font-bold mb-2">
+                            <i data-lucide="star" class="w-6 h-6 text-yellow-500 star-anim"></i>
+                            <span style="color: var(--noir-doux);">4.9</span>
+                        </div>
                         <div class="text-sm text-gray-600">Note moyenne</div>
                     </div>
-                    <div class="glass rounded-xl p-4 border tilt gradient-border">
-                        <div class="text-2xl font-bold">+1k</div>
+                    <div class="glass-card p-6 text-center">
+                        <div class="text-3xl font-bold mb-2" style="color: var(--noir-doux);">+2.5k</div>
                         <div class="text-sm text-gray-600">Rendez-vous / mois</div>
                     </div>
-                    <div class="glass rounded-xl p-4 border tilt gradient-border">
-                        <div class="text-2xl font-bold">24/7</div>
+                    <div class="glass-card p-6 text-center">
+                        <div class="text-3xl font-bold mb-2" style="color: var(--noir-doux);">24/7</div>
                         <div class="text-sm text-gray-600">Réservation</div>
                     </div>
                 </div>
             </div>
-            <div id="heroImg" class="bg-white rounded-2xl shadow-lg p-6 border float-slow will-change-transform">
-                <img src="{{ MEDIA_URL }}image.png" alt="Beauty" class="rounded-xl w-full" />
+
+            <!-- Hero Image -->
+            <div class="fade-in-right">
+                <div class="relative">
+                    <div
+                        class="absolute -inset-4 bg-gradient-to-r from-pink-400 to-blue-400 rounded-3xl blur-2xl opacity-30">
+                    </div>
+                    <div class="relative glass-card p-8">
+                        <img src="{{ MEDIA_URL }}image.png" alt="Beauty Services"
+                            class="rounded-2xl w-full h-auto shadow-2xl" />
+                        <div
+                            class="absolute -bottom-6 -right-6 w-24 h-24 bg-gradient-to-r from-pink-400 to-blue-400 rounded-full flex items-center justify-center shadow-lg">
+                            <i data-lucide="heart" class="w-12 h-12 text-white"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Services Section Premium -->
+<section id="services" class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center mb-16 fade-in-up">
+            <div class="inline-flex items-center px-4 py-2 rounded-full bg-pink-100 text-pink-600 mb-4">
+                <i data-lucide="sparkles" class="w-4 h-4 mr-2"></i>
+                <span class="text-sm font-medium">Nos Services</span>
+            </div>
+            <h2 class="text-4xl md:text-5xl font-bold mb-6"
+                style="font-family: 'Poppins', sans-serif; color: var(--noir-doux);">
+                Des soins adaptés à vos besoins
+            </h2>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                Découvrez notre gamme complète de services beauté, réalisés par des professionnelles qualifiées et
+                passionnées.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <!-- Service 1: Coiffure -->
+            <div class="service-card fade-in-up" style="animation-delay: 0.1s;">
+                <div class="flex flex-col items-center text-center">
+                    <div
+                        class="w-20 h-20 rounded-2xl bg-gradient-to-br from-pink-400 to-pink-500 flex items-center justify-center mb-6 shadow-lg">
+                        <i data-lucide="scissors" class="w-10 h-10 text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3"
+                        style="font-family: 'Poppins', sans-serif; color: var(--noir-doux);">Coiffure</h3>
+                    <p class="text-gray-600 mb-4">Coupe, brushing, coloration, balayage et soins capillaires
+                        personnalisés</p>
+                    <div class="flex items-center text-sm text-pink-500 font-medium">
+                        <i data-lucide="clock" class="w-4 h-4 mr-1"></i>
+                        <span>1h - 3h</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Service 2: Esthétique -->
+            <div class="service-card fade-in-up" style="animation-delay: 0.2s;">
+                <div class="flex flex-col items-center text-center">
+                    <div
+                        class="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-400 to-blue-500 flex items-center justify-center mb-6 shadow-lg">
+                        <i data-lucide="sparkles" class="w-10 h-10 text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3"
+                        style="font-family: 'Poppins', sans-serif; color: var(--noir-doux);">Esthétique</h3>
+                    <p class="text-gray-600 mb-4">Soins du visage, épilation, maquillage et traitements anti-âge</p>
+                    <div class="flex items-center text-sm text-blue-500 font-medium">
+                        <i data-lucide="clock" class="w-4 h-4 mr-1"></i>
+                        <span>30min - 2h</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Service 3: Manucure -->
+            <div class="service-card fade-in-up" style="animation-delay: 0.3s;">
+                <div class="flex flex-col items-center text-center">
+                    <div
+                        class="w-20 h-20 rounded-2xl bg-gradient-to-br from-purple-400 to-purple-500 flex items-center justify-center mb-6 shadow-lg">
+                        <i data-lucide="hand" class="w-10 h-10 text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3"
+                        style="font-family: 'Poppins', sans-serif; color: var(--noir-doux);">Manucure</h3>
+                    <p class="text-gray-600 mb-4">Vernis classique, gel, nail art et soins des ongles</p>
+                    <div class="flex items-center text-sm text-purple-500 font-medium">
+                        <i data-lucide="clock" class="w-4 h-4 mr-1"></i>
+                        <span>45min - 1h30</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Service 4: Massage -->
+            <div class="service-card fade-in-up" style="animation-delay: 0.4s;">
+                <div class="flex flex-col items-center text-center">
+                    <div
+                        class="w-20 h-20 rounded-2xl bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center mb-6 shadow-lg">
+                        <i data-lucide="heart" class="w-10 h-10 text-white"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3"
+                        style="font-family: 'Poppins', sans-serif; color: var(--noir-doux);">Massage</h3>
+                    <p class="text-gray-600 mb-4">Massage relaxant, thérapeutique et soins du corps</p>
+                    <div class="flex items-center text-sm text-orange-500 font-medium">
+                        <i data-lucide="clock" class="w-4 h-4 mr-1"></i>
+                        <span>1h - 2h</span>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <section id="services" class="mt-20">
-            <h2 class="text-2xl font-bold mb-6">Nos Services</h2>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div class="service-card bg-white rounded-2xl p-5 border bg-gradient-to-r from-white to-white hover:from-rose-50 hover:to-blue-50"
-                    data-aos="fade-up">
-                    <div class="flex items-center gap-3 mb-1">
-                        <div class="w-10 h-10 rounded-xl bg-pink-100 flex items-center justify-center overflow-hidden">
-                            <div class="lottie-anim"
-                                data-lottie="https://lottie.host/7c2b5b5c-63db-43e0-9b6a-3cc23e2d8c6d/Scissors.json"
-                                style="width:24px;height:24px"></div>
+        <!-- CTA Services -->
+        <div class="text-center mt-16 fade-in-up">
+            <a href="/booking/" class="btn-primary inline-flex items-center">
+                <i data-lucide="calendar-plus" class="w-5 h-5 mr-2"></i>
+                Réserver un service
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Professionals Section Premium -->
+<section id="professionals" class="py-20" style="background: var(--gris-tres-clair);">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center mb-16 fade-in-up">
+            <div class="inline-flex items-center px-4 py-2 rounded-full bg-blue-100 text-blue-600 mb-4">
+                <i data-lucide="users" class="w-4 h-4 mr-2"></i>
+                <span class="text-sm font-medium">Nos Professionnels</span>
+            </div>
+            <h2 class="text-4xl md:text-5xl font-bold mb-6"
+                style="font-family: 'Poppins', sans-serif; color: var(--noir-doux);">
+                Des expertes à votre service
+            </h2>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                Rencontrez nos professionnelles qualifiées et passionnées, prêtes à vous offrir une expérience beauté
+                exceptionnelle.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Professional 1 -->
+            <div class="pro-card fade-in-up" style="animation-delay: 0.1s;">
+                <div class="relative">
+                    <div
+                        class="h-48 bg-gradient-to-br from-pink-200 via-pink-100 to-rose-100 flex items-center justify-center">
+                        <div
+                            class="w-24 h-24 rounded-full bg-gradient-to-br from-pink-400 to-pink-500 flex items-center justify-center shadow-lg">
+                            <i data-lucide="user" class="w-12 h-12 text-white"></i>
                         </div>
-                        <div class="font-medium">Coiffure</div>
                     </div>
-                    <div class="text-sm text-gray-600">Coupe, brushing, coloration</div>
+                    <div class="absolute top-4 right-4">
+                        <div class="flex items-center gap-1 text-yellow-500">
+                            <i data-lucide="star" class="w-4 h-4 star-anim"></i>
+                            <i data-lucide="star" class="w-4 h-4 star-anim" style="animation-delay:.2s"></i>
+                            <i data-lucide="star" class="w-4 h-4 star-anim" style="animation-delay:.4s"></i>
+                            <i data-lucide="star" class="w-4 h-4 star-anim" style="animation-delay:.6s"></i>
+                            <i data-lucide="star" class="w-4 h-4 star-anim" style="animation-delay:.8s"></i>
+                        </div>
+                    </div>
                 </div>
-                <div class="service-card bg-white rounded-2xl p-5 border bg-gradient-to-r from-white to-white hover:from-blue-50 hover:to-pink-50"
-                    data-aos="fade-up">
-                    <div class="flex items-center gap-3 mb-1">
-                        <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center overflow-hidden">
-                            <div class="lottie-anim"
-                                data-lottie="https://lottie.host/2bfa8b59-5a69-4d8f-9d5f-f2e3d4a0f2b1/Sparkles.json"
-                                style="width:24px;height:24px"></div>
-                        </div>
-                        <div class="font-medium">Esthétique</div>
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-xl font-semibold"
+                            style="font-family: 'Poppins', sans-serif; color: var(--noir-doux);">Nadia Benali</h3>
+                        <span class="text-sm text-gray-500">8 ans exp.</span>
                     </div>
-                    <div class="text-sm text-gray-600">Soin visage, épilation</div>
+                    <p class="text-gray-600 mb-4">Esthéticienne - Nabeul</p>
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        <span class="px-3 py-1 rounded-full text-xs bg-pink-100 text-pink-700">Soins visage</span>
+                        <span class="px-3 py-1 rounded-full text-xs bg-blue-100 text-blue-700">Épilation</span>
+                        <span class="px-3 py-1 rounded-full text-xs bg-purple-100 text-purple-700">Massage</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <a href="/booking/" class="flex-1 btn-primary text-center text-sm py-2">
+                            <i data-lucide="calendar-plus" class="w-4 h-4 inline mr-1"></i>
+                            Réserver
+                        </a>
+                        <button type="button"
+                            class="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
+                            data-open="proModal">
+                            <i data-lucide="eye" class="w-4 h-4"></i>
+                        </button>
+                    </div>
                 </div>
-                <div class="service-card bg-white rounded-2xl p-5 border bg-gradient-to-r from-white to-white hover:from-green-50 hover:to-rose-50"
-                    data-aos="fade-up">
-                    <div class="flex items-center gap-3 mb-1">
-                        <div class="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center overflow-hidden">
-                            <div class="lottie-anim"
-                                data-lottie="https://lottie.host/3f6edb2b-6c98-4b00-bc10-2d0383f0cc18/HandCare.json"
-                                style="width:24px;height:24px"></div>
+                <div class="pro-overlay">
+                    <div class="text-center">
+                        <h4 class="text-lg font-semibold mb-3" style="color: var(--blanc-pur);">À propos de Nadia</h4>
+                        <p class="text-sm mb-4" style="color: var(--blanc-pur);">Passionnée par la beauté depuis 8 ans,
+                            Nadia s'est spécialisée dans les soins du visage et l'épilation. Elle suit régulièrement des
+                            formations pour rester à la pointe des dernières techniques.</p>
+                        <div class="text-sm" style="color: var(--blanc-pur);">
+                            <div class="mb-2"><strong>Spécialités:</strong> Soins visage, épilation, massage</div>
+                            <div class="mb-2"><strong>Formation:</strong> Institut de beauté de Tunis</div>
+                            <div><strong>Langues:</strong> Français, Arabe</div>
                         </div>
-                        <div class="font-medium">Manucure</div>
                     </div>
-                    <div class="text-sm text-gray-600">Vernis, gel, soins</div>
-                </div>
-                <div class="service-card bg-white rounded-2xl p-5 border bg-gradient-to-r from-white to-white hover:from-rose-50 hover:to-yellow-50"
-                    data-aos="fade-up">
-                    <div class="flex items-center gap-3 mb-1">
-                        <div class="w-10 h-10 rounded-xl bg-rose-100 flex items-center justify-center overflow-hidden">
-                            <div class="lottie-anim"
-                                data-lottie="https://lottie.host/0b0c9b3c-0b58-4c3e-9e40-ff9b10bda2a6/Massage.json"
-                                style="width:24px;height:24px"></div>
-                        </div>
-                        <div class="font-medium">Massage</div>
-                    </div>
-                    <div class="text-sm text-gray-600">Relaxant, thérapeutique</div>
                 </div>
             </div>
-        </section>
 
-        <section id="professionals" class="mt-20">
-            <h2 class="text-2xl font-bold mb-6">Nos Professionnels</h2>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {% for i in "123456" %}
-                <div class="pro-card rounded-2xl overflow-hidden border bg-white hover:shadow-xl transition relative"
-                    data-aos="fade-up">
-                    <div class="h-40 bg-gradient-to-br from-rose-100 to-amber-100"></div>
-                    <div class="p-5">
-                        <div class="flex items-center justify-between">
-                            <h3 class="font-semibold">Nadia Benali</h3>
-                            <div class="flex items-center gap-1 text-yellow-500">
+            <!-- Professional 2 -->
+            <div class="pro-card fade-in-up" style="animation-delay: 0.2s;">
+                <div class="relative">
+                    <div
+                        class="h-48 bg-gradient-to-br from-blue-200 via-blue-100 to-cyan-100 flex items-center justify-center">
+                        <div
+                            class="w-24 h-24 rounded-full bg-gradient-to-br from-blue-400 to-blue-500 flex items-center justify-center shadow-lg">
+                            <i data-lucide="user" class="w-12 h-12 text-white"></i>
+                        </div>
+                    </div>
+                    <div class="absolute top-4 right-4">
+                        <div class="flex items-center gap-1 text-yellow-500">
+                            <i data-lucide="star" class="w-4 h-4 star-anim"></i>
+                            <i data-lucide="star" class="w-4 h-4 star-anim" style="animation-delay:.2s"></i>
+                            <i data-lucide="star" class="w-4 h-4 star-anim" style="animation-delay:.4s"></i>
+                            <i data-lucide="star" class="w-4 h-4 star-anim" style="animation-delay:.6s"></i>
+                            <i data-lucide="star" class="w-4 h-4 star-anim" style="animation-delay:.8s"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-xl font-semibold"
+                            style="font-family: 'Poppins', sans-serif; color: var(--noir-doux);">Amina Khelil</h3>
+                        <span class="text-sm text-gray-500">5 ans exp.</span>
+                    </div>
+                    <p class="text-gray-600 mb-4">Coiffeuse - Tunis</p>
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        <span class="px-3 py-1 rounded-full text-xs bg-pink-100 text-pink-700">Coupe</span>
+                        <span class="px-3 py-1 rounded-full text-xs bg-blue-100 text-blue-700">Coloration</span>
+                        <span class="px-3 py-1 rounded-full text-xs bg-purple-100 text-purple-700">Brushing</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <a href="/booking/" class="flex-1 btn-primary text-center text-sm py-2">
+                            <i data-lucide="calendar-plus" class="w-4 h-4 inline mr-1"></i>
+                            Réserver
+                        </a>
+                        <button type="button"
+                            class="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
+                            data-open="proModal">
+                            <i data-lucide="eye" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="pro-overlay">
+                    <div class="text-center">
+                        <h4 class="text-lg font-semibold mb-3" style="color: var(--blanc-pur);">À propos d'Amina</h4>
+                        <p class="text-sm mb-4" style="color: var(--blanc-pur);">Amina excelle dans l'art de la coiffure
+                            avec une expertise particulière en coloration et coupe moderne. Elle aime créer des looks
+                            uniques qui mettent en valeur la personnalité de chaque cliente.</p>
+                        <div class="text-sm" style="color: var(--blanc-pur);">
+                            <div class="mb-2"><strong>Spécialités:</strong> Coupe, coloration, brushing</div>
+                            <div class="mb-2"><strong>Formation:</strong> École de coiffure de Paris</div>
+                            <div><strong>Langues:</strong> Français, Arabe, Anglais</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Professional 3 -->
+            <div class="pro-card fade-in-up" style="animation-delay: 0.3s;">
+                <div class="relative">
+                    <div
+                        class="h-48 bg-gradient-to-br from-purple-200 via-purple-100 to-pink-100 flex items-center justify-center">
+                        <div
+                            class="w-24 h-24 rounded-full bg-gradient-to-br from-purple-400 to-purple-500 flex items-center justify-center shadow-lg">
+                            <i data-lucide="user" class="w-12 h-12 text-white"></i>
+                        </div>
+                    </div>
+                    <div class="absolute top-4 right-4">
+                        <div class="flex items-center gap-1 text-yellow-500">
+                            <i data-lucide="star" class="w-4 h-4 star-anim"></i>
+                            <i data-lucide="star" class="w-4 h-4 star-anim" style="animation-delay:.2s"></i>
+                            <i data-lucide="star" class="w-4 h-4 star-anim" style="animation-delay:.4s"></i>
+                            <i data-lucide="star" class="w-4 h-4 star-anim" style="animation-delay:.6s"></i>
+                            <i data-lucide="star" class="w-4 h-4 star-anim" style="animation-delay:.8s"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-xl font-semibold"
+                            style="font-family: 'Poppins', sans-serif; color: var(--noir-doux);">Fatma Mansouri</h3>
+                        <span class="text-sm text-gray-500">10 ans exp.</span>
+                    </div>
+                    <p class="text-gray-600 mb-4">Manucure - Sousse</p>
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        <span class="px-3 py-1 rounded-full text-xs bg-pink-100 text-pink-700">Vernis gel</span>
+                        <span class="px-3 py-1 rounded-full text-xs bg-blue-100 text-blue-700">Nail Art</span>
+                        <span class="px-3 py-1 rounded-full text-xs bg-purple-100 text-purple-700">Soins</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <a href="/booking/" class="flex-1 btn-primary text-center text-sm py-2">
+                            <i data-lucide="calendar-plus" class="w-4 h-4 inline mr-1"></i>
+                            Réserver
+                        </a>
+                        <button type="button"
+                            class="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
+                            data-open="proModal">
+                            <i data-lucide="eye" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="pro-overlay">
+                    <div class="text-center">
+                        <h4 class="text-lg font-semibold mb-3" style="color: var(--blanc-pur);">À propos de Fatma</h4>
+                        <p class="text-sm mb-4" style="color: var(--blanc-pur);">Fatma est une artiste des ongles avec
+                            10 ans d'expérience. Elle maîtrise toutes les techniques de manucure et excelle dans le nail
+                            art créatif et les designs personnalisés.</p>
+                        <div class="text-sm" style="color: var(--blanc-pur);">
+                            <div class="mb-2"><strong>Spécialités:</strong> Vernis gel, Nail Art, Soins</div>
+                            <div class="mb-2"><strong>Formation:</strong> Institut de manucure de Milan</div>
+                            <div><strong>Langues:</strong> Français, Arabe, Italien</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CTA Professionals -->
+        <div class="text-center mt-16 fade-in-up">
+            <a href="/professionals/" class="btn-secondary inline-flex items-center">
+                <i data-lucide="users" class="w-5 h-5 mr-2"></i>
+                Voir tous les professionnels
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Modal profil pro (glass) -->
+<div id="proModal" class="modal">
+    <div class="bg-white/80 backdrop-blur-xl rounded-2xl border shadow-2xl w-[90%] max-w-xl p-6 relative">
+        <button type="button"
+            class="absolute top-3 right-3 bg-white/70 border rounded-full w-8 h-8 flex items-center justify-center"
+            data-close>&times;</button>
+        <div class="flex items-start gap-4">
+            <div class="w-20 h-20 rounded-xl bg-gradient-to-br from-rose-200 to-blue-200"></div>
+            <div class="flex-1">
+                <div class="text-lg font-semibold">Nadia Benali</div>
+                <div class="text-sm text-gray-600">Esthéticienne – Nabeul</div>
+                <div class="mt-2 text-sm">Bio courte: Passionnée par l'art de sublimer.</div>
+            </div>
+        </div>
+        <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            <div class="bg-white/70 rounded-xl p-3 border">
+                <div class="font-medium mb-1">Spécialités</div>
+                <ul class="list-disc ml-5 text-gray-700">
+                    <li>Soin visage</li>
+                    <li>Massage relaxant</li>
+                    <li>Épilation</li>
+                </ul>
+            </div>
+            <div class="bg-white/70 rounded-xl p-3 border">
+                <div class="font-medium mb-1">Réseaux</div>
+                <div class="flex gap-2"><span class="px-2 py-1 rounded bg-gray-100">Instagram</span><span
+                        class="px-2 py-1 rounded bg-gray-100">Facebook</span></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Testimonials Section Premium -->
+<section id="testimonials" class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center mb-16 fade-in-up">
+            <div class="inline-flex items-center px-4 py-2 rounded-full bg-yellow-100 text-yellow-600 mb-4">
+                <i data-lucide="heart" class="w-4 h-4 mr-2"></i>
+                <span class="text-sm font-medium">Témoignages</span>
+            </div>
+            <h2 class="text-4xl md:text-5xl font-bold mb-6"
+                style="font-family: 'Poppins', sans-serif; color: var(--noir-doux);">
+                Ils nous font confiance
+            </h2>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                Découvrez les retours de nos clientes satisfaites et laissez-vous inspirer par leurs expériences.
+            </p>
+        </div>
+
+        <div class="testimonials-carousel fade-in-up">
+            <div id="tTrack" class="testimonials-track">
+                <div class="testimonial-card" data-index="0">
+                    <div class="flex items-center mb-4">
+                        <div
+                            class="w-12 h-12 rounded-full bg-gradient-to-r from-pink-400 to-pink-500 flex items-center justify-center mr-4">
+                            <span class="text-white font-bold text-lg">M</span>
+                        </div>
+                        <div>
+                            <div class="text-lg font-semibold"
+                                style="font-family: 'Poppins', sans-serif; color: var(--noir-doux);">Marie Dubois</div>
+                            <div class="flex items-center text-yellow-500">
                                 <i data-lucide="star" class="w-4 h-4 star-anim"></i>
                                 <i data-lucide="star" class="w-4 h-4 star-anim" style="animation-delay:.2s"></i>
                                 <i data-lucide="star" class="w-4 h-4 star-anim" style="animation-delay:.4s"></i>
                                 <i data-lucide="star" class="w-4 h-4 star-anim" style="animation-delay:.6s"></i>
                                 <i data-lucide="star" class="w-4 h-4 star-anim" style="animation-delay:.8s"></i>
+                                <span class="ml-2 text-sm text-gray-600">5.0</span>
                             </div>
                         </div>
-                        <p class="text-sm text-gray-600">Esthéticienne - Nabeul</p>
-                        <div class="mt-3 flex gap-2 text-sm">
-                            <a href="/booking/" class="px-3 py-1 rounded-lg bg-pink-100 text-pink-700">Réserver</a>
-                            <button type="button" class="px-3 py-1 rounded-lg bg-gray-100" data-open="proModal">Voir le
-                                profil</button>
+                    </div>
+                    <p class="text-gray-600 mb-4 italic">"Service impeccable, accueil chaleureux et résultats parfaits.
+                        Nadia a su me conseiller et le résultat dépasse mes attentes. Je recommande vivement !"</p>
+                    <div class="text-sm text-gray-400">15 Jan 2025</div>
+                </div>
+
+                <div class="testimonial-card" data-index="1">
+                    <div class="flex items-center mb-4">
+                        <div
+                            class="w-12 h-12 rounded-full bg-gradient-to-r from-blue-400 to-blue-500 flex items-center justify-center mr-4">
+                            <span class="text-white font-bold text-lg">S</span>
+                        </div>
+                        <div>
+                            <div class="text-lg font-semibold"
+                                style="font-family: 'Poppins', sans-serif; color: var(--noir-doux);">Sophie Martin</div>
+                            <div class="flex items-center text-yellow-500">
+                                <i data-lucide="star" class="w-4 h-4 star-anim"></i>
+                                <i data-lucide="star" class="w-4 h-4 star-anim" style="animation-delay:.2s"></i>
+                                <i data-lucide="star" class="w-4 h-4 star-anim" style="animation-delay:.4s"></i>
+                                <i data-lucide="star" class="w-4 h-4 star-anim" style="animation-delay:.6s"></i>
+                                <i data-lucide="star" class="w-4 h-4 star-anim" style="animation-delay:.8s"></i>
+                                <span class="ml-2 text-sm text-gray-600">5.0</span>
+                            </div>
                         </div>
                     </div>
-                    <div class="pro-overlay absolute inset-0 bg-white/85 p-5">
-                        <div class="font-medium mb-1">À propos</div>
-                        <p class="text-sm text-gray-600">Bio: Passionnée par la beauté, 8 ans d'expérience, spécialiste
-                            soins visage.</p>
-                        <div class="mt-2 text-sm text-gray-700">Spécialités: Soins visage, épilation, massage.</div>
-                    </div>
+                    <p class="text-gray-600 mb-4 italic">"Très professionnelle et à l'écoute, Amina a su comprendre
+                        exactement ce que je voulais. L'ambiance est détendue et le résultat est magnifique. Je
+                        reviendrai !"</p>
+                    <div class="text-sm text-gray-400">16 Jan 2025</div>
                 </div>
-                {% endfor %}
-            </div>
-        </section>
 
-        <!-- Modal profil pro (glass) -->
-        <div id="proModal" class="modal">
-            <div class="bg-white/80 backdrop-blur-xl rounded-2xl border shadow-2xl w-[90%] max-w-xl p-6 relative">
-                <button type="button"
-                    class="absolute top-3 right-3 bg-white/70 border rounded-full w-8 h-8 flex items-center justify-center"
-                    data-close>&times;</button>
-                <div class="flex items-start gap-4">
-                    <div class="w-20 h-20 rounded-xl bg-gradient-to-br from-rose-200 to-blue-200"></div>
-                    <div class="flex-1">
-                        <div class="text-lg font-semibold">Nadia Benali</div>
-                        <div class="text-sm text-gray-600">Esthéticienne – Nabeul</div>
-                        <div class="mt-2 text-sm">Bio courte: Passionnée par l'art de sublimer.</div>
+                <div class="testimonial-card" data-index="2">
+                    <div class="flex items-center mb-4">
+                        <div
+                            class="w-12 h-12 rounded-full bg-gradient-to-r from-purple-400 to-purple-500 flex items-center justify-center mr-4">
+                            <span class="text-white font-bold text-lg">A</span>
+                        </div>
+                        <div>
+                            <div class="text-lg font-semibold"
+                                style="font-family: 'Poppins', sans-serif; color: var(--noir-doux);">Anne Leroy</div>
+                            <div class="flex items-center text-yellow-500">
+                                <i data-lucide="star" class="w-4 h-4 star-anim"></i>
+                                <i data-lucide="star" class="w-4 h-4 star-anim" style="animation-delay:.2s"></i>
+                                <i data-lucide="star" class="w-4 h-4 star-anim" style="animation-delay:.4s"></i>
+                                <i data-lucide="star" class="w-4 h-4 star-anim" style="animation-delay:.6s"></i>
+                                <i data-lucide="star" class="w-4 h-4 star-anim" style="animation-delay:.8s"></i>
+                                <span class="ml-2 text-sm text-gray-600">5.0</span>
+                            </div>
+                        </div>
                     </div>
+                    <p class="text-gray-600 mb-4 italic">"Réservation simple et rapide, expérience parfaite. Fatma est
+                        une artiste ! Mon nail art est unique et dure des semaines. Un service de qualité !"</p>
+                    <div class="text-sm text-gray-400">18 Jan 2025</div>
                 </div>
-                <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                    <div class="bg-white/70 rounded-xl p-3 border">
-                        <div class="font-medium mb-1">Spécialités</div>
-                        <ul class="list-disc ml-5 text-gray-700">
-                            <li>Soin visage</li>
-                            <li>Massage relaxant</li>
-                            <li>Épilation</li>
-                        </ul>
+
+                <div class="testimonial-card" data-index="3">
+                    <div class="flex items-center mb-4">
+                        <div
+                            class="w-12 h-12 rounded-full bg-gradient-to-r from-orange-400 to-orange-500 flex items-center justify-center mr-4">
+                            <span class="text-white font-bold text-lg">L</span>
+                        </div>
+                        <div>
+                            <div class="text-lg font-semibold"
+                                style="font-family: 'Poppins', sans-serif; color: var(--noir-doux);">Léa Moreau</div>
+                            <div class="flex items-center text-yellow-500">
+                                <i data-lucide="star" class="w-4 h-4 star-anim"></i>
+                                <i data-lucide="star" class="w-4 h-4 star-anim" style="animation-delay:.2s"></i>
+                                <i data-lucide="star" class="w-4 h-4 star-anim" style="animation-delay:.4s"></i>
+                                <i data-lucide="star" class="w-4 h-4 star-anim" style="animation-delay:.6s"></i>
+                                <i data-lucide="star" class="w-4 h-4 star-anim" style="animation-delay:.8s"></i>
+                                <span class="ml-2 text-sm text-gray-600">5.0</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="bg-white/70 rounded-xl p-3 border">
-                        <div class="font-medium mb-1">Réseaux</div>
-                        <div class="flex gap-2"><span class="px-2 py-1 rounded bg-gray-100">Instagram</span><span
-                                class="px-2 py-1 rounded bg-gray-100">Facebook</span></div>
-                    </div>
+                    <p class="text-gray-600 mb-4 italic">"Une expérience beauté exceptionnelle ! L'équipe est à l'écoute
+                        et les soins sont de très haute qualité. Je me sens toujours belle après mes rendez-vous."</p>
+                    <div class="text-sm text-gray-400">20 Jan 2025</div>
                 </div>
             </div>
         </div>
 
-        <section id="testimonials" class="mt-20">
-            <h2 class="text-2xl font-bold mb-6">Ils nous font confiance</h2>
-            <div class="carousel bg-white/50 rounded-2xl border p-4">
-                <div id="tTrack" class="carousel-track">
-                    <div class="bg-white rounded-2xl border p-6 shadow-sm min-w-[280px]" data-index="0">
-                        <div class="text-lg font-semibold">Marie Dubois</div>
-                        <div class="text-yellow-500">★★★★★</div>
-                        <p class="text-gray-600 mt-2">Service impeccable, accueil chaleureux et résultats parfaits.</p>
-                        <div class="text-xs text-gray-400 mt-2">15 Jan 2025</div>
-                    </div>
-                    <div class="bg-white rounded-2xl border p-6 shadow-sm min-w-[280px]" data-index="1">
-                        <div class="text-lg font-semibold">Sophie Martin</div>
-                        <div class="text-yellow-500">★★★★★</div>
-                        <p class="text-gray-600 mt-2">Très professionnelle et à l'écoute, je recommande.</p>
-                        <div class="text-xs text-gray-400 mt-2">16 Jan 2025</div>
-                    </div>
-                    <div class="bg-white rounded-2xl border p-6 shadow-sm min-w-[280px]" data-index="2">
-                        <div class="text-lg font-semibold">Anne Leroy</div>
-                        <div class="text-yellow-500">★★★★★</div>
-                        <p class="text-gray-600 mt-2">Réservation simple et rapide, expérience parfaite.</p>
-                        <div class="text-xs text-gray-400 mt-2">18 Jan 2025</div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section id="contact" class="mt-20">
-            <h2 class="text-2xl font-bold mb-6">Nous contacter</h2>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <form class="bg-white rounded-2xl border p-6 space-y-3">
-                    <input class="w-full border rounded-xl px-3 py-2" placeholder="Nom complet" />
-                    <input class="w-full border rounded-xl px-3 py-2" placeholder="Email" type="email" />
-                    <textarea class="w-full border rounded-xl px-3 py-2" rows="4"
-                        placeholder="Votre message"></textarea>
-                    <button class="px-5 py-2 rounded-xl bg-pink-500 text-white hover:bg-pink-600">Envoyer</button>
-                </form>
-                <div class="bg-white rounded-2xl border p-2">
-                    <iframe id="gmap" title="map" class="map-iframe w-full h-[300px] rounded-xl" loading="lazy"
-                        allowfullscreen
-                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3239.493!2d10.735!3d36.451!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2z!5e0!3m2!1sfr!2stn!4v1700000000000"></iframe>
-                </div>
-            </div>
-        </section>
+        <!-- Navigation arrows -->
+        <div class="flex justify-center mt-8 gap-4">
+            <button id="prevTestimonial"
+                class="w-12 h-12 rounded-full bg-pink-100 text-pink-600 hover:bg-pink-200 transition-colors flex items-center justify-center">
+                <i data-lucide="chevron-left" class="w-6 h-6"></i>
+            </button>
+            <button id="nextTestimonial"
+                class="w-12 h-12 rounded-full bg-pink-100 text-pink-600 hover:bg-pink-200 transition-colors flex items-center justify-center">
+                <i data-lucide="chevron-right" class="w-6 h-6"></i>
+            </button>
+        </div>
     </div>
 </section>
+
+<!-- Contact Section Premium -->
+<section id="contact" class="py-20" style="background: var(--gris-tres-clair);">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center mb-16 fade-in-up">
+            <div class="inline-flex items-center px-4 py-2 rounded-full bg-green-100 text-green-600 mb-4">
+                <i data-lucide="mail" class="w-4 h-4 mr-2"></i>
+                <span class="text-sm font-medium">Contact</span>
+            </div>
+            <h2 class="text-4xl md:text-5xl font-bold mb-6" style="font-family: 'Poppins', sans-serif; color: var(--noir-doux);">
+                Parlons de votre beauté
+            </h2>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                Une question ? Un conseil ? N'hésitez pas à nous contacter. Notre équipe est là pour vous accompagner.
+            </p>
+        </div>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <!-- Contact Form Premium -->
+            <div class="fade-in-left">
+                <div class="contact-form">
+                    <h3 class="text-2xl font-bold mb-6" style="font-family: 'Poppins', sans-serif; color: var(--noir-doux);">
+                        Envoyez-nous un message
+                    </h3>
+                    <form class="space-y-6">
+                        <div class="form-group">
+                            <input type="text" class="form-input" placeholder=" " required>
+                            <label class="form-label">Nom complet</label>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" class="form-input" placeholder=" " required>
+                            <label class="form-label">Adresse email</label>
+                        </div>
+                        <div class="form-group">
+                            <input type="tel" class="form-input" placeholder=" ">
+                            <label class="form-label">Téléphone (optionnel)</label>
+                        </div>
+                        <div class="form-group">
+                            <select class="form-input" required>
+                                <option value="">Sélectionnez un service</option>
+                                <option value="coiffure">Coiffure</option>
+                                <option value="esthetique">Esthétique</option>
+                                <option value="manucure">Manucure</option>
+                                <option value="massage">Massage</option>
+                                <option value="autre">Autre</option>
+                            </select>
+                            <label class="form-label">Service souhaité</label>
+                        </div>
+                        <div class="form-group">
+                            <textarea class="form-input" rows="4" placeholder=" " required></textarea>
+                            <label class="form-label">Votre message</label>
+                        </div>
+                        <button type="submit" class="btn-primary w-full">
+                            <i data-lucide="send" class="w-5 h-5 inline mr-2"></i>
+                            Envoyer le message
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Contact Info & Map -->
+            <div class="fade-in-right">
+                <div class="space-y-8">
+                    <!-- Contact Info -->
+                    <div class="glass-card p-8">
+                        <h3 class="text-2xl font-bold mb-6" style="font-family: 'Poppins', sans-serif; color: var(--noir-doux);">
+                            Informations de contact
+                        </h3>
+                        <div class="space-y-6">
+                            <div class="flex items-start gap-4">
+                                <div class="w-12 h-12 rounded-full bg-pink-100 flex items-center justify-center flex-shrink-0">
+                                    <i data-lucide="map-pin" class="w-6 h-6 text-pink-500"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold mb-1" style="color: var(--noir-doux);">Adresse</h4>
+                                    <p class="text-gray-600">123 Avenue Habib Bourguiba<br>1000 Tunis, Tunisie</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start gap-4">
+                                <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                                    <i data-lucide="phone" class="w-6 h-6 text-blue-500"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold mb-1" style="color: var(--noir-doux);">Téléphone</h4>
+                                    <p class="text-gray-600">+216 71 123 456</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start gap-4">
+                                <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                                    <i data-lucide="mail" class="w-6 h-6 text-green-500"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold mb-1" style="color: var(--noir-doux);">Email</h4>
+                                    <p class="text-gray-600">contact@coucoubeaute.tn</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start gap-4">
+                                <div class="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center flex-shrink-0">
+                                    <i data-lucide="clock" class="w-6 h-6 text-yellow-500"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold mb-1" style="color: var(--noir-doux);">Horaires</h4>
+                                    <p class="text-gray-600">Lun - Sam: 9h00 - 19h00<br>Dimanche: 10h00 - 16h00</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Map -->
+                    <div class="glass-card p-4">
+                        <iframe id="gmap" title="map" class="w-full h-80 rounded-xl" loading="lazy"
+                            allowfullscreen
+                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3239.493!2d10.735!3d36.451!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2z!5e0!3m2!1sfr!2stn!4v1700000000000"></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer Premium -->
+<footer class="footer">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="footer-content">
+            <!-- Logo & Description -->
+            <div class="footer-section">
+                <div class="flex items-center space-x-2 mb-4">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-r from-pink-400 to-blue-400 flex items-center justify-center">
+                        <i data-lucide="sparkles" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <span class="text-2xl font-bold" style="font-family: 'Poppins', sans-serif;">Coucou Beauté</span>
+                </div>
+                <p class="text-gray-400 mb-6">
+                    Votre partenaire beauté de confiance. Des professionnelles qualifiées pour des soins sur mesure qui vous ressemblent.
+                </p>
+                <div class="flex space-x-4">
+                    <a href="#" class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-pink-500 transition-colors">
+                        <i data-lucide="facebook" class="w-5 h-5"></i>
+                    </a>
+                    <a href="#" class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-pink-500 transition-colors">
+                        <i data-lucide="instagram" class="w-5 h-5"></i>
+                    </a>
+                    <a href="#" class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center hover:bg-pink-500 transition-colors">
+                        <i data-lucide="twitter" class="w-5 h-5"></i>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Services -->
+            <div class="footer-section">
+                <h3>Nos Services</h3>
+                <ul class="space-y-3">
+                    <li><a href="#services">Coiffure</a></li>
+                    <li><a href="#services">Esthétique</a></li>
+                    <li><a href="#services">Manucure</a></li>
+                    <li><a href="#services">Massage</a></li>
+                    <li><a href="#services">Soins du corps</a></li>
+                </ul>
+            </div>
+            
+            <!-- Liens rapides -->
+            <div class="footer-section">
+                <h3>Liens rapides</h3>
+                <ul class="space-y-3">
+                    <li><a href="#professionals">Nos professionnels</a></li>
+                    <li><a href="#testimonials">Témoignages</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                    <li><a href="/booking/">Réserver</a></li>
+                    <li><a href="/signup/">S'inscrire</a></li>
+                </ul>
+            </div>
+            
+            <!-- Contact -->
+            <div class="footer-section">
+                <h3>Contact</h3>
+                <div class="space-y-3">
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="map-pin" class="w-4 h-4 text-pink-400"></i>
+                        <span class="text-sm">123 Avenue Habib Bourguiba, Tunis</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="phone" class="w-4 h-4 text-pink-400"></i>
+                        <span class="text-sm">+216 71 123 456</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="mail" class="w-4 h-4 text-pink-400"></i>
+                        <span class="text-sm">contact@coucoubeaute.tn</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Copyright -->
+        <div class="border-t border-gray-700 pt-6 text-center">
+            <p class="text-gray-400 text-sm">
+                © 2025 Coucou Beauté. Tous droits réservés. | 
+                <a href="#" class="hover:text-pink-400 transition-colors">Mentions légales</a> | 
+                <a href="#" class="hover:text-pink-400 transition-colors">Politique de confidentialité</a>
+            </p>
+        </div>
+    </div>
+</footer>
 {% endblock %}
 
 {% block extra_js %}
@@ -309,53 +1254,378 @@
 <script>
     window.lucide && window.lucide.createIcons();
 </script>
-<!-- Three.js + Lottie + GSAP -->
+<!-- Three.js + GSAP -->
 <script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
-<script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
 <script src="https://unpkg.com/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://unpkg.com/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
 <script>
-    // Typewriter headline
-    (function () {
-        const el = document.getElementById('typewriter'); if (!el) return;
-        const text = "Réservez vos soins beauté en toute simplicité"; let i = 0;
-        function tick() { el.textContent = text.slice(0, ++i); if (i < text.length) setTimeout(tick, 40); }
-        tick();
+    // Initialize GSAP ScrollTrigger
+    gsap.registerPlugin(ScrollTrigger);
+
+    // Sticky Header with scroll effect
+    (function() {
+        const header = document.getElementById('stickyHeader');
+        if (!header) return;
+        
+        let lastScrollY = window.scrollY;
+        
+        window.addEventListener('scroll', () => {
+            const currentScrollY = window.scrollY;
+            
+            if (currentScrollY > 100) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+            
+            lastScrollY = currentScrollY;
+        });
     })();
-    // Parallax hero image
-    (function () {
-        const img = document.getElementById('heroImg'); if (!img) return;
-        window.addEventListener('scroll', () => { const y = window.scrollY; img.style.transform = `translateY(${y * 0.06}px)`; }, { passive: true });
+
+    // Smooth scroll animations on scroll
+    (function() {
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        // Observe all fade-in elements
+        document.querySelectorAll('.fade-in-up, .fade-in-left, .fade-in-right').forEach(el => {
+            observer.observe(el);
+        });
     })();
-    // Testimonials auto-carousel
-    (function () {
-        const track = document.getElementById('tTrack'); if (!track) return; let idx = 0; const cards = [...track.children];
-        function go(n) { idx = (n % cards.length + cards.length) % cards.length; const w = cards[0].offsetWidth + 16; track.style.transform = `translateX(${-idx * w}px)`; }
-        setInterval(() => go(idx + 1), 3000); window.addEventListener('resize', () => go(idx));
+
+    // Testimonials carousel with 3D effects
+    (function() {
+        const track = document.getElementById('tTrack');
+        const prevBtn = document.getElementById('prevTestimonial');
+        const nextBtn = document.getElementById('nextTestimonial');
+        
+        if (!track || !prevBtn || !nextBtn) return;
+        
+        let currentIndex = 0;
+        const cards = [...track.children];
+        const cardWidth = 320 + 32; // card width + gap
+        
+        function updateCarousel() {
+            const translateX = -currentIndex * cardWidth;
+            gsap.to(track, {
+                duration: 0.8,
+                x: translateX,
+                ease: "power2.out"
+            });
+        }
+        
+        function nextSlide() {
+            currentIndex = (currentIndex + 1) % cards.length;
+            updateCarousel();
+        }
+        
+        function prevSlide() {
+            currentIndex = (currentIndex - 1 + cards.length) % cards.length;
+            updateCarousel();
+        }
+        
+        // Event listeners
+        nextBtn.addEventListener('click', nextSlide);
+        prevBtn.addEventListener('click', prevSlide);
+        
+        // Auto-play
+        setInterval(nextSlide, 5000);
+        
+        // 3D hover effects
+        cards.forEach((card, index) => {
+            card.addEventListener('mouseenter', () => {
+                gsap.to(card, {
+                    duration: 0.3,
+                    scale: 1.05,
+                    rotateY: 5,
+                    z: 20,
+                    ease: "power2.out"
+                });
+            });
+            
+            card.addEventListener('mouseleave', () => {
+                gsap.to(card, {
+                    duration: 0.3,
+                    scale: 1,
+                    rotateY: 0,
+                    z: 0,
+                    ease: "power2.out"
+                });
+            });
+        });
     })();
-    // Map style sync with dark mode
-    (function () {
-        const m = document.getElementById('gmap'); if (!m) return; function apply() { const dark = document.documentElement.classList.contains('dark'); m.style.filter = dark ? 'invert(0.9) hue-rotate(180deg) brightness(0.9)' : 'none'; }
-        apply(); const t = document.getElementById('themeToggle'); if (t) t.addEventListener('click', () => setTimeout(apply, 10));
+
+    // Professional cards hover effects
+    (function() {
+        const proCards = document.querySelectorAll('.pro-card');
+        
+        proCards.forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                gsap.to(card, {
+                    duration: 0.4,
+                    y: -10,
+                    rotateX: 5,
+                    scale: 1.02,
+                    ease: "power2.out"
+                });
+            });
+            
+            card.addEventListener('mouseleave', () => {
+                gsap.to(card, {
+                    duration: 0.4,
+                    y: 0,
+                    rotateX: 0,
+                    scale: 1,
+                    ease: "power2.out"
+                });
+            });
+        });
     })();
-    // Three.js aurora/particles background
-    (function () {
-        const canvas = document.getElementById('hero3d'); if (!canvas || !window.THREE) return;
-        const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-        const scene = new THREE.Scene(); const camera = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.1, 100); camera.position.z = 9;
-        renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); renderer.setSize(innerWidth, innerHeight);
-        const amb = new THREE.AmbientLight(0xffffff, 0.9); scene.add(amb);
-        function auroraTex() { const s = 256, c = document.createElement('canvas'); c.width = c.height = s; const x = c.getContext('2d'); const g = x.createLinearGradient(0, 0, s, s); g.addColorStop(0, 'rgba(108,169,224,.55)'); g.addColorStop(.5, 'rgba(242,139,178,.45)'); g.addColorStop(1, 'rgba(201,162,39,.35)'); x.fillStyle = g; x.beginPath(); x.arc(s / 2, s / 2, s / 2, 0, Math.PI * 2); x.fill(); return new THREE.CanvasTexture(c); }
-        const geo = new THREE.PlaneGeometry(18, 10, 64, 64); const mat = new THREE.MeshBasicMaterial({ map: auroraTex(), transparent: true, opacity: 0.6 }); const aurora = new THREE.Mesh(geo, mat); aurora.position.z = -2; scene.add(aurora);
-        const group = new THREE.Group(); scene.add(group); const pgeo = new THREE.SphereGeometry(0.03, 6, 6); const pm = new THREE.MeshBasicMaterial({ color: 0xffffff });
-        for (let i = 0; i < 220; i++) { const m = new THREE.Mesh(pgeo, pm); m.position.set((Math.random() - 0.5) * 18, (Math.random() - 0.2) * 10, -1.5 - Math.random()); m.userData = { vy: 0.005 + Math.random() * 0.005 }; group.add(m); }
-        function onResize() { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); } window.addEventListener('resize', onResize);
-        let t = 0; function loop() { requestAnimationFrame(loop); t += 0.005; aurora.rotation.z = Math.sin(t) * 0.08; group.children.forEach(p => { p.position.y += p.userData.vy; if (p.position.y > 5) { p.position.y = -3 - Math.random() * 2; } }); renderer.render(scene, camera); } loop();
+
+    // Service cards hover effects
+    (function() {
+        const serviceCards = document.querySelectorAll('.service-card');
+        
+        serviceCards.forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                gsap.to(card, {
+                    duration: 0.4,
+                    y: -12,
+                    scale: 1.02,
+                    ease: "power2.out"
+                });
+            });
+            
+            card.addEventListener('mouseleave', () => {
+                gsap.to(card, {
+                    duration: 0.4,
+                    y: 0,
+                    scale: 1,
+                    ease: "power2.out"
+                });
+            });
+        });
     })();
-    // Lottie icons for services
-    (function () { const map = { scissors: 'https://assets8.lottiefiles.com/packages/lf20_1pxqjqps.json', sparkles: 'https://assets7.lottiefiles.com/packages/lf20_9wjm14ni.json', hand: 'https://assets3.lottiefiles.com/packages/lf20_0yfsb3a1.json', heart: 'https://assets10.lottiefiles.com/packages/lf20_9xcyasrh.json' }; document.querySelectorAll('.lottie-anim').forEach(el => { const k = el.getAttribute('data-lottie'); const src = map[k]; if (!src) return; const p = document.createElement('lottie-player'); p.setAttribute('src', src); p.setAttribute('background', 'transparent'); p.setAttribute('speed', '1'); p.style.width = '100%'; p.style.height = '100%'; p.setAttribute('loop', ''); p.setAttribute('autoplay', ''); el.appendChild(p); }); })();
-    // Modal open/close
-    (function () { const modal = document.getElementById('proModal'); if (!modal) return; document.querySelectorAll('[data-open="proModal"]').forEach(b => b.addEventListener('click', () => modal.classList.add('open'))); modal.querySelector('[data-close]')?.addEventListener('click', () => modal.classList.remove('open')); modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('open'); }); })();
-    // GSAP hover depth on testimonials
-    (function () { const track = document.getElementById('tTrack'); if (!track || !window.gsap) return;[...track.children].forEach(card => { card.style.transformStyle = 'preserve-3d'; card.addEventListener('mouseenter', () => gsap.to(card, { duration: .3, scale: 1.05, rotateY: 6 })); card.addEventListener('mouseleave', () => gsap.to(card, { duration: .3, scale: 1, rotateY: 0 })); }); })();
+
+    // Form interactions
+    (function() {
+        const formInputs = document.querySelectorAll('.form-input');
+        
+        formInputs.forEach(input => {
+            input.addEventListener('focus', () => {
+                gsap.to(input, {
+                    duration: 0.3,
+                    scale: 1.02,
+                    ease: "power2.out"
+                });
+            });
+            
+            input.addEventListener('blur', () => {
+                gsap.to(input, {
+                    duration: 0.3,
+                    scale: 1,
+                    ease: "power2.out"
+                });
+            });
+        });
+    })();
+
+    // Modal functionality
+    (function() {
+        const modal = document.getElementById('proModal');
+        if (!modal) return;
+        
+        const openButtons = document.querySelectorAll('[data-open="proModal"]');
+        const closeButton = modal.querySelector('[data-close]');
+        
+        openButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                modal.classList.add('open');
+                gsap.fromTo(modal, 
+                    { opacity: 0, scale: 0.8 },
+                    { opacity: 1, scale: 1, duration: 0.3, ease: "power2.out" }
+                );
+            });
+        });
+        
+        function closeModal() {
+            gsap.to(modal, {
+                opacity: 0,
+                scale: 0.8,
+                duration: 0.3,
+                ease: "power2.out",
+                onComplete: () => modal.classList.remove('open')
+            });
+        }
+        
+        if (closeButton) closeButton.addEventListener('click', closeModal);
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+    })();
+
+    // Three.js background animation
+    (function() {
+        const canvas = document.getElementById('hero3d');
+        if (!canvas || !window.THREE) return;
+        
+        const renderer = new THREE.WebGLRenderer({ 
+            canvas, 
+            alpha: true, 
+            antialias: true 
+        });
+        
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 5;
+        
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        
+        // Create floating particles
+        const particlesGeometry = new THREE.BufferGeometry();
+        const particlesCount = 100;
+        const posArray = new Float32Array(particlesCount * 3);
+        
+        for (let i = 0; i < particlesCount * 3; i++) {
+            posArray[i] = (Math.random() - 0.5) * 10;
+        }
+        
+        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+        
+        const particlesMaterial = new THREE.PointsMaterial({
+            size: 0.05,
+            color: 0xffffff,
+            transparent: true,
+            opacity: 0.6
+        });
+        
+        const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+        scene.add(particlesMesh);
+        
+        // Create gradient background
+        const gradientGeometry = new THREE.PlaneGeometry(20, 20);
+        const gradientMaterial = new THREE.ShaderMaterial({
+            uniforms: {
+                time: { value: 0 },
+                color1: { value: new THREE.Color(0xf8bbd0) },
+                color2: { value: new THREE.Color(0xb3e5fc) },
+                color3: { value: new THREE.Color(0xfbe9e7) }
+            },
+            vertexShader: `
+                varying vec2 vUv;
+                void main() {
+                    vUv = uv;
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                }
+            `,
+            fragmentShader: `
+                uniform float time;
+                uniform vec3 color1;
+                uniform vec3 color2;
+                uniform vec3 color3;
+                varying vec2 vUv;
+                
+                void main() {
+                    vec2 uv = vUv;
+                    float noise = sin(uv.x * 10.0 + time) * 0.1 + sin(uv.y * 10.0 + time * 0.5) * 0.1;
+                    vec3 color = mix(color1, color2, uv.x + noise);
+                    color = mix(color, color3, uv.y + noise);
+                    gl_FragColor = vec4(color, 0.3);
+                }
+            `
+        });
+        
+        const gradientMesh = new THREE.Mesh(gradientGeometry, gradientMaterial);
+        gradientMesh.position.z = -5;
+        scene.add(gradientMesh);
+        
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            const time = Date.now() * 0.001;
+            gradientMaterial.uniforms.time.value = time;
+            
+            particlesMesh.rotation.y = time * 0.1;
+            particlesMesh.rotation.x = time * 0.05;
+            
+            renderer.render(scene, camera);
+        }
+        
+        animate();
+        
+        // Handle resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    })();
+
+    // Smooth scrolling for navigation links
+    (function() {
+        const navLinks = document.querySelectorAll('a[href^="#"]');
+        
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetId = link.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                
+                if (targetElement) {
+                    gsap.to(window, {
+                        duration: 1,
+                        scrollTo: { y: targetElement, offsetY: 80 },
+                        ease: "power2.inOut"
+                    });
+                }
+            });
+        });
+    })();
+
+    // Button hover effects
+    (function() {
+        const buttons = document.querySelectorAll('.btn-primary, .btn-secondary');
+        
+        buttons.forEach(btn => {
+            btn.addEventListener('mouseenter', () => {
+                gsap.to(btn, {
+                    duration: 0.3,
+                    scale: 1.05,
+                    ease: "power2.out"
+                });
+            });
+            
+            btn.addEventListener('mouseleave', () => {
+                gsap.to(btn, {
+                    duration: 0.3,
+                    scale: 1,
+                    ease: "power2.out"
+                });
+            });
+        });
+    })();
+
+    // Loading animation
+    (function() {
+        window.addEventListener('load', () => {
+            gsap.fromTo('body', 
+                { opacity: 0 },
+                { opacity: 1, duration: 0.5, ease: "power2.out" }
+            );
+        });
+    })();
 </script>
 {% endblock %}
