@@ -62,7 +62,7 @@ chmod +x deploy.sh
 
 ```bash
 # 1. Mise à jour du code
-git pull origin main
+git pull origin main 
 
 # 2. Redémarrage des services
 docker compose -f docker-compose.prod.yml down
@@ -191,3 +191,6 @@ crontab -e
 ```
 
 Cette solution surveille origin/main et déploie automatiquement en cas de nouveaux commits, avec migrations et collectstatic gérées par `deploy-simple.sh`.
+
+
+## test 
