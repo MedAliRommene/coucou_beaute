@@ -82,7 +82,7 @@ for i in 1 2 3; do
 
 log "🧱 Collectstatic..."
 for i in 1 2 3; do
-  if run_in_web "python manage.py collectstatic --noinput"; then
+  if run_in_web "python manage.py collectstatic --noinput --no-post-process"; then
     OK=1; break; fi; log "⏳ Retry collectstatic ($i)"; sleep 3; done
 
 # Attendre que les services soient prêts
