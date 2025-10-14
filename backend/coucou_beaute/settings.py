@@ -91,13 +91,20 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'static'
-STATICFILES_DIRS = [
-	BASE_DIR / 'shared' / 'static',
-]
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+# --- Static & Media ---
+STATIC_URL = os.getenv('STATIC_URL', '/static/')
+STATIC_ROOT = Path(os.getenv('STATIC_ROOT', str(BASE_DIR / 'static')))
+
+# Inclure les assets additionnels uniquement en développement si le dossier existe
+if DEBUG and (BASE_DIR / 'shared' / 'static').exists():
+	STATICFILES_DIRS = [
+		BASE_DIR / 'shared' / 'static',
+	]
+else:
+	STATICFILES_DIRS = []
+
+MEDIA_URL = os.getenv('MEDIA_URL', '/media/')
+MEDIA_ROOT = Path(os.getenv('MEDIA_ROOT', str(BASE_DIR / 'media')))
 
 # Configuration Whitenoise pour la production
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
