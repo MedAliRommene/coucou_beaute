@@ -1,4 +1,4 @@
-// Scripts globaux - Coucou Beauté
+// Scripts globaux - Coucou BeautÃ©
 
 // Configuration globale
 window.CoucouBeaute = {
@@ -35,7 +35,7 @@ window.CoucouBeaute = {
     // Gestion des notifications
     notifications: {
         show: function(message, type = 'info') {
-            // Implémentation des notifications
+            // ImplÃ©mentation des notifications
             console.log(`[${type.toUpperCase()}] ${message}`);
         },
         
@@ -55,13 +55,13 @@ window.CoucouBeaute = {
 
 // Initialisation au chargement de la page
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Coucou Beauté - Application initialisée');
+    console.log('Coucou BeautÃ© - Application initialisÃ©e');
     
     // Initialiser les composants globaux
     initializeGlobalComponents();
 });
 
 function initializeGlobalComponents() {
-    // Initialisation des composants partagés
+    // Initialisation des composants partagÃ©s
     // Navigation, footer, etc.
 }

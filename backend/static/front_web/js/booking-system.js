@@ -25,7 +25,11 @@ class BookingSystem {
     }
 
     init() {
-        if (!this.data) return;
+        if (!this.data) {
+            console.error('BookingSystem: No booking data found');
+            return;
+        }
+        console.log('BookingSystem: Initializing with data:', this.data);
         this.bindEvents();
         this.handleUrlParams();
     }
@@ -35,6 +39,12 @@ class BookingSystem {
         document.addEventListener('click', (e) => {
             if (e.target.closest('.booking-btn')) {
                 const btn = e.target.closest('.booking-btn');
+                console.log('BookingSystem: Booking button clicked', {
+                    serviceName: btn.dataset.serviceName,
+                    serviceDuration: btn.dataset.serviceDuration,
+                    servicePrice: btn.dataset.servicePrice,
+                    allDataset: btn.dataset
+                });
                 this.openBooking({
                     name: btn.dataset.serviceName,
                     duration: parseInt(btn.dataset.serviceDuration) || 60,
@@ -77,6 +87,7 @@ class BookingSystem {
     }
 
     openBooking(service = null) {
+        console.log('BookingSystem: openBooking called with service:', service);
         this.selectedService = service;
 
         // Update UI
@@ -85,9 +96,19 @@ class BookingSystem {
         const modal = document.getElementById('bookingModal');
         const dateInput = document.getElementById('bookingDate');
 
+        console.log('BookingSystem: UI elements found:', {
+            serviceNameEl: !!serviceNameEl,
+            servicePriceEl: !!servicePriceEl,
+            modal: !!modal,
+            dateInput: !!dateInput
+        });
+
         if (serviceNameEl) serviceNameEl.textContent = service?.name || 'Service';
         if (servicePriceEl) servicePriceEl.textContent = (service?.price || 0) + ' DT';
-        if (modal) modal.classList.remove('hidden');
+        if (modal) {
+            modal.classList.remove('hidden');
+            console.log('BookingSystem: Modal opened');
+        }
         if (dateInput) {
             const today = new Date().toISOString().slice(0, 10);
             dateInput.value = today;
@@ -169,8 +190,8 @@ class BookingSystem {
             const disabled = slot.status !== 'available';
             const btn = document.createElement('button');
             btn.className = `px-4 py-2 rounded-xl border text-sm transition-all ${disabled
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                    : 'bg-white hover:bg-pink-50 border-pink-200 text-gray-700 hover:border-pink-300'
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                : 'bg-white hover:bg-pink-50 border-pink-200 text-gray-700 hover:border-pink-300'
                 }`;
 
             const from = new Date(slot.start);
@@ -217,17 +238,26 @@ class BookingSystem {
     }
 
     async submitBooking() {
-        if (!this.chosenSlot.start || !this.chosenSlot.end) {
+        if (!this.chosenSlot.start) {
             this.showAlert('Veuillez sélectionner un créneau.', 'warning');
             return;
         }
+
+        // Compute end time from service duration to ensure correct length
+        let computedEnd = this.chosenSlot.end;
+        try {
+            const startDate = new Date(this.chosenSlot.start);
+            const durationMin = (this.selectedService && this.selectedService.duration) ? this.selectedService.duration : 60;
+            const endDate = new Date(startDate.getTime() + durationMin * 60000);
+            computedEnd = endDate.toISOString();
+        } catch (_) { }
 
         const payload = {
             pro_id: parseInt(this.data.proId),
             service_name: this.selectedService?.name || 'Service',
             price: this.selectedService?.price || 0,
             start: this.chosenSlot.start,
-            end: this.chosenSlot.end,
+            end: computedEnd,
         };
 
         try {
