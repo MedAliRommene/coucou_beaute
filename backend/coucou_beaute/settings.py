@@ -161,12 +161,7 @@ EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', os.getenv('EMAIL_HOST_USER', 'dalyrommen@gmail.com'))
 SERVER_EMAIL = os.getenv('SERVER_EMAIL', DEFAULT_FROM_EMAIL)
 
-if os.getenv('AWS_STORAGE_BUCKET_NAME'):
-	DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-	AWS_S3_REGION_NAME = os.getenv('AWS_S3_REGION_NAME')
-	AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')
-	AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
-	AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+
 
 # --- CSRF Trusted Origins (toujours actif) ---
 # Configuration basée sur les variables d'environnement
