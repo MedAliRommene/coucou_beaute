@@ -55,7 +55,7 @@ EMAIL_HOST_PASSWORD=votre-mot-de-passe-email
 chmod +x deploy.sh
 
 # Lancer le déploiement
-./deploy.sh
+./deploy-simple.sh
 ```
 
 ### **Méthode 2 : Manuel**
@@ -158,3 +158,36 @@ En cas de problème, vérifiez :
 
 
 Le déploiement GitHub Actions devrait maintenant fonctionner..
+
+---
+
+## 🤖 Auto-déploiement professionnel (via Cron)
+
+Créez `/opt/coucou_beaute/deploy-cron.sh` :
+
+```bash
+#!/bin/bash
+set -euo pipefail
+cd /opt/coucou_beaute
+LOG=/var/log/coucou_deploy.log
+echo "[$(date '+%F %T')] 🔄 Check updates" | tee -a "$LOG"
+git fetch origin main
+LOCAL=$(git rev-parse HEAD || echo "")
+REMOTE=$(git rev-parse origin/main || echo "")
+if [ -n "$REMOTE" ] && [ "$LOCAL" != "$REMOTE" ]; then
+  echo "[$(date '+%F %T')] 🆕 Changes detected -> deploy" | tee -a "$LOG"
+  ./deploy-simple.sh | tee -a "$LOG"
+else
+  echo "[$(date '+%F %T')] ✅ No changes" | tee -a "$LOG"
+fi
+```
+
+Rendez-le exécutable et planifiez :
+
+```bash
+chmod +x /opt/coucou_beaute/deploy-cron.sh
+crontab -e
+# */2 * * * * /opt/coucou_beaute/deploy-cron.sh >/dev/null 2>&1
+```
+
+Cette solution surveille origin/main et déploie automatiquement en cas de nouveaux commits, avec migrations et collectstatic gérées par `deploy-simple.sh`.
