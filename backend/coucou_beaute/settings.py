@@ -71,10 +71,10 @@ WSGI_APPLICATION = 'coucou_beaute.wsgi.application'
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.getenv("POSTGRES_DB", "coucou_local"),
-        "USER": os.getenv("POSTGRES_USER", "postgres"),
+        "NAME": os.getenv("POSTGRES_DB", "coucou_prod"),
+        "USER": os.getenv("POSTGRES_USER", "coucou"),
         "PASSWORD": os.getenv("POSTGRES_PASSWORD", "admin"),
-        "HOST": os.getenv("POSTGRES_HOST", "localhost"),
+        "HOST": os.getenv("POSTGRES_HOST", "db"),
         "PORT": os.getenv("POSTGRES_PORT", "5432"),
     }
 }
