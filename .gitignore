@@ -13,6 +13,9 @@ env.local
 env.prod
 env.development
 env.production
+backend/.env
+backend/.env.*
+backend/env.*
 
 # ===========================================
 # PYTHON
