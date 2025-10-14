@@ -177,3 +177,6 @@ En cas de problème :
 1. Vérifiez les logs : `docker logs coucou_nginx`
 2. Testez la connectivité : `curl -I https://196.203.120.35/`
 3. Vérifiez les certificats : `openssl x509 -in ssl/fullchain.pem -text -noout`
+
+
+#ssfd
