@@ -168,6 +168,18 @@ if os.getenv('AWS_STORAGE_BUCKET_NAME'):
 	AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
 	AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
 
+# --- CSRF Trusted Origins (toujours actif) ---
+# Configuration basée sur les variables d'environnement
+csrf_origins = os.getenv('CSRF_TRUSTED_ORIGINS','').split(',')
+CSRF_TRUSTED_ORIGINS = [u for u in csrf_origins if u]
+
+# Ajouter automatiquement les origines HTTP/HTTPS basées sur ALLOWED_HOSTS
+for host in ALLOWED_HOSTS:
+	if host and host != '*':
+		if not any(host in origin for origin in CSRF_TRUSTED_ORIGINS):
+			CSRF_TRUSTED_ORIGINS.append(f'https://{host}')
+			CSRF_TRUSTED_ORIGINS.append(f'http://{host}')
+
 # --- Security headers & cookies in production ---
 if not DEBUG:
 	# Configuration sécurisée pour HTTPS
@@ -180,20 +192,10 @@ if not DEBUG:
 	SECURE_CONTENT_TYPE_NOSNIFF = True
 	SECURE_BROWSER_XSS_FILTER = True
 	SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', 'False') == 'True'
-	# CSRF Trusted Origins avec fallback pour HTTPS
-	csrf_origins = os.getenv('CSRF_TRUSTED_ORIGINS','').split(',')
-	CSRF_TRUSTED_ORIGINS = [u for u in csrf_origins if u]
-	# Ajouter automatiquement l'origine HTTPS basée sur ALLOWED_HOSTS
-	for host in ALLOWED_HOSTS:
-		if host and host != '*':
-			if not any(host in origin for origin in CSRF_TRUSTED_ORIGINS):
-				CSRF_TRUSTED_ORIGINS.append(f'https://{host}')
-				CSRF_TRUSTED_ORIGINS.append(f'http://{host}')
 else:
 	# Configuration CSRF pour le développement
 	CSRF_COOKIE_SECURE = False
 	SESSION_COOKIE_SECURE = False
-	CSRF_TRUSTED_ORIGINS = []
 
 # Configuration CSRF globale
 CSRF_COOKIE_HTTPONLY = False
