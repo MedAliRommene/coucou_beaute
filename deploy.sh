@@ -52,6 +52,12 @@ log "⚙️ Migrations et collectstatic..."
 docker compose -f docker-compose.prod.yml exec -T web python manage.py migrate --noinput || true
 docker compose -f docker-compose.prod.yml exec -T web python manage.py collectstatic --noinput || true
 
+# Corriger les permissions d'upload
+log "🔧 Correction des permissions d'upload..."
+mkdir -p media/applications media/professionals/avatars media/static
+chmod -R 755 media/
+chmod -R 777 media/applications/ media/professionals/
+
 # Test final
 log "🔍 Test final..."
 if curl -kfsS "https://196.203.120.35/" > /dev/null 2>&1; then
