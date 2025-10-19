@@ -37,7 +37,10 @@ FROM base as application
 WORKDIR /app
 
 # Créer un utilisateur non-root
-RUN groupadd -r django && useradd -r -g django django
+# Permet d'aligner l'UID/GID avec ceux du volume (ex: 1001)
+ARG APP_UID=1000
+ARG APP_GID=1000
+RUN groupadd -g ${APP_GID} -r django && useradd -m -u ${APP_UID} -r -g django django
 
 # Copier les dépendances installées
 COPY --from=dependencies /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages

@@ -32,7 +32,11 @@ services:
   # APPLICATION DJANGO
   # ===========================================
   web:
-    build: ./backend
+    build:
+      context: ./backend
+      args:
+        APP_UID: ${APP_UID:-1001}
+        APP_GID: ${APP_GID:-1001}
     container_name: coucou_web
     restart: unless-stopped
     env_file: ./backend/.env

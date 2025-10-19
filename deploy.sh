@@ -54,13 +54,7 @@ docker compose -f docker-compose.prod.yml exec -T web python manage.py collectst
 
 
 
-# Correction ownership/permissions du volume media côté host (si montage bind absent)
-log "🔐 Normalisation des permissions du volume 'media_data' (host)"
-docker compose -f docker-compose.prod.yml down || true
-docker volume inspect coucou_beaute_media_data >/dev/null 2>&1 && \
-  docker run --rm -v coucou_beaute_media_data:/v alpine sh -c "chown -R 1000:1000 /v && find /v -type d -exec chmod 755 {} \\; && find /v -type f -exec chmod 644 {} \\;" || true
-
-docker compose -f docker-compose.prod.yml up -d
+# Plus de correction de permissions à chaque déploiement: on aligne l'UID/GID via build args
 
 # Test final
 log "🔍 Test final..."
