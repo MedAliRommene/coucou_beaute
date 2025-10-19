@@ -52,11 +52,22 @@ log "⚙️ Migrations et collectstatic..."
 docker compose -f docker-compose.prod.yml exec -T web python manage.py migrate --noinput || true
 docker compose -f docker-compose.prod.yml exec -T web python manage.py collectstatic --noinput || true
 
-# Corriger les permissions d'upload
-log "🔧 Correction des permissions d'upload..."
-mkdir -p media/applications media/professionals/avatars media/static
-chmod -R 755 media/
-chmod -R 777 media/applications/ media/professionals/
+# Corriger les permissions d'upload et pré-remplir les médias par défaut (dans le conteneur)
+log "🔧 Correction des permissions d'upload & seed des fichiers media..."
+docker compose -f docker-compose.prod.yml exec -T web bash -lc '
+  set -e
+  mkdir -p /app/media/applications /app/media/professionals/avatars
+  # Copier les médias du dépôt vers le volume si absents
+  if [ -d /app/backend/media ]; then
+    for f in /app/backend/media/*; do
+      [ -f "$f" ] || continue
+      base="$(basename "$f")"
+      [ -f "/app/media/$base" ] || cp -n "$f" "/app/media/$base"
+    done
+  fi
+  chmod -R 755 /app/media || true
+  chmod -R 777 /app/media/applications /app/media/professionals || true
+'
 
 # Test final
 log "🔍 Test final..."
