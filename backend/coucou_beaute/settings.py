@@ -4,7 +4,7 @@ from datetime import timedelta
 from dotenv import load_dotenv
 import os
 
-load_dotenv()
+load_dotenv(encoding='utf-8') 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'dev-secret')
