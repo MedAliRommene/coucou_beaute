@@ -95,8 +95,8 @@ USE_TZ = True
 STATIC_URL = os.getenv('STATIC_URL', '/static/')
 STATIC_ROOT = Path(os.getenv('STATIC_ROOT', str(BASE_DIR / 'static')))
 
-# Inclure les assets additionnels uniquement en développement si le dossier existe
-if DEBUG and (BASE_DIR / 'shared' / 'static').exists():
+# Inclure le dossier shared/static s'il existe (prod et dev)
+if (BASE_DIR / 'shared' / 'static').exists():
 	STATICFILES_DIRS = [
 		BASE_DIR / 'shared' / 'static',
 	]
