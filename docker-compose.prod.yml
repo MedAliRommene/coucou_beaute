@@ -20,8 +20,6 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./backups:/backups
-    ports:
-      - "5432:5432"
     networks:
       - coucou_network
     healthcheck:
@@ -44,8 +42,6 @@ services:
       - media_data:/app/media
       - static_data:/app/static
       - ./logs:/app/logs
-    ports:
-      - "8000:8000"
     depends_on:
       db:
         condition: service_healthy
@@ -55,8 +51,8 @@ services:
       test: [ "CMD", "curl", "-f", "http://localhost:8000/" ]
       interval: 20s
       timeout: 10s
-      retries: 6
-      start_period: 90s
+      retries: 8
+      start_period: 120s
 
   # ===========================================
   # REDIS (CACHE & SESSIONS)
