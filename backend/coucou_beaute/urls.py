@@ -1,11 +1,13 @@
 from django.contrib import admin
 from django.urls import include, path
+from django.http import HttpResponse
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic import RedirectView
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
+    path('health/', lambda request: HttpResponse('ok'), name='health'),
     # Public/front web
     path('', include('front_web.urls', namespace='front_web')),
     # Admin dashboard moved under /dashboard/
