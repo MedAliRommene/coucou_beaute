@@ -860,8 +860,8 @@
             <div class="fade-in-right">
                 <div class="relative">
                     <div class="sculpture-frame">
-                        <img src="{{ MEDIA_URL }}image2.jpg" alt="Esthétique classique – sculpture et marbre"
-                            class="sculpture" />
+                        {% load static %}
+                        <img src="{% static 'images/image2.jpg' %}" class="sculpture" />
                         <div class="gold-corners" aria-hidden="true">
                             <span></span><span></span><span></span><span></span>
                         </div>

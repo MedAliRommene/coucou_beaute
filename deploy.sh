@@ -68,6 +68,17 @@ if ! docker compose -f docker-compose.prod.yml exec -T web python manage.py coll
     docker compose -f docker-compose.prod.yml exec -T web python manage.py collectstatic --noinput || true
 fi
 
+# Copier les images statiques du dépôt vers le volume media
+log "📸 Copie des images statiques vers le volume media..."
+docker compose -f docker-compose.prod.yml exec -T web bash -c "
+  for img in logo-coucou-beaute.png image2.jpg image.png; do
+    if [ -f /app/backend/media/\$img ] && [ ! -f /app/media/\$img ]; then
+      cp /app/backend/media/\$img /app/media/\$img
+      echo \"✅ \$img copiée\"
+    fi
+  done
+"
+
 # Test final
 log "🔍 Test final..."
 if curl -kfsS "https://196.203.120.35/" > /dev/null 2>&1; then
