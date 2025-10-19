@@ -50,11 +50,23 @@ docker exec -i coucou_db psql -U postgres -d coucou_prod -c "GRANT ALL ON SCHEMA
 # Migrations et collectstatic
 log "⚙️ Migrations et collectstatic..."
 docker compose -f docker-compose.prod.yml exec -T web python manage.py migrate --noinput || true
-docker compose -f docker-compose.prod.yml exec -T web python manage.py collectstatic --noinput || true
 
-
-
-# Plus de correction de permissions à chaque déploiement: on aligne l'UID/GID via build args
+# Correction automatique des permissions des volumes si collectstatic échoue
+if ! docker compose -f docker-compose.prod.yml exec -T web python manage.py collectstatic --noinput 2>&1; then
+    log "⚠️ Collectstatic échoué → correction permissions volumes (static + media)..."
+    docker compose -f docker-compose.prod.yml down
+    docker run --rm -v coucou_beaute_static_data:/v alpine sh -c "chown -R 1001:1001 /v && find /v -type d -exec chmod 755 {} \; && find /v -type f -exec chmod 644 {} \;" || true
+    docker run --rm -v coucou_beaute_media_data:/v alpine sh -c "chown -R 1001:1001 /v && find /v -type d -exec chmod 755 {} \; && find /v -type f -exec chmod 644 {} \;" || true
+    docker compose -f docker-compose.prod.yml up -d
+    log "⏳ Attente du service web..."
+    for i in $(seq 1 30); do
+        if docker compose -f docker-compose.prod.yml ps | grep -q "web\s\+.*(healthy)"; then
+            break
+        fi
+        sleep 2
+    done
+    docker compose -f docker-compose.prod.yml exec -T web python manage.py collectstatic --noinput || true
+fi
 
 # Test final
 log "🔍 Test final..."
