@@ -52,22 +52,15 @@ log "⚙️ Migrations et collectstatic..."
 docker compose -f docker-compose.prod.yml exec -T web python manage.py migrate --noinput || true
 docker compose -f docker-compose.prod.yml exec -T web python manage.py collectstatic --noinput || true
 
-# Corriger les permissions d'upload et pré-remplir les médias par défaut (dans le conteneur)
-log "🔧 Correction des permissions d'upload & seed des fichiers media..."
-docker compose -f docker-compose.prod.yml exec -T web bash -lc '
-  set -e
-  mkdir -p /app/media/applications /app/media/professionals/avatars
-  # Copier les médias du dépôt vers le volume si absents
-  if [ -d /app/backend/media ]; then
-    for f in /app/backend/media/*; do
-      [ -f "$f" ] || continue
-      base="$(basename "$f")"
-      [ -f "/app/media/$base" ] || cp -n "$f" "/app/media/$base"
-    done
-  fi
-  chmod -R 755 /app/media || true
-  chmod -R 777 /app/media/applications /app/media/professionals || true
-'
+
+
+# Correction ownership/permissions du volume media côté host (si montage bind absent)
+log "🔐 Normalisation des permissions du volume 'media_data' (host)"
+docker compose -f docker-compose.prod.yml down || true
+docker volume inspect coucou_beaute_media_data >/dev/null 2>&1 && \
+  docker run --rm -v coucou_beaute_media_data:/v alpine sh -c "chown -R 1000:1000 /v && find /v -type d -exec chmod 755 {} \\; && find /v -type f -exec chmod 644 {} \\;" || true
+
+docker compose -f docker-compose.prod.yml up -d
 
 # Test final
 log "🔍 Test final..."

@@ -204,6 +204,7 @@ CSRF_FAILURE_VIEW = 'django.views.csrf.csrf_failure'
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
 FILE_UPLOAD_PERMISSIONS = 0o644
+FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o755
 DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 
 # CSRF_TRUSTED_ORIGINS est maintenant géré par les variables d'environnement (ligne 176)
