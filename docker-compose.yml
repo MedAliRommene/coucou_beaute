@@ -14,7 +14,7 @@ services:
   backend:
     build:
       context: ./backend
-    env_file: .env
+    env_file: .env.local
     command: bash -c "python manage.py makemigrations && python manage.py migrate && gunicorn coucou_beaute.wsgi:application --bind 0.0.0.0:8000"
     volumes:
       - ./backend:/app
