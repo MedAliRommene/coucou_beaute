@@ -51,9 +51,22 @@ MANIFEST
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
+
+# Media files (user uploads) - TOUJOURS ignorer
 media/
+
+# Staticfiles collectés - TOUJOURS ignorer
 staticfiles/
-static/
+backend/staticfiles/
+
+# Static files - Ignorer SEULEMENT les fichiers collectés/générés
+# MAIS GARDER les sources CSS/JS que nous écrivons
+/static/
+backend/static/
+
+# EXCEPTION: Garder les sources static des apps Django
+!backend/*/static/
+!backend/shared/static/
 
 # ===========================================
 # ENVIRONNEMENTS VIRTUELS
