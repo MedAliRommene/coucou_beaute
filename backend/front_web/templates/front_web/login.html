@@ -219,7 +219,7 @@
     <div class="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-12 items-center justify-items-center">
         <div class="glass rounded-3xl p-8 border border-white/60 w-[620px] md:w-[660px]">
             <div class="flex items-center justify-center mb-8">
-                <img src="{{ MEDIA_URL }}logo coucou beaute.png" alt="Coucou Beauté"
+                <img src="{% static 'images/logo-coucou-beaute.png' %}" alt="Coucou Beauté"
                     class="h-24 w-auto object-contain logo-enhanced" />
             </div>
             {% if messages %}
@@ -263,7 +263,7 @@
         <div class="hidden md:block">
             <div
                 class="rounded-3xl overflow-hidden shadow-[0_15px_50px_rgba(108,169,224,0.25)] ring-1 ring-white/60 w-[460px] md:w-[520px]">
-                <img src="{{ MEDIA_URL }}image.png" alt="Beauté & bien-être — simple et élégant"
+                <img src="{% static 'images/image.png' %}" alt="Beauté & bien-être — simple et élégant"
                     class="w-full h-auto object-cover" />
             </div>
         </div>

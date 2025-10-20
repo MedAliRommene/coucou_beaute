@@ -538,7 +538,7 @@
             class="w-72 bg-white/80 backdrop-blur-xl shadow-2xl border-r border-white/50 transition-all duration-300 ease-in-out flex flex-col py-6 px-5">
             <!-- Logo Section -->
             <div class="flex items-center justify-center mb-10 px-2">
-                <img src="{{ MEDIA_URL }}logo%20coucou%20beaute.png" alt="Coucou Beauté"
+                <img src="{% static 'images/logo-coucou-beaute.png' %}" alt="Coucou Beauté"
                     class="h-24 w-auto object-contain logo-enhanced">
             </div>
 
@@ -652,8 +652,9 @@
                                 {{ user.get_full_name|default:user.email|first|upper }}
                             </div>
                             <div class="hidden sm:block">
-                                <div class="text-sm font-semibold text-gray-900">{{  user.get_full_name|default:user.email }}</div>
-                                  
+                                <div class="text-sm font-semibold text-gray-900">{{
+                                    user.get_full_name|default:user.email }}</div>
+
                                 <div class="text-xs text-gray-500">Administrateur</div>
                             </div>
                         </div>
