@@ -127,6 +127,290 @@
         font-family: 'Courier New', monospace;
         font-size: 0.875rem;
     }
+
+    /* ==========================
+       RESPONSIVE MOBILE OPTIMIZATIONS
+       ========================== */
+    @media (max-width: 768px) {
+
+        /* Disable three.js animation on mobile for performance */
+        #three-bg {
+            display: none;
+        }
+
+        /* Mobile-friendly container */
+        .min-h-screen {
+            min-height: 100svh;
+            /* Safe viewport height for mobile */
+            padding: 1rem !important;
+        }
+
+        /* Glass card adaptation */
+        .glass {
+            width: 100% !important;
+            max-width: 100% !important;
+            padding: 1.5rem !important;
+            margin: 0 !important;
+        }
+
+        /* Logo responsive */
+        .logo-enhanced {
+            height: 4rem !important;
+            max-width: 80%;
+        }
+
+        /* Form spacing */
+        form .space-y-4>*+* {
+            margin-top: 1rem !important;
+        }
+
+        /* Input fields touch-friendly */
+        input[type="email"],
+        input[type="password"],
+        input[type="text"],
+        input[type="tel"],
+        select {
+            font-size: 16px !important;
+            /* Prevent zoom on iOS */
+            padding: 0.875rem 0.75rem !important;
+        }
+
+        /* Icons sizing */
+        [data-lucide] {
+            width: 1.25rem !important;
+            height: 1.25rem !important;
+            flex-shrink: 0;
+        }
+
+        /* Touch-friendly buttons */
+        button {
+            min-height: 44px;
+            /* Apple's recommendation */
+            padding: 0.875rem 1rem !important;
+            font-size: 1rem !important;
+        }
+
+        /* Links touch-friendly */
+        a {
+            min-height: 44px;
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem;
+        }
+
+        /* Role selection touch-friendly */
+        .flex.gap-4.text-sm {
+            gap: 1rem !important;
+            font-size: 0.875rem !important;
+            flex-wrap: wrap;
+        }
+
+        .flex.gap-4.text-sm label {
+            padding: 0.5rem;
+            cursor: pointer;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+        }
+
+        /* Checkbox/Radio touch area */
+        input[type="checkbox"],
+        input[type="radio"] {
+            width: 1.25rem;
+            height: 1.25rem;
+            margin-right: 0.5rem;
+            flex-shrink: 0;
+        }
+
+        /* Hide decorative image on mobile */
+        .hidden.md\\:block {
+            display: none !important;
+        }
+
+        /* Single column layout */
+        .grid.grid-cols-1.md\\:grid-cols-2 {
+            grid-template-columns: 1fr !important;
+            gap: 1rem !important;
+        }
+
+        /* Pro notice box */
+        #proNotice {
+            font-size: 0.8125rem !important;
+            padding: 0.75rem !important;
+        }
+
+        /* Dropzone for file uploads */
+        .dropzone {
+            flex-direction: column;
+            padding: 1rem !important;
+            text-align: center;
+            min-height: 120px;
+        }
+
+        .dropzone>div:first-child {
+            margin-bottom: 0.75rem;
+        }
+
+        /* Map containers */
+        #clientMap {
+            height: 250px !important;
+        }
+
+        #signupMap {
+            height: 350px !important;
+        }
+
+        .map-container {
+            margin: 0 !important;
+        }
+
+        /* Modal adaptation */
+        .modal .bg-white {
+            width: 100% !important;
+            max-width: 100% !important;
+            height: 100vh;
+            max-height: 100vh;
+            border-radius: 0 !important;
+            padding: 1rem !important;
+        }
+
+        /* Coordinate inputs */
+        .coordinate-input {
+            font-size: 0.75rem !important;
+            padding: 0.625rem !important;
+        }
+
+        /* Hint items */
+        .hint-item {
+            font-size: 0.75rem !important;
+        }
+
+        /* Password toggle */
+        #togglePwd {
+            padding: 0.5rem !important;
+            min-width: 40px !important;
+            min-height: 40px !important;
+        }
+
+        /* Adjusted text sizes */
+        .text-sm {
+            font-size: 0.875rem !important;
+        }
+
+        .text-xs {
+            font-size: 0.75rem !important;
+        }
+
+        /* Copyright text */
+        .text-center.text-textMuted.text-sm {
+            font-size: 0.75rem !important;
+            padding: 0.5rem 0 !important;
+        }
+
+        /* Flex items wrap */
+        .flex.flex-wrap {
+            gap: 0.75rem !important;
+        }
+
+        /* Spoken languages checkboxes */
+        .flex.flex-wrap.gap-3 label {
+            min-width: calc(50% - 0.375rem);
+            justify-content: flex-start;
+        }
+    }
+
+    /* Small mobile (iPhone SE, etc.) */
+    @media (max-width: 375px) {
+        .glass {
+            padding: 1rem !important;
+            border-radius: 1.5rem !important;
+        }
+
+        .logo-enhanced {
+            height: 3.5rem !important;
+        }
+
+        button {
+            font-size: 0.9375rem !important;
+        }
+
+        #clientMap,
+        #signupMap {
+            height: 200px !important;
+        }
+
+        .dropzone {
+            min-height: 100px;
+        }
+
+        .dropzone .w-14.h-14 {
+            width: 3rem !important;
+            height: 3rem !important;
+        }
+    }
+
+    /* Landscape mobile optimization */
+    @media (max-width: 768px) and (orientation: landscape) {
+        .min-h-screen {
+            min-height: auto;
+            padding: 0.5rem !important;
+        }
+
+        .glass {
+            padding: 1rem !important;
+        }
+
+        .logo-enhanced {
+            height: 3rem !important;
+            margin-bottom: 0.5rem !important;
+        }
+
+        #clientMap {
+            height: 180px !important;
+        }
+    }
+
+    /* Touch device optimizations */
+    @media (hover: none) and (pointer: coarse) {
+
+        /* Enhanced touch targets */
+        button,
+        a,
+        label {
+            cursor: pointer;
+            -webkit-tap-highlight-color: rgba(242, 139, 178, 0.2);
+        }
+
+        /* Smooth scrolling */
+        * {
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Better dropzone interaction */
+        .dropzone {
+            cursor: pointer;
+        }
+
+        .dropzone:active {
+            opacity: 0.8;
+        }
+    }
+
+    /* iOS Safari specific fixes */
+    @supports (-webkit-touch-callout: none) {
+
+        /* Fix iOS input zoom */
+        input,
+        select,
+        textarea {
+            font-size: max(16px, 1rem) !important;
+        }
+
+        /* Fix iOS viewport height */
+        .min-h-screen {
+            min-height: -webkit-fill-available;
+        }
+    }
 </style>
 <!-- Leaflet CSS for the map selector -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />

@@ -50,6 +50,166 @@
         z-index: -1;
         pointer-events: none;
     }
+
+    /* ==========================
+       RESPONSIVE MOBILE OPTIMIZATIONS
+       ========================== */
+    @media (max-width: 768px) {
+
+        /* Disable three.js animation on mobile for performance */
+        #three-bg {
+            display: none;
+        }
+
+        /* Mobile-friendly container */
+        .min-h-screen {
+            min-height: 100svh;
+            /* Safe viewport height for mobile */
+            padding: 1rem !important;
+        }
+
+        /* Glass card adaptation */
+        .glass {
+            width: 100% !important;
+            max-width: 100% !important;
+            padding: 1.5rem !important;
+            margin: 0 !important;
+        }
+
+        /* Logo responsive */
+        .logo-enhanced {
+            height: 4rem !important;
+            max-width: 80%;
+        }
+
+        /* Form spacing */
+        form .space-y-4>*+* {
+            margin-top: 1rem !important;
+        }
+
+        /* Input fields touch-friendly */
+        input[type="email"],
+        input[type="password"],
+        input[type="text"],
+        input[type="tel"] {
+            font-size: 16px !important;
+            /* Prevent zoom on iOS */
+            padding: 0.875rem !important;
+        }
+
+        /* Icons sizing */
+        [data-lucide] {
+            width: 1.25rem !important;
+            height: 1.25rem !important;
+        }
+
+        /* Touch-friendly buttons */
+        button,
+        a.text-blueLight {
+            min-height: 44px;
+            /* Apple's recommendation */
+            min-width: 44px;
+            padding: 0.75rem 1rem !important;
+            font-size: 1rem !important;
+        }
+
+        /* Role selection touch-friendly */
+        .flex.gap-4.text-sm {
+            gap: 1rem !important;
+            font-size: 0.875rem !important;
+        }
+
+        .flex.gap-4.text-sm label {
+            padding: 0.5rem;
+            cursor: pointer;
+        }
+
+        /* Checkbox/Radio touch area */
+        input[type="checkbox"],
+        input[type="radio"] {
+            width: 1.25rem;
+            height: 1.25rem;
+            margin-right: 0.5rem;
+        }
+
+        /* Hide decorative image on mobile */
+        .hidden.md\\:block {
+            display: none !important;
+        }
+
+        /* Single column layout */
+        .grid.grid-cols-1.md\\:grid-cols-2 {
+            grid-template-columns: 1fr !important;
+            gap: 1rem !important;
+        }
+
+        /* Adjusted text sizes */
+        .text-sm {
+            font-size: 0.875rem !important;
+        }
+
+        /* Copyright text */
+        .text-center.text-textMuted.text-sm {
+            font-size: 0.75rem !important;
+            padding: 0.5rem 0 !important;
+        }
+
+        /* Eye toggle button */
+        #toggleLoginPwd {
+            padding: 0.5rem !important;
+            min-width: 40px !important;
+            min-height: 40px !important;
+        }
+    }
+
+    /* Small mobile (iPhone SE, etc.) */
+    @media (max-width: 375px) {
+        .glass {
+            padding: 1rem !important;
+            border-radius: 1.5rem !important;
+        }
+
+        .logo-enhanced {
+            height: 3.5rem !important;
+        }
+
+        button {
+            font-size: 0.9375rem !important;
+        }
+    }
+
+    /* Landscape mobile optimization */
+    @media (max-width: 768px) and (orientation: landscape) {
+        .min-h-screen {
+            min-height: auto;
+            padding: 0.5rem !important;
+        }
+
+        .glass {
+            padding: 1rem !important;
+        }
+
+        .logo-enhanced {
+            height: 3rem !important;
+        }
+    }
+
+    /* Touch device optimizations */
+    @media (hover: none) and (pointer: coarse) {
+
+        /* Enhanced touch targets */
+        button,
+        a,
+        label {
+            cursor: pointer;
+            -webkit-tap-highlight-color: rgba(242, 139, 178, 0.2);
+        }
+
+        /* Smooth scrolling */
+        * {
+            -webkit-overflow-scrolling: touch;
+        }
+    }
 </style>
 {% endblock %}
 

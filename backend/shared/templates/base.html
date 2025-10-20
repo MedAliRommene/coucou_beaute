@@ -3,7 +3,11 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     {% load static %}
     <title>{% block title %}Coucou Beauté{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -25,6 +29,7 @@
 
     <!-- Styles globaux -->
     <link rel="stylesheet" href="{% static 'css/global.css' %}">
+    <link rel="stylesheet" href="{% static 'css/responsive-mobile.css' %}">
     {% block extra_css %}{% endblock %}
     <style>
         .btn-grad {
@@ -79,6 +84,59 @@
 
             50% {
                 transform: translateY(-10px)
+            }
+        }
+
+        /* Mobile-first responsive optimizations */
+        @media (max-width: 768px) {
+            body {
+                font-size: 16px;
+                /* Prevent iOS zoom */
+                -webkit-text-size-adjust: 100%;
+            }
+
+            /* Header mobile */
+            header nav {
+                padding: 0.75rem 1rem !important;
+            }
+
+            header nav img {
+                height: 2.5rem !important;
+            }
+
+            header nav .font-extrabold {
+                font-size: 1rem !important;
+            }
+
+            /* Buttons touch-friendly */
+            header nav a {
+                padding: 0.625rem 1rem !important;
+                font-size: 0.875rem !important;
+                min-height: 44px;
+                display: inline-flex;
+                align-items: center;
+            }
+
+            /* Hide desktop menu */
+            .hidden.md\\:flex {
+                display: none !important;
+            }
+
+            /* Footer mobile */
+            footer {
+                padding: 1rem !important;
+                font-size: 0.875rem !important;
+            }
+        }
+
+        /* Landscape mobile */
+        @media (max-width: 768px) and (orientation: landscape) {
+            header nav {
+                padding: 0.5rem 1rem !important;
+            }
+
+            header nav img {
+                height: 2rem !important;
             }
         }
     </style>

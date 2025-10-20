@@ -77,6 +77,152 @@
         pointer-events: none;
         z-index: 1000;
     }
+
+    /* ==========================
+       RESPONSIVE MOBILE OPTIMIZATIONS
+       ========================== */
+    @media (max-width: 768px) {
+
+        /* Container mobile */
+        .p-6 {
+            padding: 1rem !important;
+        }
+
+        .space-y-6>*+* {
+            margin-top: 1rem !important;
+        }
+
+        /* Header section mobile */
+        .flex.flex-col.lg\\:flex-row {
+            gap: 1rem !important;
+        }
+
+        h1 {
+            font-size: 1.5rem !important;
+        }
+
+        /* Search bar mobile */
+        .w-64 {
+            width: 100% !important;
+        }
+
+        button {
+            font-size: 0.875rem !important;
+            padding: 0.625rem 0.875rem !important;
+        }
+
+        /* KPI grid mobile - 2 columns */
+        #applications-kpis {
+            grid-template-columns: 1fr 1fr !important;
+            gap: 0.75rem !important;
+        }
+
+        .kpi-card {
+            flex-direction: column !important;
+            gap: 0.5rem !important;
+            padding: 0.875rem !important;
+            text-align: center;
+        }
+
+        .kpi-card .w-12 {
+            width: 2.5rem !important;
+            height: 2.5rem !important;
+        }
+
+        .kpi-card .text-2xl {
+            font-size: 1.25rem !important;
+        }
+
+        .kpi-card .text-sm {
+            font-size: 0.75rem !important;
+        }
+
+        /* Filter panel mobile */
+        .filter-panel {
+            padding: 1rem !important;
+        }
+
+        .flex.flex-wrap.items-center.gap-4 {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 0.75rem !important;
+        }
+
+        .filter-panel select,
+        .filter-panel input {
+            width: 100% !important;
+            font-size: 16px !important;
+        }
+
+        /* Charts mobile */
+        .chart-container {
+            height: 220px !important;
+        }
+
+        .bg-white.rounded-2xl {
+            padding: 1rem !important;
+            border-radius: 1rem !important;
+        }
+
+        .bg-white.rounded-2xl h3 {
+            font-size: 1rem !important;
+            margin-bottom: 0.75rem !important;
+        }
+
+        /* Grid layouts mobile */
+        .grid.grid-cols-1.lg\\:grid-cols-2,
+        .grid.grid-cols-1.lg\\:grid-cols-3 {
+            grid-template-columns: 1fr !important;
+            gap: 1rem !important;
+        }
+
+        /* Status chart section */
+        .lg\\:col-span-2 {
+            grid-column: span 1 !important;
+        }
+
+        /* Top services list */
+        #topServices {
+            font-size: 0.8125rem !important;
+        }
+
+        /* Legend position mobile */
+        canvas {
+            max-height: 220px !important;
+        }
+    }
+
+    /* Small mobile (iPhone SE) */
+    @media (max-width: 375px) {
+
+        /* Single column KPIs */
+        #applications-kpis {
+            grid-template-columns: 1fr !important;
+        }
+
+        h1 {
+            font-size: 1.25rem !important;
+        }
+
+        .chart-container {
+            height: 200px !important;
+        }
+
+        button {
+            width: 100% !important;
+        }
+    }
+
+    /* Landscape mobile */
+    @media (max-width: 768px) and (orientation: landscape) {
+        .chart-container {
+            height: 180px !important;
+        }
+
+        .p-6 {
+            padding: 0.75rem !important;
+        }
+    }
 </style>
 {% endblock %}
 
@@ -143,7 +289,7 @@
 
 
 
- 
+
     <!-- Charts Section -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Revenue Trend Chart -->

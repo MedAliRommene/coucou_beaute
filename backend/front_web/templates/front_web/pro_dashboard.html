@@ -194,6 +194,381 @@
         backdrop-filter: blur(5px);
         border: 1px solid rgba(255, 255, 255, 0.3);
     }
+
+    /* ==========================
+       RESPONSIVE MOBILE OPTIMIZATIONS
+       ========================== */
+    @media (max-width: 768px) {
+
+        /* Mobile-friendly body */
+        body {
+            font-size: 16px !important;
+            /* Prevent iOS zoom */
+            -webkit-text-size-adjust: 100%;
+        }
+
+        /* Page padding mobile */
+        .p-6 {
+            padding: 1rem !important;
+        }
+
+        /* Header mobile */
+        .flex.items-center.justify-between.gap-3 {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 1rem !important;
+        }
+
+        .w-12.h-12 {
+            width: 2.5rem !important;
+            height: 2.5rem !important;
+        }
+
+        h1.text-3xl {
+            font-size: 1.5rem !important;
+        }
+
+        h2.text-2xl {
+            font-size: 1.25rem !important;
+        }
+
+        h3.text-xl {
+            font-size: 1.125rem !important;
+        }
+
+        /* KPI cards mobile */
+        .grid.grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-4 {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 0.75rem !important;
+        }
+
+        .kpi-glass {
+            padding: 0.75rem !important;
+        }
+
+        .kpi-glass .text-sm {
+            font-size: 0.75rem !important;
+        }
+
+        .kpi-glass .text-xl {
+            font-size: 1rem !important;
+        }
+
+        .kpi-glass .text-2xl {
+            font-size: 1.125rem !important;
+        }
+
+        /* Glass cards mobile */
+        .glass,
+        .glass-card {
+            padding: 1rem !important;
+            border-radius: 1rem !important;
+        }
+
+        /* Analytics section mobile */
+        .grid.grid-cols-1.xl\\:grid-cols-3 {
+            grid-template-columns: 1fr !important;
+            gap: 1rem !important;
+        }
+
+        .xl\\:col-span-2 {
+            grid-column: span 1 !important;
+        }
+
+        /* Charts mobile */
+        canvas {
+            max-height: 200px !important;
+        }
+
+        /* Date inputs touch-friendly */
+        input[type="date"],
+        input[type="text"],
+        select,
+        textarea {
+            font-size: 16px !important;
+            padding: 0.75rem !important;
+            min-height: 44px;
+        }
+
+        /* Buttons touch-friendly */
+        button,
+        .btn-glass,
+        .btn-secondary-glass {
+            min-height: 44px;
+            padding: 0.75rem 1rem !important;
+            font-size: 1rem !important;
+            touch-action: manipulation;
+        }
+
+        /* Agenda section mobile */
+        #dayPicker {
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+
+        .flex.items-center.gap-3 {
+            flex-direction: column !important;
+            gap: 0.75rem !important;
+            width: 100%;
+        }
+
+        .flex.items-center.gap-3>* {
+            width: 100%;
+        }
+
+        /* Timeline/Schedule mobile */
+        #timeline {
+            padding: 1rem !important;
+            border-radius: 1rem !important;
+        }
+
+        #scheduleGrid {
+            gap: 0.5rem !important;
+        }
+
+        .schedule-card {
+            padding: 0.75rem !important;
+            border-radius: 0.75rem !important;
+        }
+
+        .schedule-card .time-slot {
+            font-size: 0.75rem !important;
+        }
+
+        .schedule-card .service-name {
+            font-size: 0.75rem !important;
+        }
+
+        .schedule-card .client-name {
+            font-size: 0.6875rem !important;
+        }
+
+        .duration-badge {
+            font-size: 0.6875rem !important;
+            padding: 0.25rem 0.5rem !important;
+        }
+
+        /* Info section mobile */
+        .grid.md\\:grid-cols-2 {
+            grid-template-columns: 1fr !important;
+            gap: 0.75rem !important;
+        }
+
+        .md\\:col-span-2 {
+            grid-column: span 1 !important;
+        }
+
+        .grid.lg\\:grid-cols-3 {
+            grid-template-columns: 1fr !important;
+        }
+
+        .grid.sm\\:grid-cols-2 {
+            grid-template-columns: 1fr !important;
+        }
+
+        /* Services cards mobile */
+        .p-3.rounded-lg {
+            padding: 0.75rem !important;
+            font-size: 0.875rem !important;
+        }
+
+        /* Gallery mobile */
+        .w-24.h-24 {
+            width: 5rem !important;
+            height: 5rem !important;
+        }
+
+        /* Stats cards mobile */
+        .stats-card {
+            padding: 0.75rem !important;
+        }
+
+        /* Review section mobile */
+        .grid.grid-cols-1.md\\:grid-cols-3 {
+            grid-template-columns: 1fr !important;
+            gap: 0.75rem !important;
+        }
+
+        /* Icons sizing */
+        [data-lucide] {
+            width: 1rem !important;
+            height: 1rem !important;
+        }
+
+        .w-6.h-6 [data-lucide] {
+            width: 1.25rem !important;
+            height: 1.25rem !important;
+        }
+
+        /* Modal mobile */
+        .modal .bg-white {
+            width: calc(100% - 2rem) !important;
+            max-width: calc(100% - 2rem) !important;
+            margin: 1rem !important;
+            padding: 1rem !important;
+            max-height: calc(100vh - 2rem);
+            overflow-y: auto;
+        }
+
+        /* Textarea mobile */
+        textarea {
+            font-size: 16px !important;
+            min-height: 120px;
+        }
+
+        /* Action buttons mobile */
+        .flex.flex-col.gap-2 {
+            gap: 0.75rem !important;
+        }
+
+        .flex.flex-col.gap-2 button {
+            width: 100%;
+            justify-content: center;
+        }
+
+        /* Spacing adjustments */
+        .space-y-6>*+* {
+            margin-top: 1.5rem !important;
+        }
+
+        .gap-4 {
+            gap: 0.75rem !important;
+        }
+
+        .gap-6 {
+            gap: 1rem !important;
+        }
+
+        /* Animate adjustments for mobile */
+        .animate-fade-in,
+        .animate-slide-up,
+        .animate-bounce-in {
+            animation-duration: 0.3s !important;
+        }
+
+        /* Chart containers mobile */
+        .bg-white\/40 {
+            padding: 0.75rem !important;
+        }
+
+        /* Working days badges */
+        .flex.flex-wrap.gap-2 {
+            gap: 0.5rem !important;
+        }
+
+        .px-2.py-1 {
+            padding: 0.375rem 0.625rem !important;
+            font-size: 0.75rem !important;
+        }
+
+        /* Social links mobile */
+        .space-y-1 {
+            font-size: 0.875rem !important;
+        }
+
+        /* Image preview mobile */
+        .w-16.h-16 {
+            width: 3.5rem !important;
+            height: 3.5rem !important;
+        }
+    }
+
+    /* Small mobile (iPhone SE, etc.) */
+    @media (max-width: 375px) {
+        .p-6 {
+            padding: 0.75rem !important;
+        }
+
+        h1.text-3xl {
+            font-size: 1.25rem !important;
+        }
+
+        .kpi-glass {
+            padding: 0.5rem !important;
+        }
+
+        .glass,
+        .glass-card {
+            padding: 0.75rem !important;
+        }
+
+        button {
+            font-size: 0.9375rem !important;
+            padding: 0.625rem 0.875rem !important;
+        }
+
+        .schedule-card {
+            padding: 0.5rem !important;
+        }
+
+        canvas {
+            max-height: 150px !important;
+        }
+    }
+
+    /* Landscape mobile optimization */
+    @media (max-width: 768px) and (orientation: landscape) {
+        .p-6 {
+            padding: 0.75rem !important;
+        }
+
+        h1.text-3xl {
+            font-size: 1.25rem !important;
+        }
+
+        canvas {
+            max-height: 150px !important;
+        }
+
+        #timeline {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    }
+
+    /* Touch device optimizations */
+    @media (hover: none) and (pointer: coarse) {
+
+        /* Enhanced touch targets */
+        button,
+        a,
+        label,
+        .schedule-card {
+            cursor: pointer;
+            -webkit-tap-highlight-color: rgba(242, 139, 178, 0.2);
+        }
+
+        /* Smooth scrolling */
+        * {
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Active states */
+        button:active {
+            opacity: 0.8;
+            transform: scale(0.98);
+        }
+
+        .schedule-card:active {
+            transform: scale(0.98) !important;
+        }
+    }
+
+    /* iOS Safari specific fixes */
+    @supports (-webkit-touch-callout: none) {
+
+        /* Fix iOS input zoom */
+        input,
+        select,
+        textarea {
+            font-size: max(16px, 1rem) !important;
+        }
+
+        /* Fix iOS viewport height */
+        .min-h-screen {
+            min-height: -webkit-fill-available;
+        }
+    }
 </style>
 {% endblock %}
 

@@ -1,6 +1,150 @@
 {% extends 'front_web/base_prof.html' %}
 {% load static %}
 {% block title %}Gestion des rendez‑vous - Coucou Beauté{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ==========================
+       RESPONSIVE MOBILE OPTIMIZATIONS
+       ========================== */
+    @media (max-width: 768px) {
+
+        /* Mobile body */
+        body {
+            font-size: 16px !important;
+            -webkit-text-size-adjust: 100%;
+        }
+
+        /* Page padding mobile */
+        .p-6 {
+            padding: 1rem !important;
+        }
+
+        .space-y-6>*+* {
+            margin-top: 1.5rem !important;
+        }
+
+        /* Header mobile */
+        .flex.items-center.justify-between.gap-3 {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 1rem !important;
+        }
+
+        .w-12.h-12 {
+            width: 2.5rem !important;
+            height: 2.5rem !important;
+        }
+
+        .w-12.h-12 [data-lucide] {
+            width: 1.25rem !important;
+            height: 1.25rem !important;
+        }
+
+        h1.text-3xl {
+            font-size: 1.5rem !important;
+        }
+
+        .text-gray-600.mt-1 {
+            font-size: 0.875rem !important;
+        }
+
+        /* Glass cards mobile */
+        .glass {
+            padding: 1rem !important;
+        }
+
+        h2.text-xl {
+            font-size: 1.125rem !important;
+        }
+
+        /* Table responsive */
+        .overflow-hidden.rounded-xl {
+            overflow-x: auto !important;
+        }
+
+        .table-glass {
+            min-width: 600px;
+        }
+
+        .table-glass th,
+        .table-glass td {
+            padding: 0.75rem 0.5rem !important;
+            font-size: 0.8125rem !important;
+        }
+
+        .table-glass th {
+            font-size: 0.75rem !important;
+        }
+
+        /* Action buttons mobile */
+        .btn-glass,
+        .btn-secondary-glass {
+            padding: 0.625rem 0.875rem !important;
+            font-size: 0.8125rem !important;
+            min-height: 44px;
+        }
+
+        /* Counts mobile */
+        .text-sm.text-gray-500 {
+            font-size: 0.8125rem !important;
+        }
+
+        /* Badge mobile */
+        .px-2.py-1 {
+            padding: 0.375rem 0.625rem !important;
+            font-size: 0.6875rem !important;
+        }
+    }
+
+    /* Small mobile (iPhone SE) */
+    @media (max-width: 375px) {
+        h1.text-3xl {
+            font-size: 1.25rem !important;
+        }
+
+        .glass {
+            padding: 0.75rem !important;
+        }
+
+        .table-glass th,
+        .table-glass td {
+            padding: 0.5rem 0.375rem !important;
+            font-size: 0.75rem !important;
+        }
+
+        .btn-glass,
+        .btn-secondary-glass {
+            padding: 0.5rem 0.75rem !important;
+            font-size: 0.75rem !important;
+        }
+    }
+
+    /* Touch device optimizations */
+    @media (hover: none) and (pointer: coarse) {
+        button {
+            -webkit-tap-highlight-color: rgba(242, 139, 178, 0.2);
+            cursor: pointer;
+        }
+
+        * {
+            -webkit-overflow-scrolling: touch;
+        }
+
+        button:active {
+            opacity: 0.8;
+        }
+    }
+
+    /* iOS Safari fixes */
+    @supports (-webkit-touch-callout: none) {
+        .min-h-screen {
+            min-height: -webkit-fill-available;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="p-6 space-y-6">
     <div class="flex items-center justify-between gap-3">

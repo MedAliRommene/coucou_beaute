@@ -3,6 +3,231 @@
 
 {% block title %}Mon profil - Coucou Beauté{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* ==========================
+       RESPONSIVE MOBILE OPTIMIZATIONS
+       ========================== */
+    @media (max-width: 768px) {
+
+        /* Mobile body */
+        body {
+            font-size: 16px !important;
+            -webkit-text-size-adjust: 100%;
+        }
+
+        /* Container mobile */
+        .max-w-4xl {
+            padding: 0 1rem !important;
+        }
+
+        .p-6 {
+            padding: 1rem !important;
+        }
+
+        /* Header mobile */
+        .flex.items-center.justify-between {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 0.5rem !important;
+        }
+
+        h1.text-2xl {
+            font-size: 1.25rem !important;
+        }
+
+        .text-xs {
+            font-size: 0.75rem !important;
+        }
+
+        /* Profile banner mobile */
+        .rounded-2xl.border {
+            padding: 0.875rem !important;
+        }
+
+        .w-12.h-12 {
+            width: 2.5rem !important;
+            height: 2.5rem !important;
+        }
+
+        .text-sm {
+            font-size: 0.8125rem !important;
+        }
+
+        #btnPickPhoto {
+            padding: 0.625rem 0.875rem !important;
+            font-size: 0.75rem !important;
+            white-space: nowrap;
+        }
+
+        /* Form inputs mobile */
+        input,
+        select,
+        textarea {
+            font-size: 16px !important;
+            padding: 0.75rem !important;
+        }
+
+        label {
+            font-size: 0.875rem !important;
+        }
+
+        /* Grid mobile */
+        .grid.grid-cols-1.md\\:grid-cols-2,
+        .grid.grid-cols-1.md\\:grid-cols-3 {
+            grid-template-columns: 1fr !important;
+        }
+
+        .gap-3 {
+            gap: 0.75rem !important;
+        }
+
+        /* Days checkboxes mobile */
+        #days {
+            gap: 0.5rem !important;
+        }
+
+        #days label {
+            padding: 0.625rem 0.75rem !important;
+            font-size: 0.8125rem !important;
+        }
+
+        /* Time inputs mobile */
+        #startTime,
+        #endTime {
+            padding: 0.75rem !important;
+            font-size: 16px !important;
+        }
+
+        /* Gallery dropzone mobile */
+        #dropGallery {
+            padding: 1.5rem 1rem !important;
+            font-size: 0.875rem !important;
+        }
+
+        .flex.flex-wrap.gap-3 {
+            gap: 0.5rem !important;
+        }
+
+        /* Gallery thumbs mobile */
+        #gallery img {
+            width: 5rem !important;
+            height: 5rem !important;
+        }
+
+        /* Services grid mobile */
+        .grid.grid-cols-3 {
+            grid-template-columns: 1fr !important;
+            gap: 0.5rem !important;
+        }
+
+        #services input {
+            margin-bottom: 0.5rem !important;
+        }
+
+        #addService {
+            padding: 0.625rem 0.875rem !important;
+            font-size: 0.875rem !important;
+        }
+
+        /* Save button mobile */
+        #save {
+            width: 100%;
+            padding: 0.875rem 1rem !important;
+            font-size: 1rem !important;
+            min-height: 48px;
+        }
+
+        /* Social inputs mobile */
+        .flex.items-center.gap-2 {
+            flex-direction: row;
+            padding: 0.75rem !important;
+        }
+
+        .flex.items-center.gap-2 [data-lucide] {
+            width: 1rem !important;
+            height: 1rem !important;
+            flex-shrink: 0;
+        }
+
+        .flex.items-center.gap-2 input {
+            font-size: 0.875rem !important;
+            padding: 0 !important;
+        }
+
+        /* Borders mobile */
+        .border.rounded-xl {
+            padding: 1rem !important;
+        }
+
+        /* Spacing */
+        .space-y-4>*+* {
+            margin-top: 1rem !important;
+        }
+
+        .mb-4 {
+            margin-bottom: 1rem !important;
+        }
+
+        .mb-2 {
+            margin-bottom: 0.5rem !important;
+        }
+
+        .mt-3 {
+            margin-top: 0.75rem !important;
+        }
+    }
+
+    /* Small mobile (iPhone SE) */
+    @media (max-width: 375px) {
+        h1.text-2xl {
+            font-size: 1.125rem !important;
+        }
+
+        #gallery img {
+            width: 4rem !important;
+            height: 4rem !important;
+        }
+
+        #btnPickPhoto {
+            padding: 0.5rem 0.75rem !important;
+            font-size: 0.6875rem !important;
+        }
+    }
+
+    /* Touch device optimizations */
+    @media (hover: none) and (pointer: coarse) {
+
+        input,
+        select,
+        textarea,
+        button,
+        label {
+            -webkit-tap-highlight-color: rgba(242, 139, 178, 0.2);
+        }
+
+        * {
+            -webkit-overflow-scrolling: touch;
+        }
+
+        button:active {
+            opacity: 0.85;
+            transform: scale(0.98);
+        }
+    }
+
+    /* iOS Safari fixes */
+    @supports (-webkit-touch-callout: none) {
+
+        input,
+        select,
+        textarea {
+            font-size: max(16px, 1rem) !important;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="max-w-4xl mx-auto p-6">
     <div class="flex items-center justify-between mb-4">

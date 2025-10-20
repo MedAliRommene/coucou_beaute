@@ -194,6 +194,260 @@
         backdrop-filter: blur(5px);
         border: 1px solid rgba(255, 255, 255, 0.3);
     }
+
+    /* ==========================
+       RESPONSIVE MOBILE OPTIMIZATIONS
+       ========================== */
+    @media (max-width: 768px) {
+        /* Container mobile */
+        .p-6 {
+            padding: 1rem !important;
+        }
+
+        .space-y-6 > * + * {
+            margin-top: 1rem !important;
+        }
+
+        /* Header mobile */
+        .flex.items-center.justify-between.gap-3 {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 1rem !important;
+        }
+
+        h1 {
+            font-size: 1.5rem !important;
+        }
+
+        .flex.items-center.gap-2 {
+            width: 100%;
+            flex-direction: column !important;
+        }
+
+        .flex.items-center.gap-2 > * {
+            width: 100%;
+        }
+
+        /* KPI grid mobile - 2 columns */
+        .grid.grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-4 {
+            grid-template-columns: 1fr 1fr !important;
+            gap: 0.75rem !important;
+        }
+
+        .kpi-glass {
+            flex-direction: column !important;
+            text-align: center;
+            padding: 0.875rem !important;
+        }
+
+        .kpi-glass .w-12 {
+            width: 2.5rem !important;
+            height: 2.5rem !important;
+        }
+
+        .kpi-glass .text-xl {
+            font-size: 1.125rem !important;
+        }
+
+        .kpi-glass .text-sm {
+            font-size: 0.75rem !important;
+        }
+
+        /* Analytics section mobile */
+        .flex.items-center.justify-between.mb-3 {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 0.75rem !important;
+        }
+
+        .flex.items-center.gap-2.text-sm {
+            flex-wrap: wrap;
+            width: 100%;
+        }
+
+        #anFrom,
+        #anTo {
+            font-size: 16px !important;
+            padding: 0.5rem !important;
+        }
+
+        /* Charts grid mobile */
+        .grid.grid-cols-1.xl\\:grid-cols-3 {
+            grid-template-columns: 1fr !important;
+            gap: 1rem !important;
+        }
+
+        .xl\\:col-span-2 {
+            grid-column: span 1 !important;
+        }
+
+        .bg-white\\/40.rounded-xl.border.p-4 {
+            padding: 1rem !important;
+        }
+
+        canvas {
+            max-height: 200px !important;
+        }
+
+        h3.text-sm {
+            font-size: 0.875rem !important;
+        }
+
+        /* KPIs grid analytics mobile */
+        .grid.grid-cols-1.md\\:grid-cols-4 {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 0.75rem !important;
+        }
+
+        /* Agenda section mobile */
+        .flex.items-center.justify-between.mb-6 {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 1rem !important;
+        }
+
+        .flex.items-center.gap-3 {
+            flex-direction: column !important;
+            width: 100%;
+            gap: 0.75rem !important;
+        }
+
+        #dayPicker {
+            width: 100% !important;
+            font-size: 16px !important;
+            padding: 0.75rem !important;
+        }
+
+        button[onclick="reloadAgenda()"] {
+            width: 100% !important;
+            justify-content: center !important;
+        }
+
+        /* Timeline mobile */
+        #timeline {
+            padding: 1rem !important;
+        }
+
+        .schedule-card {
+            padding: 0.75rem !important;
+            margin-bottom: 0.5rem !important;
+        }
+
+        .time-slot {
+            font-size: 0.75rem !important;
+        }
+
+        .service-name {
+            font-size: 0.75rem !important;
+        }
+
+        .client-name {
+            font-size: 0.6875rem !important;
+        }
+
+        .duration-badge {
+            font-size: 0.625rem !important;
+            padding: 0.25rem 0.5rem !important;
+        }
+
+        /* Info grid mobile */
+        .grid.grid-cols-1.lg\\:grid-cols-3 {
+            grid-template-columns: 1fr !important;
+            gap: 1rem !important;
+        }
+
+        .lg\\:col-span-2 {
+            grid-column: span 1 !important;
+        }
+
+        .grid.md\\:grid-cols-2 {
+            grid-template-columns: 1fr !important;
+            gap: 0.75rem !important;
+        }
+
+        .md\\:col-span-2 {
+            grid-column: span 1 !important;
+        }
+
+        .p-4.rounded-xl.border {
+            padding: 0.875rem !important;
+        }
+
+        /* Services grid mobile */
+        .grid.sm\\:grid-cols-2.lg\\:grid-cols-3 {
+            grid-template-columns: 1fr !important;
+        }
+
+        /* Gallery mobile */
+        .flex.flex-wrap.gap-3 img {
+            width: 5rem !important;
+            height: 5rem !important;
+        }
+
+        /* Actions buttons mobile */
+        .flex.flex-col.gap-2 {
+            gap: 0.75rem !important;
+        }
+
+        .flex.flex-col.gap-2 > * {
+            font-size: 0.875rem !important;
+            padding: 0.75rem !important;
+        }
+
+        /* Modals mobile */
+        .fixed.inset-0 > div:not(.absolute) {
+            width: calc(100% - 2rem) !important;
+            max-width: 100% !important;
+            margin: 1rem !important;
+        }
+
+        .fixed.inset-0 > div h3 {
+            font-size: 1.125rem !important;
+        }
+
+        .fixed.inset-0 > div textarea {
+            font-size: 16px !important;
+        }
+
+        .fixed.inset-0 > div input {
+            font-size: 16px !important;
+            padding: 0.75rem !important;
+        }
+    }
+
+    /* Small mobile (iPhone SE) */
+    @media (max-width: 375px) {
+        h1 {
+            font-size: 1.25rem !important;
+        }
+
+        .grid.grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-4 {
+            grid-template-columns: 1fr !important;
+        }
+
+        .grid.grid-cols-1.md\\:grid-cols-4 {
+            grid-template-columns: 1fr !important;
+        }
+
+        canvas {
+            max-height: 180px !important;
+        }
+
+        .schedule-card {
+            padding: 0.625rem !important;
+        }
+    }
+
+    /* Landscape mobile */
+    @media (max-width: 768px) and (orientation: landscape) {
+        canvas {
+            max-height: 160px !important;
+        }
+
+        #timeline {
+            padding: 0.75rem !important;
+        }
+    }
 </style>
 {% endblock %}
 

@@ -3,7 +3,11 @@
 
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover" />
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>Coucou Beauté – Admin Login</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -50,6 +54,165 @@
             inset: 0;
             z-index: -1;
             pointer-events: none;
+        }
+
+        /* ==========================
+           RESPONSIVE MOBILE OPTIMIZATIONS
+           ========================== */
+        @media (max-width: 768px) {
+
+            /* Disable Three.js background on mobile for performance */
+            #three-bg {
+                display: none !important;
+            }
+
+            /* Mobile body */
+            body {
+                font-size: 16px !important;
+                -webkit-text-size-adjust: 100%;
+                overflow-x: hidden;
+                min-height: 100svh;
+            }
+
+            /* Container mobile */
+            .min-h-screen {
+                min-height: 100svh;
+                padding: 1rem !important;
+            }
+
+            /* Grid mobile - stack vertically */
+            .grid.grid-cols-1.md\\:grid-cols-2 {
+                grid-template-columns: 1fr !important;
+                gap: 1.5rem !important;
+            }
+
+            /* Form container mobile */
+            .glass.rounded-3xl {
+                width: 100% !important;
+                max-width: 100% !important;
+                padding: 1.5rem !important;
+                border-radius: 1.5rem !important;
+            }
+
+            /* Logo mobile */
+            .logo-enhanced {
+                height: 4rem !important;
+            }
+
+            /* Form inputs mobile - 16px to prevent iOS zoom */
+            input[type="email"],
+            input[type="password"],
+            input[type="text"] {
+                font-size: 16px !important;
+                padding: 0.75rem !important;
+            }
+
+            /* Input containers mobile */
+            .flex.items-center.gap-2 {
+                padding: 0.75rem !important;
+            }
+
+            /* Icons in inputs */
+            [data-lucide] {
+                flex-shrink: 0;
+            }
+
+            /* Button mobile - touch-friendly */
+            .grad-btn {
+                padding: 0.875rem 1rem !important;
+                font-size: 1rem !important;
+                min-height: 48px;
+                border-radius: 0.75rem !important;
+            }
+
+            /* Checkbox mobile - touch-friendly */
+            input[type="checkbox"] {
+                width: 1.25rem !important;
+                height: 1.25rem !important;
+                flex-shrink: 0;
+            }
+
+            /* Labels mobile */
+            label {
+                font-size: 0.9375rem !important;
+            }
+
+            /* Hide illustration on mobile */
+            .hidden.md\\:block {
+                display: none !important;
+            }
+
+            /* Copyright text mobile */
+            .text-center.text-textMuted.text-sm {
+                font-size: 0.8125rem !important;
+                margin-top: 1rem !important;
+            }
+
+            /* Messages mobile */
+            ul.mb-4 {
+                font-size: 0.875rem !important;
+                padding: 0.75rem !important;
+                background: rgba(242, 139, 178, 0.1);
+                border-radius: 0.75rem;
+            }
+        }
+
+        /* Small mobile devices (iPhone SE) */
+        @media (max-width: 375px) {
+            .glass.rounded-3xl {
+                padding: 1rem !important;
+            }
+
+            .logo-enhanced {
+                height: 3.5rem !important;
+            }
+
+            input[type="email"],
+            input[type="password"] {
+                font-size: 16px !important;
+            }
+        }
+
+        /* Landscape mobile */
+        @media (max-width: 768px) and (orientation: landscape) {
+            .min-h-screen {
+                min-height: 100vh;
+                padding: 0.75rem !important;
+            }
+
+            .glass.rounded-3xl {
+                padding: 1rem !important;
+            }
+
+            .logo-enhanced {
+                height: 3rem !important;
+            }
+        }
+
+        /* Touch device optimizations */
+        @media (hover: none) and (pointer: coarse) {
+
+            button,
+            input,
+            label {
+                cursor: pointer;
+                -webkit-tap-highlight-color: rgba(242, 139, 178, 0.2);
+            }
+
+            * {
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+
+        /* iOS Safari fixes */
+        @supports (-webkit-touch-callout: none) {
+            .min-h-screen {
+                min-height: -webkit-fill-available;
+            }
+
+            body {
+                padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+            }
         }
     </style>
 </head>
@@ -118,11 +281,19 @@
         </div>
     </div>
     <script>lucide.createIcons();</script>
-    <!-- three.js accessories-only background -->
+    <!-- three.js accessories-only background (disabled on mobile) -->
     <script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
     <script>
         (function () {
+            // Disable Three.js on mobile for performance
+            if (window.innerWidth <= 768) {
+                console.log('Three.js disabled on mobile for performance');
+                return;
+            }
+
             const container = document.getElementById('three-bg');
+            if (!container) return;
+
             const scene = new THREE.Scene();
             const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 100);
             camera.position.z = 7;
@@ -180,7 +351,7 @@
                 accessories.add(sp);
             }
 
-            // Parallax
+            // Parallax (desktop only)
             let targetX = 0, targetY = 0;
             window.addEventListener('mousemove', (e) => {
                 const nx = (e.clientX / window.innerWidth) * 2 - 1;

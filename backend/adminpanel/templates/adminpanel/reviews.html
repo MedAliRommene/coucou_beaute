@@ -312,6 +312,267 @@
         color: #1f2937;
         font-size: 0.9rem;
     }
+
+    /* ==========================
+       RESPONSIVE MOBILE OPTIMIZATIONS
+       ========================== */
+    @media (max-width: 768px) {
+
+        /* Container mobile */
+        .p-6 {
+            padding: 1rem !important;
+        }
+
+        .space-y-6>*+* {
+            margin-top: 1rem !important;
+        }
+
+        /* Header section mobile */
+        .glass.p-8 {
+            padding: 1rem !important;
+        }
+
+        .w-20.h-20 {
+            width: 3rem !important;
+            height: 3rem !important;
+        }
+
+        h1.text-5xl {
+            font-size: 1.75rem !important;
+        }
+
+        p.text-xl {
+            font-size: 0.9375rem !important;
+        }
+
+        /* Info badges mobile */
+        .flex.items-center.gap-6 {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 0.75rem !important;
+        }
+
+        .glass.rounded-full {
+            padding: 0.5rem 0.75rem !important;
+        }
+
+        /* Stats mobile */
+        .kpi-glass.p-6 {
+            padding: 1rem !important;
+        }
+
+        .text-4xl {
+            font-size: 1.75rem !important;
+        }
+
+        /* KPI grid mobile - 2 columns */
+        .grid.grid-cols-1.md\\:grid-cols-4 {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 0.75rem !important;
+        }
+
+        .kpi-glass .text-3xl {
+            font-size: 1.5rem !important;
+        }
+
+        /* Rating distribution mobile */
+        .rating-bar {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 0.5rem !important;
+        }
+
+        .rating-label {
+            min-width: auto !important;
+            font-size: 0.8125rem !important;
+        }
+
+        .rating-count {
+            min-width: auto !important;
+            text-align: left;
+            font-size: 0.8125rem !important;
+        }
+
+        /* Filters mobile */
+        .grid.grid-cols-1.md\\:grid-cols-4 {
+            grid-template-columns: 1fr !important;
+            gap: 0.75rem !important;
+        }
+
+        form input,
+        form select {
+            font-size: 16px !important;
+            padding: 0.875rem 0.75rem !important;
+        }
+
+        .flex.gap-4:has(button[type="submit"]) {
+            flex-direction: column;
+            gap: 0.75rem !important;
+        }
+
+        .flex.gap-4 button,
+        .flex.gap-4 a {
+            width: 100%;
+            justify-content: center;
+        }
+
+        /* Review cards mobile */
+        .review-card.glass.p-8 {
+            padding: 1rem !important;
+        }
+
+        .w-16.h-16 {
+            width: 3rem !important;
+            height: 3rem !important;
+        }
+
+        h4.text-xl {
+            font-size: 1.125rem !important;
+        }
+
+        .flex.items-center.justify-between.mb-6 {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 1rem !important;
+        }
+
+        .flex.items-center.gap-4:has(.rating-stars) {
+            width: 100%;
+            justify-content: space-between;
+        }
+
+        .rating-stars {
+            gap: 2px !important;
+        }
+
+        .rating-stars i {
+            width: 1rem !important;
+            height: 1rem !important;
+        }
+
+        .text-2xl.font-bold {
+            font-size: 1.25rem !important;
+        }
+
+        /* Review actions mobile */
+        .flex.items-center.justify-between:last-child {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 1rem !important;
+        }
+
+        .flex.items-center.gap-4:has([data-lucide="calendar"]),
+        .flex.gap-3:has(.delete-btn) {
+            width: 100%;
+        }
+
+        .delete-btn {
+            width: 100% !important;
+            justify-content: center !important;
+        }
+
+        /* Pagination mobile */
+        .flex.justify-center.gap-3 {
+            flex-wrap: wrap;
+            gap: 0.5rem !important;
+        }
+
+        .flex.justify-center.gap-3>* {
+            font-size: 0.8125rem !important;
+            padding: 0.5rem 0.75rem !important;
+        }
+
+        /* Empty state mobile */
+        .glass.p-16 {
+            padding: 3rem 1rem !important;
+        }
+
+        .w-24.h-24 {
+            width: 4rem !important;
+            height: 4rem !important;
+        }
+
+        .text-3xl {
+            font-size: 1.5rem !important;
+        }
+
+        /* Floating action mobile */
+        .floating-action {
+            bottom: 1rem !important;
+            right: 1rem !important;
+        }
+
+        .floating-action button {
+            width: 3rem !important;
+            height: 3rem !important;
+        }
+
+        /* Modal mobile */
+        .modal-dialog {
+            margin: 1rem !important;
+        }
+
+        .modal-content {
+            border-radius: 1rem !important;
+        }
+
+        .modal-header {
+            padding: 1rem !important;
+        }
+
+        .modal-header .w-16 {
+            width: 3rem !important;
+            height: 3rem !important;
+        }
+
+        .modal-title {
+            font-size: 1.25rem !important;
+        }
+
+        .modal-body {
+            padding: 1rem !important;
+        }
+
+        .modal-footer {
+            padding: 1rem !important;
+            flex-direction: column;
+            gap: 0.75rem !important;
+        }
+
+        .modal-footer button {
+            width: 100% !important;
+        }
+    }
+
+    /* Small mobile (iPhone SE) */
+    @media (max-width: 375px) {
+        h1.text-5xl {
+            font-size: 1.5rem !important;
+        }
+
+        .grid.grid-cols-1.md\\:grid-cols-4 {
+            grid-template-columns: 1fr !important;
+        }
+
+        .kpi-glass .text-3xl {
+            font-size: 1.25rem !important;
+        }
+
+        .review-card {
+            padding: 0.875rem !important;
+        }
+    }
+
+    /* Landscape mobile */
+    @media (max-width: 768px) and (orientation: landscape) {
+        .grid.grid-cols-1.md\\:grid-cols-4 {
+            grid-template-columns: repeat(2, 1fr) !important;
+        }
+
+        .glass.p-16 {
+            padding: 2rem 1rem !important;
+        }
+    }
 </style>
 {% endblock %}
 
@@ -347,8 +608,9 @@
                 <div class="flex items-center gap-6 mt-4">
                     <div class="flex items-center gap-2 px-4 py-2 glass rounded-full">
                         <i data-lucide="map-pin" class="w-4 h-4 text-pink-500"></i>
-                        <span class="text-gray-700 font-medium">{{ professional.extra.city|default:"Ville non spécifiée"   }}</span>
-                        
+                        <span class="text-gray-700 font-medium">{{ professional.extra.city|default:"Ville non spécifiée"
+                            }}</span>
+
 
 
                     </div>
@@ -450,11 +712,11 @@
                     <select name="rating"
                         class="w-full px-4 py-3 glass rounded-xl border-0 focus:ring-2 focus:ring-pink-400 focus:outline-none">
                         <option value="">Toutes les notes</option>
-                        <option value="5" {% if rating_filter == '5' %}selected{% endif %}>5 étoiles</option>
-                        <option value="4" {% if rating_filter == '4' %}selected{% endif %}>4 étoiles</option>
-                        <option value="3" {% if rating_filter == '3' %}selected{% endif %}>3 étoiles</option>
-                        <option value="2" {% if rating_filter == '2' %}selected{% endif %}>2 étoiles</option>
-                        <option value="1" {% if rating_filter == '1' %}selected{% endif %}>1 étoile</option>
+                        <option value="5" {% if rating_filter=='5' %}selected{% endif %}>5 étoiles</option>
+                        <option value="4" {% if rating_filter=='4' %}selected{% endif %}>4 étoiles</option>
+                        <option value="3" {% if rating_filter=='3' %}selected{% endif %}>3 étoiles</option>
+                        <option value="2" {% if rating_filter=='2' %}selected{% endif %}>2 étoiles</option>
+                        <option value="1" {% if rating_filter=='1' %}selected{% endif %}>1 étoile</option>
                     </select>
                 </div>
 
@@ -464,10 +726,10 @@
                     <select name="date_filter"
                         class="w-full px-4 py-3 glass rounded-xl border-0 focus:ring-2 focus:ring-pink-400 focus:outline-none">
                         <option value="">Toutes les périodes</option>
-                        <option value="today" {% if date_filter == 'today' %}selected{% endif %}>Aujourd'hui</option>
-                        <option value="week" {% if date_filter == 'week' %}selected{% endif %}>Cette semaine</option>
-                        <option value="month" {% if date_filter == 'month' %}selected{% endif %}>Ce mois</option>
-                        <option value="year" {% if date_filter == 'year' %}selected{% endif %}>Cette année</option>
+                        <option value="today" {% if date_filter=='today' %}selected{% endif %}>Aujourd'hui</option>
+                        <option value="week" {% if date_filter=='week' %}selected{% endif %}>Cette semaine</option>
+                        <option value="month" {% if date_filter=='month' %}selected{% endif %}>Ce mois</option>
+                        <option value="year" {% if date_filter=='year' %}selected{% endif %}>Cette année</option>
                     </select>
                 </div>
 
@@ -476,11 +738,11 @@
                     <label class="block text-sm font-semibold text-gray-700 mb-3">Trier par</label>
                     <select name="sort"
                         class="w-full px-4 py-3 glass rounded-xl border-0 focus:ring-2 focus:ring-pink-400 focus:outline-none">
-                        <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>Plus récents</option>
-                        <option value="oldest" {% if sort_by == 'oldest' %}selected{% endif %}>Plus anciens</option>
-                        <option value="rating_high" {% if sort_by == 'rating_high' %}selected{% endif %}>Note élevée
+                        <option value="newest" {% if sort_by=='newest' %}selected{% endif %}>Plus récents</option>
+                        <option value="oldest" {% if sort_by=='oldest' %}selected{% endif %}>Plus anciens</option>
+                        <option value="rating_high" {% if sort_by=='rating_high' %}selected{% endif %}>Note élevée
                         </option>
-                        <option value="rating_low" {% if sort_by == 'rating_low' %}selected{% endif %}>Note faible
+                        <option value="rating_low" {% if sort_by=='rating_low' %}selected{% endif %}>Note faible
                         </option>
                     </select>
                 </div>

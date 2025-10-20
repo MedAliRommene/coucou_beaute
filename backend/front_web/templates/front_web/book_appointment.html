@@ -347,6 +347,322 @@ Beauté{%endblock%}
         background: linear-gradient(135deg, #F28BB2, #6CA9E0);
         box-shadow: 0 0 0 4px rgba(242, 139, 178, .15);
     }
+
+    /* ==========================
+       RESPONSIVE MOBILE OPTIMIZATIONS
+       ========================== */
+    @media (max-width: 768px) {
+
+        /* Disable background on mobile */
+        #three-bg,
+        #three-bg::before,
+        #three-bg::after {
+            display: none !important;
+        }
+
+        /* Mobile body */
+        body {
+            font-size: 16px !important;
+            -webkit-text-size-adjust: 100%;
+        }
+
+        /* Sticky header mobile */
+        .sticky.top-0 {
+            padding: 0.75rem 1rem !important;
+        }
+
+        .glass.px-4 {
+            padding: 0.75rem 1rem !important;
+            font-size: 0.875rem !important;
+        }
+
+        /* Container mobile */
+        .max-w-6xl {
+            padding: 0 1rem !important;
+        }
+
+        .pb-8 {
+            padding-bottom: 1.5rem !important;
+        }
+
+        /* Steps grid to single column */
+        .grid.grid-cols-1.lg\\:grid-cols-3 {
+            grid-template-columns: 1fr !important;
+            gap: 1.5rem !important;
+        }
+
+        /* Step cards mobile */
+        .glass.rounded-3xl {
+            padding: 1rem !important;
+            border-radius: 1.5rem !important;
+        }
+
+        /* Step header mobile */
+        .w-10.h-10 {
+            width: 2.5rem !important;
+            height: 2.5rem !important;
+        }
+
+        h2.text-xl {
+            font-size: 1.125rem !important;
+        }
+
+        /* Service cards mobile */
+        .service-card {
+            padding: 0.875rem !important;
+        }
+
+        .service-card h3 {
+            font-size: 0.9375rem !important;
+        }
+
+        .service-card .text-sm {
+            font-size: 0.8125rem !important;
+        }
+
+        .service-card .text-lg {
+            font-size: 1rem !important;
+        }
+
+        /* Calendar mobile */
+        .calendar-wrap {
+            margin: 0 -0.5rem !important;
+        }
+
+        .calendar-track {
+            gap: 8px !important;
+            padding: 0 0.5rem 6px !important;
+        }
+
+        .calendar-card {
+            min-width: 70px !important;
+            min-height: 90px !important;
+            border-radius: 12px !important;
+        }
+
+        .calendar-card .text-lg {
+            font-size: 1rem !important;
+        }
+
+        .calendar-card .text-xs {
+            font-size: 0.6875rem !important;
+        }
+
+        /* Calendar nav buttons */
+        .cal-nav button {
+            width: 32px !important;
+            height: 32px !important;
+        }
+
+        .cal-nav.prev {
+            left: -4px !important;
+        }
+
+        .cal-nav.next {
+            right: -4px !important;
+        }
+
+        /* Selected date display */
+        #selectedDateDisplay {
+            font-size: 0.8125rem !important;
+        }
+
+        /* Time slots mobile */
+        #timeSlots {
+            grid-template-columns: 1fr 1fr !important;
+            gap: 0.5rem !important;
+        }
+
+        .time-slot {
+            padding: 0.75rem !important;
+            border-radius: 12px !important;
+        }
+
+        .time-slot .font-semibold {
+            font-size: 0.875rem !important;
+        }
+
+        .time-slot .meta {
+            font-size: 0.625rem !important;
+        }
+
+        /* Summary section mobile */
+        .grid.grid-cols-1.md\\:grid-cols-3 {
+            grid-template-columns: 1fr !important;
+            gap: 0.75rem !important;
+        }
+
+        #bookingSummary>div {
+            padding: 0.75rem !important;
+        }
+
+        #bookingSummary .text-sm {
+            font-size: 0.75rem !important;
+        }
+
+        #bookingSummary .font-bold {
+            font-size: 0.875rem !important;
+        }
+
+        /* Floating field mobile */
+        .float-field>input,
+        .float-field>textarea {
+            font-size: 16px !important;
+            padding: 0.875rem !important;
+        }
+
+        .float-field>label {
+            font-size: 0.875rem !important;
+        }
+
+        /* Submit button mobile */
+        #submitBtn {
+            width: 100% !important;
+            padding: 1rem !important;
+            font-size: 1rem !important;
+            border-radius: 1rem !important;
+        }
+
+        #submitBtn [data-lucide] {
+            width: 1.125rem !important;
+            height: 1.125rem !important;
+        }
+
+        /* CTA glow effect reduced on mobile */
+        .cta-glow::after {
+            filter: blur(8px) !important;
+        }
+
+        /* Notification mobile */
+        .notification {
+            top: 10px !important;
+            right: 10px !important;
+            left: 10px !important;
+            padding: 0.875rem 1rem !important;
+            font-size: 0.875rem !important;
+        }
+
+        /* Typography mobile */
+        h3.text-xl {
+            font-size: 1.125rem !important;
+        }
+
+        /* Icons sizing */
+        [data-lucide] {
+            width: 1rem !important;
+            height: 1rem !important;
+        }
+
+        /* Spacing adjustments */
+        .gap-8 {
+            gap: 1.5rem !important;
+        }
+
+        .gap-6 {
+            gap: 1rem !important;
+        }
+
+        .gap-4 {
+            gap: 0.75rem !important;
+        }
+
+        .gap-3 {
+            gap: 0.5rem !important;
+        }
+
+        .mb-6 {
+            margin-bottom: 1rem !important;
+        }
+
+        .mt-8 {
+            margin-top: 1.5rem !important;
+        }
+    }
+
+    /* Small mobile (iPhone SE) */
+    @media (max-width: 375px) {
+        .glass.rounded-3xl {
+            padding: 0.75rem !important;
+        }
+
+        h2.text-xl {
+            font-size: 1rem !important;
+        }
+
+        .calendar-card {
+            min-width: 60px !important;
+            min-height: 80px !important;
+        }
+
+        #timeSlots {
+            grid-template-columns: 1fr !important;
+        }
+
+        .service-card {
+            padding: 0.75rem !important;
+        }
+
+        #submitBtn {
+            padding: 0.875rem !important;
+            font-size: 0.9375rem !important;
+        }
+    }
+
+    /* Landscape mobile */
+    @media (max-width: 768px) and (orientation: landscape) {
+        .grid.grid-cols-1.lg\\:grid-cols-3 {
+            grid-template-columns: repeat(2, 1fr) !important;
+        }
+
+        .glass.rounded-3xl {
+            padding: 0.75rem !important;
+        }
+
+        .calendar-card {
+            min-height: 75px !important;
+        }
+    }
+
+    /* Touch device optimizations */
+    @media (hover: none) and (pointer: coarse) {
+
+        .service-card,
+        .calendar-card,
+        .time-slot,
+        button {
+            -webkit-tap-highlight-color: rgba(242, 139, 178, 0.2);
+            cursor: pointer;
+        }
+
+        * {
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .service-card:active,
+        .calendar-card:active,
+        .time-slot:active {
+            opacity: 0.9;
+            transform: scale(0.98);
+        }
+
+        button:active {
+            opacity: 0.9;
+        }
+    }
+
+    /* iOS Safari fixes */
+    @supports (-webkit-touch-callout: none) {
+
+        input,
+        select,
+        textarea {
+            font-size: max(16px, 1rem) !important;
+        }
+
+        .min-h-screen {
+            min-height: -webkit-fill-available;
+        }
+    }
 </style>
 {% endblock %}
 

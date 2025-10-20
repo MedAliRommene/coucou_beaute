@@ -4,7 +4,11 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>{% block title %}Coucou Beauté - Espace Pro{% endblock %}</title>
 
     <!-- Tailwind CSS -->
@@ -173,7 +177,188 @@
                 transform: translate(0, 0) scale(1);
             }
         }
+
+        /* ==========================
+           RESPONSIVE MOBILE OPTIMIZATIONS
+           ========================== */
+        @media (max-width: 768px) {
+
+            /* Hide blob animations on mobile */
+            .animate-blob-1,
+            .animate-blob-2,
+            .animate-blob-3 {
+                display: none !important;
+            }
+
+            /* Mobile body */
+            body {
+                font-size: 16px !important;
+                -webkit-text-size-adjust: 100%;
+                overflow-x: hidden;
+            }
+
+            /* Sidebar mobile off-canvas */
+            #sidebar {
+                position: fixed !important;
+                left: -100%;
+                top: 0;
+                width: 80% !important;
+                max-width: 280px;
+                height: 100vh;
+                z-index: 9999;
+                transition: left 0.3s ease;
+                overflow-y: auto;
+            }
+
+            #sidebar.mobile-open {
+                left: 0 !important;
+            }
+
+            /* Sidebar overlay */
+            .sidebar-overlay {
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 9998;
+                display: none;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            }
+
+            .sidebar-overlay.active {
+                display: block;
+                opacity: 1;
+            }
+
+            /* Prevent body scroll when sidebar open */
+            body.sidebar-open {
+                overflow: hidden;
+            }
+
+            /* Logo in sidebar mobile */
+            #sidebar .logo-enhanced {
+                height: 4rem !important;
+            }
+
+            /* Sidebar links touch-friendly */
+            #sidebar nav a {
+                padding: 0.875rem 0.75rem !important;
+                min-height: 48px;
+            }
+
+            #sidebar .icon-bubble {
+                width: 2.5rem !important;
+                height: 2.5rem !important;
+            }
+
+            #sidebar .sidebar-label {
+                font-size: 0.9375rem !important;
+            }
+
+            /* Main content full width on mobile */
+            .flex.h-screen {
+                flex-direction: column;
+            }
+
+            .flex-1.flex.flex-col {
+                width: 100% !important;
+            }
+
+            /* Top bar mobile */
+            header {
+                padding: 0.75rem 1rem !important;
+            }
+
+            header .flex {
+                gap: 0.75rem !important;
+            }
+
+            header .text-sm {
+                font-size: 0.8125rem !important;
+            }
+
+            /* Hide extra info on mobile top bar */
+            header .text-sm .mx-2,
+            header .text-sm span:last-child {
+                display: none;
+            }
+
+            /* Avatar smaller */
+            header .w-8.h-8 {
+                width: 2rem !important;
+                height: 2rem !important;
+            }
+
+            /* Main content */
+            main {
+                padding: 0 !important;
+            }
+
+            /* Disable collapsed state on mobile */
+            #sidebar.collapsed {
+                width: 80% !important;
+                max-width: 280px !important;
+            }
+
+            #sidebar.collapsed .sidebar-label,
+            #sidebar.collapsed .sidebar-chevron {
+                opacity: 1 !important;
+                visibility: visible !important;
+            }
+
+            #sidebar.collapsed .icon-bubble {
+                width: 2.5rem !important;
+                height: 2.5rem !important;
+            }
+        }
+
+        /* Small mobile (iPhone SE) */
+        @media (max-width: 375px) {
+            #sidebar {
+                width: 85% !important;
+            }
+        }
+
+        /* Landscape mobile */
+        @media (max-width: 768px) and (orientation: landscape) {
+            #sidebar {
+                width: 60% !important;
+                max-width: 240px;
+            }
+        }
+
+        /* Touch device optimizations */
+        @media (hover: none) and (pointer: coarse) {
+
+            #sidebar nav a,
+            button {
+                cursor: pointer;
+                -webkit-tap-highlight-color: rgba(242, 139, 178, 0.2);
+            }
+
+            * {
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+
+        /* iOS Safari fixes */
+        @supports (-webkit-touch-callout: none) {
+            #sidebar {
+                min-height: -webkit-fill-available;
+            }
+
+            .h-screen {
+                min-height: -webkit-fill-available;
+            }
+
+            body {
+                padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+            }
+        }
     </style>
+
+    <!-- Include dashboard mobile CSS -->
+    <link rel="stylesheet" href="{% static 'css/dashboard-mobile.css' %}">
 
     {% block extra_css %}{% endblock %}
 </head>
@@ -188,6 +373,9 @@
         <div class="absolute rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob-3 bg-pink-100"
             style="width: 350px; height: 350px; top: 30%; right: 10%;"></div>
     </div>
+
+    <!-- Sidebar overlay for mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
     <div class="flex h-screen relative z-10">
         <!-- Sidebar -->
@@ -220,7 +408,7 @@
                         class="ml-auto w-4 h-4 text-gray-400 group-hover:text-pink-500 transition-transform duration-200 sidebar-chevron"></i>
                 </a>
 
-               
+
 
                 <a href="{% url 'front_web:pro_appointments' %}"
                     class="flex items-center p-3 rounded-xl text-gray-700 hover:bg-pink-50 hover:text-pink-600 transition-colors duration-200 group relative {% if request.resolver_match.url_name == 'pro_appointments' %}bg-gradient-to-r from-pink-50 to-blue-50 text-pink-600 font-semibold shadow-sm{% endif %}">
@@ -283,12 +471,73 @@
         // Sidebar toggle functionality
         const sidebar = document.getElementById('sidebar');
         const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
         const mainContent = document.querySelector('.main-content');
+        const body = document.body;
 
-        sidebarToggle.addEventListener('click', function () {
-            sidebar.classList.toggle('collapsed');
-            if (mainContent) {
-                mainContent.classList.toggle('expanded');
+        // Detect if mobile
+        function isMobile() {
+            return window.innerWidth <= 768;
+        }
+
+        // Toggle sidebar
+        function toggleSidebar() {
+            if (isMobile()) {
+                // Mobile: Off-canvas behavior
+                sidebar.classList.toggle('mobile-open');
+                sidebarOverlay.classList.toggle('active');
+                body.classList.toggle('sidebar-open');
+            } else {
+                // Desktop: Collapse behavior
+                sidebar.classList.toggle('collapsed');
+                if (mainContent) {
+                    mainContent.classList.toggle('expanded');
+                }
+            }
+        }
+
+        // Close sidebar
+        function closeSidebar() {
+            if (isMobile()) {
+                sidebar.classList.remove('mobile-open');
+                sidebarOverlay.classList.remove('active');
+                body.classList.remove('sidebar-open');
+            }
+        }
+
+        // Toggle button click
+        sidebarToggle.addEventListener('click', function (e) {
+            e.stopPropagation();
+            toggleSidebar();
+        });
+
+        // Overlay click to close
+        sidebarOverlay.addEventListener('click', closeSidebar);
+
+        // Close sidebar when clicking a link on mobile
+        if (isMobile()) {
+            const sidebarLinks = sidebar.querySelectorAll('nav a');
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', closeSidebar);
+            });
+        }
+
+        // Handle window resize
+        let resizeTimer;
+        window.addEventListener('resize', function () {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(function () {
+                // Close mobile sidebar when resizing to desktop
+                if (!isMobile()) {
+                    closeSidebar();
+                }
+            }, 250);
+        });
+
+        // Prevent body scroll on mobile when sidebar is open
+        sidebar.addEventListener('touchmove', function (e) {
+            if (isMobile() && sidebar.classList.contains('mobile-open')) {
+                e.stopPropagation();
             }
         });
     </script>

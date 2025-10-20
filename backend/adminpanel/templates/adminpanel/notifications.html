@@ -1,25 +1,135 @@
 {% extends 'adminpanel/base.html' %}
+
+{% block title %}Notifications Push - Coucou Beauté{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ==========================
+       RESPONSIVE MOBILE OPTIMIZATIONS
+       ========================== */
+    @media (max-width: 768px) {
+
+        /* Container mobile */
+        h1 {
+            font-size: 1.5rem !important;
+            margin-bottom: 1rem !important;
+            padding: 1rem !important;
+        }
+
+        /* Form mobile */
+        form {
+            padding: 1rem !important;
+        }
+
+        .max-w-2xl {
+            max-width: 100% !important;
+        }
+
+        .space-y-3>*+* {
+            margin-top: 1rem !important;
+        }
+
+        /* Labels mobile */
+        label {
+            font-size: 0.9375rem !important;
+            margin-bottom: 0.5rem !important;
+        }
+
+        /* Inputs mobile - 16px font to prevent iOS zoom */
+        input,
+        textarea,
+        select {
+            font-size: 16px !important;
+            padding: 0.875rem 0.75rem !important;
+        }
+
+        /* Grid mobile - stack vertically */
+        .grid.grid-cols-1.md\\:grid-cols-3 {
+            grid-template-columns: 1fr !important;
+            gap: 0.75rem !important;
+        }
+
+        /* Button mobile - full width, touch-friendly */
+        button {
+            width: 100% !important;
+            padding: 1rem !important;
+            font-size: 1rem !important;
+            min-height: 48px;
+            border-radius: 0.75rem !important;
+        }
+    }
+
+    /* Small mobile (iPhone SE) */
+    @media (max-width: 375px) {
+        h1 {
+            font-size: 1.25rem !important;
+        }
+
+        input,
+        textarea,
+        select {
+            font-size: 16px !important;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<h1 class="text-xl font-semibold mb-4">Notifications push</h1>
-<form class="space-y-3 max-w-2xl">
-    <div>
-        <label class="block text-sm text-textMuted">Titre</label>
-        <input class="w-full border rounded-lg px-3 py-2" placeholder="Promo spéciale" />
+<div class="p-6">
+    <div class="glass p-6 rounded-2xl max-w-4xl mx-auto">
+        <div class="flex items-center gap-3 mb-6">
+            <div
+                class="w-12 h-12 rounded-full bg-gradient-to-br from-pink-400 to-blue-400 flex items-center justify-center text-white">
+                <i data-lucide="bell" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">Notifications Push</h1>
+                <p class="text-gray-600 mt-1">Envoyez des notifications à vos utilisateurs</p>
+            </div>
+        </div>
+
+        <form class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Titre</label>
+                <input
+                    class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-pink-200 focus:border-pink-300"
+                    placeholder="Promo spéciale" />
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Message</label>
+                <textarea
+                    class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-pink-200 focus:border-pink-300"
+                    rows="4" placeholder="-20% sur les soins visage…"></textarea>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Ville (optionnel)</label>
+                    <input
+                        class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-pink-200 focus:border-pink-300"
+                        placeholder="Toutes les villes" />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Service (optionnel)</label>
+                    <input
+                        class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-pink-200 focus:border-pink-300"
+                        placeholder="Tous les services" />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Abonnement</label>
+                    <select
+                        class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-pink-200 focus:border-pink-300">
+                        <option>Tous abonnements</option>
+                        <option>Actif</option>
+                        <option>Inactif</option>
+                    </select>
+                </div>
+            </div>
+            <button
+                class="bg-gradient-to-r from-pink-500 to-blue-500 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 w-full md:w-auto">
+                <i data-lucide="send" class="w-5 h-5 inline mr-2"></i>
+                Envoyer la notification
+            </button>
+        </form>
     </div>
-    <div>
-        <label class="block text-sm text-textMuted">Message</label>
-        <textarea class="w-full border rounded-lg px-3 py-2" rows="4"
-            placeholder="-20% sur les soins visage…"></textarea>
-    </div>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <input class="border rounded-lg px-3 py-2" placeholder="Ville (optionnel)" />
-        <input class="border rounded-lg px-3 py-2" placeholder="Service (optionnel)" />
-        <select class="border rounded-lg px-3 py-2">
-            <option>Tous abonnements</option>
-            <option>Actif</option>
-            <option>Inactif</option>
-        </select>
-    </div>
-    <button class="bg-rosePastel text-white px-4 py-2 rounded-lg">Envoyer</button>
-</form>
+</div>
 {% endblock %}

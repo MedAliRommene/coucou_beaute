@@ -90,6 +90,254 @@
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
         border: 1px solid rgba(255, 255, 255, 0.2);
     }
+
+    /* ==========================
+       RESPONSIVE MOBILE OPTIMIZATIONS
+       ========================== */
+    @media (max-width: 768px) {
+
+        /* Mobile-friendly body */
+        body {
+            font-size: 16px !important;
+            -webkit-text-size-adjust: 100%;
+        }
+
+        /* Page padding mobile */
+        .p-6 {
+            padding: 1rem !important;
+        }
+
+        /* Header mobile */
+        h1.text-3xl {
+            font-size: 1.5rem !important;
+        }
+
+        .text-gray-600 {
+            font-size: 0.875rem !important;
+        }
+
+        .mb-8 {
+            margin-bottom: 1.5rem !important;
+        }
+
+        /* Grid to single column */
+        .grid.grid-cols-1.lg\\:grid-cols-3 {
+            grid-template-columns: 1fr !important;
+            gap: 1rem !important;
+        }
+
+        .lg\\:col-span-2 {
+            grid-column: span 1 !important;
+        }
+
+        /* Calendar container mobile */
+        .calendar-container {
+            padding: 1rem !important;
+            border-radius: 1rem !important;
+        }
+
+        /* Calendar navigation mobile */
+        .flex.items-center.justify-between.mb-6 {
+            margin-bottom: 1rem !important;
+        }
+
+        .flex.items-center.justify-between.mb-6 button {
+            padding: 0.5rem !important;
+            min-height: 44px;
+            min-width: 44px;
+        }
+
+        h2#currentMonth {
+            font-size: 1.125rem !important;
+        }
+
+        /* Calendar headers mobile */
+        .calendar-header {
+            gap: 4px !important;
+            margin-bottom: 0.75rem !important;
+        }
+
+        .calendar-day-header {
+            font-size: 0.6875rem !important;
+            padding: 0.5rem 0.25rem !important;
+        }
+
+        /* Calendar grid mobile */
+        .calendar-grid {
+            gap: 4px !important;
+        }
+
+        .calendar-day {
+            min-height: 40px !important;
+            font-size: 0.875rem !important;
+            border-radius: 8px !important;
+        }
+
+        /* Appointment dot mobile */
+        .appointment-dot {
+            width: 4px !important;
+            height: 4px !important;
+            bottom: 2px !important;
+        }
+
+        /* Side panels mobile */
+        .space-y-6>*+* {
+            margin-top: 1rem !important;
+        }
+
+        .bg-white.rounded-xl {
+            padding: 1rem !important;
+        }
+
+        h3.text-lg {
+            font-size: 1rem !important;
+            margin-bottom: 0.75rem !important;
+        }
+
+        /* Stats mobile */
+        .space-y-4>*+* {
+            margin-top: 0.75rem !important;
+        }
+
+        .space-y-4 .text-sm {
+            font-size: 0.8125rem !important;
+        }
+
+        .space-y-4 [data-lucide] {
+            width: 0.875rem !important;
+            height: 0.875rem !important;
+        }
+
+        /* Day appointments mobile */
+        #dayAppointments {
+            font-size: 0.875rem !important;
+        }
+
+        #dayAppointments [data-lucide] {
+            width: 2.5rem !important;
+            height: 2.5rem !important;
+        }
+
+        #dayAppointments p {
+            font-size: 0.8125rem !important;
+        }
+
+        /* Appointment card mobile */
+        .appointment-card {
+            padding: 0.75rem !important;
+            margin-bottom: 0.5rem !important;
+            border-radius: 0.75rem !important;
+        }
+
+        .appointment-card .font-semibold {
+            font-size: 0.875rem !important;
+        }
+
+        .appointment-card .text-xs {
+            font-size: 0.6875rem !important;
+        }
+
+        .appointment-card .text-sm {
+            font-size: 0.75rem !important;
+        }
+
+        /* "Ce mois" section mobile */
+        .space-y-3>*+* {
+            margin-top: 0.5rem !important;
+        }
+
+        .space-y-3 .text-sm {
+            font-size: 0.8125rem !important;
+        }
+    }
+
+    /* Small mobile (iPhone SE) */
+    @media (max-width: 375px) {
+        h1.text-3xl {
+            font-size: 1.25rem !important;
+        }
+
+        .calendar-container {
+            padding: 0.75rem !important;
+        }
+
+        h2#currentMonth {
+            font-size: 1rem !important;
+        }
+
+        .calendar-day-header {
+            font-size: 0.625rem !important;
+            padding: 0.375rem 0.125rem !important;
+        }
+
+        .calendar-day {
+            min-height: 36px !important;
+            font-size: 0.8125rem !important;
+        }
+
+        .calendar-grid {
+            gap: 2px !important;
+        }
+
+        .bg-white.rounded-xl {
+            padding: 0.75rem !important;
+        }
+    }
+
+    /* Landscape mobile */
+    @media (max-width: 768px) and (orientation: landscape) {
+        .p-6 {
+            padding: 0.75rem !important;
+        }
+
+        .grid.grid-cols-1.lg\\:grid-cols-3 {
+            grid-template-columns: repeat(2, 1fr) !important;
+        }
+
+        .calendar-container {
+            padding: 0.75rem !important;
+        }
+
+        .calendar-day {
+            min-height: 36px !important;
+        }
+    }
+
+    /* Touch device optimizations */
+    @media (hover: none) and (pointer: coarse) {
+
+        .calendar-day,
+        button {
+            -webkit-tap-highlight-color: rgba(242, 139, 178, 0.2);
+            cursor: pointer;
+        }
+
+        * {
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .calendar-day:active {
+            opacity: 0.8;
+            transform: scale(0.95);
+        }
+
+        button:active {
+            opacity: 0.8;
+        }
+    }
+
+    /* iOS Safari fixes */
+    @supports (-webkit-touch-callout: none) {
+
+        input,
+        select {
+            font-size: max(16px, 1rem) !important;
+        }
+
+        .min-h-screen {
+            min-height: -webkit-fill-available;
+        }
+    }
 </style>
 {% endblock %}
 

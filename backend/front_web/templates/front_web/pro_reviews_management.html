@@ -414,6 +414,360 @@
         transform: scale(1.1);
         box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
     }
+
+    /* ==========================
+       RESPONSIVE MOBILE OPTIMIZATIONS
+       ========================== */
+    @media (max-width: 768px) {
+
+        /* Mobile body */
+        body {
+            font-size: 16px !important;
+            -webkit-text-size-adjust: 100%;
+        }
+
+        /* Container mobile */
+        .container-fluid {
+            padding: 0 1rem !important;
+        }
+
+        /* Header mobile */
+        .d-flex.justify-content-between {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 1rem !important;
+        }
+
+        h1.h2 {
+            font-size: 1.5rem !important;
+        }
+
+        .text-muted {
+            font-size: 0.875rem !important;
+        }
+
+        .mb-5 {
+            margin-bottom: 1.5rem !important;
+        }
+
+        /* Stats grid mobile */
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 1rem !important;
+        }
+
+        .stat-card {
+            padding: 1rem !important;
+        }
+
+        .stat-number {
+            font-size: 1.75rem !important;
+        }
+
+        .stat-label {
+            font-size: 0.75rem !important;
+        }
+
+        .icon-bubble {
+            width: 2.5rem !important;
+            height: 2.5rem !important;
+        }
+
+        .icon-bubble i {
+            font-size: 1rem !important;
+        }
+
+        /* Rating distribution mobile */
+        .glass-card {
+            padding: 1rem !important;
+            margin-bottom: 1.5rem !important;
+        }
+
+        .rating-bar {
+            gap: 0.5rem !important;
+        }
+
+        .rating-label {
+            min-width: 4rem !important;
+            font-size: 0.75rem !important;
+        }
+
+        .rating-progress {
+            height: 6px !important;
+        }
+
+        /* Filter section mobile */
+        .filter-section {
+            padding: 1rem !important;
+            margin-bottom: 1.5rem !important;
+        }
+
+        .row.g-4 {
+            gap: 1rem !important;
+        }
+
+        .col-lg-3,
+        .col-lg-2 {
+            width: 100% !important;
+            padding: 0 !important;
+        }
+
+        .search-input-modern,
+        .filter-select-modern {
+            padding: 0.75rem !important;
+            font-size: 16px !important;
+        }
+
+        .form-label {
+            font-size: 0.875rem !important;
+            margin-bottom: 0.5rem !important;
+        }
+
+        .d-flex.gap-3 {
+            flex-direction: column !important;
+            gap: 0.5rem !important;
+        }
+
+        .btn-modern {
+            width: 100% !important;
+            padding: 0.75rem 1rem !important;
+            font-size: 0.875rem !important;
+        }
+
+        /* Review cards mobile */
+        .review-card {
+            padding: 1rem !important;
+            margin-bottom: 1rem !important;
+        }
+
+        .review-card .row {
+            flex-direction: column !important;
+        }
+
+        .review-card .col-md-8,
+        .review-card .col-md-4 {
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+
+        /* Avatar mobile */
+        .avatar-gradient {
+            width: 2.5rem !important;
+            height: 2.5rem !important;
+            font-size: 1rem !important;
+        }
+
+        .me-4 {
+            margin-right: 0.75rem !important;
+        }
+
+        h6.fw-bold {
+            font-size: 0.9375rem !important;
+        }
+
+        /* Rating stars mobile */
+        .rating-stars {
+            font-size: 1rem !important;
+        }
+
+        .rating-stars i {
+            font-size: 0.875rem !important;
+        }
+
+        /* Status badges mobile */
+        .status-badge {
+            padding: 0.5rem 0.75rem !important;
+            font-size: 0.625rem !important;
+        }
+
+        .d-flex.flex-wrap.gap-2 {
+            gap: 0.5rem !important;
+        }
+
+        .mb-3 {
+            margin-bottom: 0.75rem !important;
+        }
+
+        /* Comment section mobile */
+        .comment-section p,
+        .response-section p {
+            font-size: 0.875rem !important;
+        }
+
+        /* Response section mobile */
+        .response-section {
+            padding: 0.875rem !important;
+            margin-top: 0.75rem !important;
+        }
+
+        .response-form textarea {
+            font-size: 16px !important;
+            padding: 0.75rem !important;
+        }
+
+        .response-form .mb-3 {
+            margin-bottom: 0.75rem !important;
+        }
+
+        .d-flex.gap-2 {
+            gap: 0.5rem !important;
+        }
+
+        /* Action buttons mobile */
+        .action-buttons {
+            margin-top: 1rem !important;
+        }
+
+        .action-buttons button {
+            width: 100% !important;
+        }
+
+        .col-md-4 .d-flex.flex-column {
+            align-items: flex-start !important;
+        }
+
+        /* Pagination mobile */
+        .pagination-modern {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.5rem !important;
+            padding: 0.5rem !important;
+        }
+
+        .pagination-modern a,
+        .pagination-modern span {
+            padding: 0.5rem 0.75rem !important;
+            font-size: 0.875rem !important;
+        }
+
+        /* No reviews mobile */
+        .no-reviews-modern {
+            padding: 2rem 1rem !important;
+        }
+
+        .no-reviews-modern i {
+            font-size: 3rem !important;
+        }
+
+        .no-reviews-modern h4 {
+            font-size: 1.125rem !important;
+        }
+
+        .no-reviews-modern p {
+            font-size: 0.875rem !important;
+        }
+
+        /* Floating action button mobile */
+        .floating-action {
+            bottom: 1rem !important;
+            right: 1rem !important;
+        }
+
+        .btn-floating {
+            width: 48px !important;
+            height: 48px !important;
+            font-size: 1.25rem !important;
+        }
+
+        /* Hide decorative elements */
+        .animate-blob-1,
+        .animate-blob-2,
+        .animate-blob-3 {
+            display: none !important;
+        }
+
+        /* Spacing adjustments */
+        .mb-4 {
+            margin-bottom: 1rem !important;
+        }
+
+        .mb-2 {
+            margin-bottom: 0.5rem !important;
+        }
+
+        .mt-auto {
+            margin-top: 1rem !important;
+        }
+    }
+
+    /* Small mobile (iPhone SE) */
+    @media (max-width: 375px) {
+        h1.h2 {
+            font-size: 1.25rem !important;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr !important;
+        }
+
+        .stat-number {
+            font-size: 1.5rem !important;
+        }
+
+        .review-card {
+            padding: 0.75rem !important;
+        }
+
+        .avatar-gradient {
+            width: 2rem !important;
+            height: 2rem !important;
+            font-size: 0.875rem !important;
+        }
+    }
+
+    /* Landscape mobile */
+    @media (max-width: 768px) and (orientation: landscape) {
+        .stats-grid {
+            grid-template-columns: repeat(4, 1fr) !important;
+        }
+
+        .filter-section .row.g-4 {
+            flex-direction: row !important;
+            flex-wrap: wrap;
+        }
+
+        .col-lg-3,
+        .col-lg-2 {
+            width: auto !important;
+            flex: 1;
+        }
+    }
+
+    /* Touch device optimizations */
+    @media (hover: none) and (pointer: coarse) {
+
+        .review-card,
+        .btn-modern,
+        .btn-floating,
+        .filter-select-modern,
+        .search-input-modern {
+            -webkit-tap-highlight-color: rgba(102, 126, 234, 0.2);
+        }
+
+        * {
+            -webkit-overflow-scrolling: touch;
+        }
+
+        button:active {
+            opacity: 0.85;
+            transform: scale(0.98);
+        }
+    }
+
+    /* iOS Safari fixes */
+    @supports (-webkit-touch-callout: none) {
+
+        input,
+        select,
+        textarea {
+            font-size: max(16px, 1rem) !important;
+        }
+
+        .container-fluid {
+            min-height: -webkit-fill-available;
+        }
+    }
 </style>
 {% endblock %}
 

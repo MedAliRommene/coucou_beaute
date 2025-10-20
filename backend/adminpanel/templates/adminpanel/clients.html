@@ -2,6 +2,171 @@
 
 {% block title %}Clients - Coucou Beauté{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* ==========================
+       RESPONSIVE MOBILE OPTIMIZATIONS
+       ========================== */
+    @media (max-width: 768px) {
+
+        /* Container mobile */
+        .p-6 {
+            padding: 1rem !important;
+        }
+
+        .space-y-6>*+* {
+            margin-top: 1rem !important;
+        }
+
+        /* Header section mobile */
+        .flex.items-center.justify-between {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 1rem !important;
+        }
+
+        .flex.items-center.gap-3 {
+            width: 100%;
+        }
+
+        .w-12.h-12 {
+            width: 2.5rem !important;
+            height: 2.5rem !important;
+        }
+
+        h1 {
+            font-size: 1.5rem !important;
+        }
+
+        p.text-gray-600 {
+            font-size: 0.875rem !important;
+        }
+
+        /* KPI grid mobile - single column */
+        .grid.grid-cols-1.md\\:grid-cols-3 {
+            grid-template-columns: 1fr !important;
+            gap: 0.75rem !important;
+        }
+
+        .kpi-glass {
+            padding: 0.875rem !important;
+        }
+
+        .kpi-glass .w-10 {
+            width: 2.25rem !important;
+            height: 2.25rem !important;
+        }
+
+        .kpi-glass .text-2xl {
+            font-size: 1.25rem !important;
+        }
+
+        .kpi-glass .text-sm {
+            font-size: 0.8125rem !important;
+        }
+
+        /* Table section mobile */
+        .glass {
+            padding: 1rem !important;
+        }
+
+        /* Filters mobile */
+        .flex.flex-col.md\\:flex-row {
+            flex-direction: column !important;
+        }
+
+        .flex.flex-wrap.items-center.gap-2 {
+            flex-direction: column !important;
+            width: 100% !important;
+            gap: 0.75rem !important;
+        }
+
+        .flex.flex-wrap.items-center.gap-2>* {
+            width: 100% !important;
+        }
+
+        /* Search input mobile - 16px font */
+        #clientSearch,
+        #cityFilter,
+        #dateFrom,
+        #dateTo {
+            width: 100% !important;
+            font-size: 16px !important;
+            padding: 0.75rem !important;
+            padding-left: 2.5rem !important;
+        }
+
+        .relative i {
+            left: 0.75rem !important;
+            top: 0.875rem !important;
+        }
+
+        /* Reset button mobile */
+        #resetFilters {
+            width: 100% !important;
+            padding: 0.75rem !important;
+            font-size: 0.9375rem !important;
+        }
+
+        /* Table mobile - horizontal scroll */
+        .overflow-x-auto {
+            margin: 0 -1rem !important;
+            padding: 0 1rem !important;
+        }
+
+        table {
+            font-size: 0.8125rem !important;
+        }
+
+        table th,
+        table td {
+            padding: 0.625rem 0.5rem !important;
+            white-space: nowrap;
+        }
+
+        table th {
+            font-size: 0.75rem !important;
+        }
+
+        /* Hide less important columns on very small screens */
+        @media (max-width: 375px) {
+
+            table th:nth-child(5),
+            table td:nth-child(5) {
+                display: none;
+            }
+        }
+    }
+
+    /* Small mobile (iPhone SE) */
+    @media (max-width: 375px) {
+        h1 {
+            font-size: 1.25rem !important;
+        }
+
+        .w-12.h-12 {
+            width: 2rem !important;
+            height: 2rem !important;
+        }
+
+        table {
+            font-size: 0.75rem !important;
+        }
+
+        .kpi-glass .text-2xl {
+            font-size: 1.125rem !important;
+        }
+    }
+
+    /* Landscape mobile */
+    @media (max-width: 768px) and (orientation: landscape) {
+        .grid.grid-cols-1.md\\:grid-cols-3 {
+            grid-template-columns: repeat(3, 1fr) !important;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="p-6 space-y-6">
     <div class="flex items-center justify-between">

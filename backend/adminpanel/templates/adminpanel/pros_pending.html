@@ -2,6 +2,204 @@
 
 {% block title %}Professionnels en Attente - Coucou Beauté{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* ==========================
+       RESPONSIVE MOBILE OPTIMIZATIONS
+       ========================== */
+    @media (max-width: 768px) {
+
+        /* Container mobile */
+        .p-6 {
+            padding: 1rem !important;
+        }
+
+        /* Header section mobile */
+        .mb-6.flex.items-center.gap-3 {
+            flex-wrap: wrap;
+            gap: 1rem !important;
+        }
+
+        .w-12.h-12 {
+            width: 2.5rem !important;
+            height: 2.5rem !important;
+        }
+
+        h1 {
+            font-size: 1.5rem !important;
+        }
+
+        p.text-gray-600 {
+            font-size: 0.875rem !important;
+        }
+
+        .ml-auto {
+            margin-left: 0 !important;
+            width: 100%;
+        }
+
+        /* Glass container mobile */
+        .glass.p-6 {
+            padding: 1rem !important;
+        }
+
+        /* Header demandes mobile */
+        .flex.items-center.justify-between.mb-4 {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 0.75rem !important;
+        }
+
+        .hidden.md\\:block {
+            display: none !important;
+        }
+
+        /* Empty state mobile */
+        #empty {
+            padding: 3rem 1rem !important;
+        }
+
+        #empty i {
+            width: 3rem !important;
+            height: 3rem !important;
+        }
+
+        /* List cards mobile */
+        .kpi-glass {
+            padding: 1rem !important;
+        }
+
+        .flex.items-start.justify-between {
+            flex-direction: column !important;
+            gap: 1rem !important;
+        }
+
+        .flex.flex-wrap.items-center.gap-2 {
+            gap: 0.5rem !important;
+        }
+
+        .flex.flex-col.gap-2 {
+            flex-direction: row !important;
+            width: 100%;
+        }
+
+        .flex.flex-col.gap-2>* {
+            flex: 1;
+            font-size: 0.8125rem !important;
+            padding: 0.625rem 0.75rem !important;
+        }
+
+        /* Historique filters mobile */
+        .flex.items-center.gap-2:has(#statusFilter) {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 0.5rem !important;
+        }
+
+        #statusFilter,
+        #fromDate,
+        #toDate,
+        #searchQ,
+        #exportCsv,
+        #exportAuditCsv {
+            width: 100% !important;
+            font-size: 16px !important;
+            padding: 0.75rem !important;
+        }
+
+        /* Table mobile - horizontal scroll */
+        .overflow-x-auto {
+            margin: 0 -1rem !important;
+            padding: 0 1rem !important;
+        }
+
+        table {
+            font-size: 0.75rem !important;
+            min-width: 700px !important;
+        }
+
+        table th,
+        table td {
+            padding: 0.625rem 0.5rem !important;
+            white-space: nowrap;
+        }
+
+        table th {
+            font-size: 0.6875rem !important;
+        }
+
+        /* Badges mobile */
+        .px-2.py-1.text-xs {
+            font-size: 0.625rem !important;
+            padding: 0.25rem 0.5rem !important;
+        }
+
+        /* Pager mobile */
+        #historyPager {
+            flex-wrap: wrap;
+            gap: 0.5rem !important;
+        }
+
+        #historyPager button {
+            flex: 1;
+            min-width: 100px;
+        }
+
+        /* Modal mobile */
+        #deleteModal .glass {
+            margin: 1rem !important;
+            max-width: 100% !important;
+            padding: 1rem !important;
+        }
+
+        #deleteModal .w-10 {
+            width: 2.25rem !important;
+            height: 2.25rem !important;
+        }
+
+        #deleteModal h3 {
+            font-size: 1.125rem !important;
+        }
+
+        #deleteModal p {
+            font-size: 0.8125rem !important;
+        }
+    }
+
+    /* Small mobile (iPhone SE) */
+    @media (max-width: 375px) {
+        h1 {
+            font-size: 1.25rem !important;
+        }
+
+        .w-12.h-12 {
+            width: 2rem !important;
+            height: 2rem !important;
+        }
+
+        table {
+            font-size: 0.6875rem !important;
+        }
+
+        table th,
+        table td {
+            padding: 0.5rem 0.375rem !important;
+        }
+
+        .flex.flex-col.gap-2 {
+            flex-direction: column !important;
+        }
+    }
+
+    /* Landscape mobile */
+    @media (max-width: 768px) and (orientation: landscape) {
+        #empty {
+            padding: 2rem 1rem !important;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="p-6">
     <div class="mb-6 flex items-center gap-3">

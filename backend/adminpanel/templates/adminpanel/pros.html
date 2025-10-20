@@ -2,6 +2,194 @@
 
 {% block title %}Professionnels - Coucou Beauté{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* ==========================
+       RESPONSIVE MOBILE OPTIMIZATIONS
+       ========================== */
+    @media (max-width: 768px) {
+
+        /* Container mobile */
+        .p-6 {
+            padding: 1rem !important;
+        }
+
+        /* Header mobile */
+        .mb-6.flex.items-center.gap-3 {
+            flex-wrap: wrap;
+        }
+
+        .w-12.h-12 {
+            width: 2.5rem !important;
+            height: 2.5rem !important;
+        }
+
+        h1 {
+            font-size: 1.5rem !important;
+        }
+
+        /* Glass container mobile */
+        .glass.p-6 {
+            padding: 1rem !important;
+        }
+
+        /* Top buttons mobile */
+        .flex.items-center.gap-2 {
+            flex-direction: column !important;
+            width: 100% !important;
+            gap: 0.5rem !important;
+        }
+
+        .flex.items-center.gap-2>* {
+            width: 100%;
+            font-size: 0.875rem !important;
+            padding: 0.75rem !important;
+        }
+
+        /* KPIs grid mobile - 2 columns */
+        #appsKpis {
+            grid-template-columns: 1fr 1fr !important;
+            gap: 0.75rem !important;
+        }
+
+        .kpi-glass.flex.items-center {
+            flex-direction: column !important;
+            text-align: center;
+            padding: 0.875rem !important;
+        }
+
+        .kpi-glass .w-12 {
+            width: 2.25rem !important;
+            height: 2.25rem !important;
+        }
+
+        .kpi-glass .text-3xl {
+            font-size: 1.25rem !important;
+        }
+
+        .kpi-glass .text-sm {
+            font-size: 0.75rem !important;
+        }
+
+        /* Controls mobile */
+        #prosControls {
+            flex-direction: column !important;
+            gap: 0.75rem !important;
+        }
+
+        #prosControls>div {
+            width: 100%;
+        }
+
+        #prosSearch,
+        #prosVerified,
+        #fromDate,
+        #toDate,
+        #prosSort,
+        #prosExport {
+            width: 100% !important;
+            font-size: 16px !important;
+            padding: 0.75rem !important;
+        }
+
+        /* Grid list mobile */
+        #list {
+            grid-template-columns: 1fr !important;
+            gap: 1rem !important;
+        }
+
+        #list .kpi-glass {
+            padding: 1rem !important;
+        }
+
+        #list .flex.items-start.justify-between {
+            flex-direction: column !important;
+            gap: 1rem !important;
+        }
+
+        #list .flex.flex-col.gap-2 {
+            flex-direction: row !important;
+            width: 100%;
+        }
+
+        #list .flex.flex-col.gap-2>* {
+            flex: 1;
+            font-size: 0.8125rem !important;
+            padding: 0.625rem 0.75rem !important;
+        }
+
+        /* Pagination mobile */
+        #prosPager {
+            flex-wrap: wrap;
+            gap: 0.5rem !important;
+        }
+
+        #prosPager button {
+            flex: 1;
+            min-width: 100px;
+            font-size: 0.875rem !important;
+        }
+
+        #prosPager .text-sm {
+            width: 100%;
+            text-align: center;
+            font-size: 0.8125rem !important;
+        }
+
+        /* Modal mobile */
+        #proDeleteModal .glass {
+            margin: 1rem !important;
+            max-width: 100% !important;
+            padding: 1rem !important;
+        }
+
+        #proDeleteModal .w-10 {
+            width: 2.25rem !important;
+            height: 2.25rem !important;
+        }
+
+        #proDeleteModal h3 {
+            font-size: 1.125rem !important;
+        }
+
+        #proDeleteModal p {
+            font-size: 0.8125rem !important;
+        }
+
+        #proDeleteModal .flex.items-center.justify-end {
+            flex-direction: column;
+            gap: 0.75rem !important;
+        }
+
+        #proDeleteModal .flex.items-center.justify-end>* {
+            width: 100%;
+        }
+    }
+
+    /* Small mobile (iPhone SE) */
+    @media (max-width: 375px) {
+        h1 {
+            font-size: 1.25rem !important;
+        }
+
+        #appsKpis {
+            grid-template-columns: 1fr !important;
+        }
+
+        .kpi-glass .text-3xl {
+            font-size: 1.125rem !important;
+        }
+    }
+
+    /* Landscape mobile */
+    @media (max-width: 768px) and (orientation: landscape) {
+        #appsKpis {
+            grid-template-columns: repeat(4, 1fr) !important;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="p-6">
     <div class="mb-6 flex items-center gap-3">

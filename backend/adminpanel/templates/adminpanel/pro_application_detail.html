@@ -2,6 +2,172 @@
 
 {% block title %}Détail de la Demande - Coucou Beauté{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* ==========================
+       RESPONSIVE MOBILE OPTIMIZATIONS
+       ========================== */
+    @media (max-width: 768px) {
+
+        /* Container mobile */
+        .p-6 {
+            padding: 1rem !important;
+        }
+
+        .space-y-6>*+* {
+            margin-top: 1rem !important;
+        }
+
+        /* Header mobile */
+        .flex.items-center.justify-between {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 1rem !important;
+        }
+
+        .w-12.h-12 {
+            width: 2.5rem !important;
+            height: 2.5rem !important;
+        }
+
+        h1 {
+            font-size: 1.5rem !important;
+        }
+
+        p {
+            font-size: 0.875rem !important;
+        }
+
+        /* Grid mobile */
+        .grid.lg\\:grid-cols-3 {
+            grid-template-columns: 1fr !important;
+            gap: 1rem !important;
+        }
+
+        .lg\\:col-span-2 {
+            grid-column: span 1 !important;
+        }
+
+        /* Glass containers mobile */
+        .glass.p-6 {
+            padding: 1rem !important;
+        }
+
+        /* Profile section mobile */
+        .flex.items-start.gap-5 {
+            flex-direction: column !important;
+            gap: 1rem !important;
+            align-items: center !important;
+            text-align: center;
+        }
+
+        .flex.items-start.gap-5 img {
+            width: 5rem !important;
+            height: 5rem !important;
+        }
+
+        .flex-1 {
+            width: 100%;
+        }
+
+        .text-2xl {
+            font-size: 1.25rem !important;
+        }
+
+        .flex.items-center.gap-4 {
+            flex-direction: column !important;
+            align-items: center !important;
+            gap: 0.5rem !important;
+        }
+
+        .flex.flex-wrap.gap-2 {
+            justify-content: center;
+        }
+
+        /* Info grid mobile */
+        .grid.md\\:grid-cols-2 {
+            grid-template-columns: 1fr !important;
+            gap: 0.75rem !important;
+        }
+
+        .p-4.rounded-xl.border {
+            padding: 0.875rem !important;
+        }
+
+        /* Map link mobile */
+        a.text-pink-600 {
+            font-size: 0.8125rem !important;
+        }
+
+        /* Historique mobile */
+        .space-y-2>* {
+            margin-top: 0.5rem !important;
+        }
+
+        .p-3.rounded-xl.border.bg-white\\/60 {
+            padding: 0.75rem !important;
+        }
+
+        /* Sidebar mobile */
+        .glass.p-6:last-child {
+            padding: 1rem !important;
+        }
+
+        .glass.p-6:last-child img {
+            max-height: 12rem !important;
+        }
+
+        /* Textarea mobile - 16px font */
+        #notes {
+            font-size: 16px !important;
+            padding: 0.75rem !important;
+        }
+
+        /* Buttons mobile */
+        .flex.gap-2:has(#approveBtn) {
+            flex-direction: column;
+            gap: 0.75rem !important;
+        }
+
+        #approveBtn,
+        #rejectBtn {
+            width: 100%;
+            font-size: 0.9375rem !important;
+            padding: 0.875rem !important;
+            min-height: 48px;
+        }
+    }
+
+    /* Small mobile (iPhone SE) */
+    @media (max-width: 375px) {
+        h1 {
+            font-size: 1.25rem !important;
+        }
+
+        .w-12.h-12 {
+            width: 2rem !important;
+            height: 2rem !important;
+        }
+
+        .flex.items-start.gap-5 img {
+            width: 4rem !important;
+            height: 4rem !important;
+        }
+
+        .text-2xl {
+            font-size: 1.125rem !important;
+        }
+    }
+
+    /* Landscape mobile */
+    @media (max-width: 768px) and (orientation: landscape) {
+        .glass.p-6:last-child img {
+            max-height: 10rem !important;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="p-6 space-y-6">
     <div class="flex items-center justify-between">

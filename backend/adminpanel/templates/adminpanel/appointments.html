@@ -1,26 +1,133 @@
 {% extends 'adminpanel/base.html' %}
+
+{% block title %}Rendez-vous - Coucou Beauté{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ==========================
+       RESPONSIVE MOBILE OPTIMIZATIONS
+       ========================== */
+    @media (max-width: 768px) {
+
+        /* Container mobile */
+        h1 {
+            font-size: 1.25rem !important;
+            margin-bottom: 1rem !important;
+            padding: 1rem !important;
+        }
+
+        /* Table mobile - horizontal scroll */
+        .w-full {
+            display: block !important;
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+        }
+
+        table {
+            min-width: 600px !important;
+            font-size: 0.8125rem !important;
+        }
+
+        table th,
+        table td {
+            padding: 0.75rem 0.5rem !important;
+            white-space: nowrap !important;
+        }
+
+        table th {
+            font-size: 0.75rem !important;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+        }
+
+        /* Status badges */
+        table td:last-child {
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+        }
+    }
+
+    /* Small mobile (iPhone SE) */
+    @media (max-width: 375px) {
+        h1 {
+            font-size: 1.125rem !important;
+        }
+
+        table {
+            font-size: 0.75rem !important;
+        }
+
+        table th,
+        table td {
+            padding: 0.5rem 0.375rem !important;
+        }
+    }
+
+    /* Add visual improvements for better UX */
+    table tbody tr {
+        transition: background-color 0.2s ease;
+    }
+
+    table tbody tr:hover {
+        background-color: rgba(249, 250, 251, 0.7);
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<h1 class="text-xl font-semibold mb-4">Rendez-vous</h1>
-<table class="w-full text-sm">
-    <thead class="text-textMuted">
-        <tr>
-            <th class="text-left py-2">Client</th>
-            <th class="text-left">Pro</th>
-            <th class="text-left">Service</th>
-            <th class="text-left">Date</th>
-            <th class="text-left">Statut</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for a in items %}
-        <tr class="border-t">
-            <td class="py-2">{{ a.client.email }}</td>
-            <td>{{ a.professional.user.email }}</td>
-            <td>{{ a.service.name }}</td>
-            <td>{{ a.start_time|date:'Y-m-d H:i' }}</td>
-            <td>{{ a.status }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div class="p-6">
+    <div class="glass p-6 rounded-2xl">
+        <div class="flex items-center gap-3 mb-6">
+            <div
+                class="w-10 h-10 rounded-full bg-gradient-to-br from-pink-400 to-blue-400 flex items-center justify-center text-white">
+                <i data-lucide="calendar-check" class="w-5 h-5"></i>
+            </div>
+            <h1 class="text-2xl font-bold text-gray-900">Rendez-vous</h1>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm table-glass">
+                <thead class="text-textMuted bg-gray-50">
+                    <tr>
+                        <th class="text-left py-3 px-4">Client</th>
+                        <th class="text-left py-3 px-4">Pro</th>
+                        <th class="text-left py-3 px-4">Service</th>
+                        <th class="text-left py-3 px-4">Date</th>
+                        <th class="text-left py-3 px-4">Statut</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in items %}
+                    <tr class="border-t border-gray-100">
+                        <td class="py-3 px-4">{{ a.client.email }}</td>
+                        <td class="py-3 px-4">{{ a.professional.user.email }}</td>
+                        <td class="py-3 px-4">{{ a.service.name }}</td>
+                        <td class="py-3 px-4">{{ a.start_time|date:'Y-m-d H:i' }}</td>
+                        <td class="py-3 px-4">
+                            <span class="px-2 py-1 rounded-lg text-xs font-medium
+                                {% if a.status == 'confirmed' %}bg-green-100 text-green-700
+                                {% elif a.status == 'pending' %}bg-yellow-100 text-yellow-700
+                                {% elif a.status == 'cancelled' %}bg-red-100 text-red-700
+                                {% elif a.status == 'completed' %}bg-blue-100 text-blue-700
+                                {% else %}bg-gray-100 text-gray-700{% endif %}">
+                                {{ a.status }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center text-gray-500 py-8">
+                            <div class="flex flex-col items-center gap-3">
+                                <i data-lucide="calendar-x" class="w-12 h-12 text-gray-300"></i>
+                                <span>Aucun rendez-vous pour le moment</span>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 {% endblock %}
