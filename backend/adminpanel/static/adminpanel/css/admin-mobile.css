@@ -1,0 +1,332 @@
+/* ==========================
+   ADMINPANEL GLOBAL MOBILE OPTIMIZATIONS
+   ========================== */
+
+@media (max-width: 768px) {
+
+    /* General body and typography adjustments */
+    body {
+        font-size: 16px !important;
+        -webkit-text-size-adjust: 100%;
+        overflow-x: hidden;
+    }
+
+    /* Main content padding */
+    .p-6 {
+        padding: 1rem !important;
+    }
+
+    .space-y-6>*+* {
+        margin-top: 1rem !important;
+    }
+
+    /* Headings */
+    h1.text-3xl {
+        font-size: 1.5rem !important;
+    }
+
+    h2.text-2xl {
+        font-size: 1.25rem !important;
+    }
+
+    h3.text-xl {
+        font-size: 1.125rem !important;
+    }
+
+    /* Text sizes */
+    .text-lg {
+        font-size: 0.9375rem !important;
+    }
+
+    .text-base {
+        font-size: 0.875rem !important;
+    }
+
+    .text-sm {
+        font-size: 0.8125rem !important;
+    }
+
+    .text-xs {
+        font-size: 0.75rem !important;
+    }
+
+    /* Buttons - ensure touch targets are large enough */
+    button,
+    a.btn-glass,
+    a.btn-secondary-glass {
+        padding: 0.75rem 1rem !important;
+        font-size: 0.875rem !important;
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+
+    /* Form elements - prevent iOS zoom */
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="date"],
+    input[type="time"],
+    select,
+    textarea {
+        font-size: 16px !important;
+        padding: 0.75rem !important;
+        min-height: 44px;
+    }
+
+    label {
+        font-size: 0.875rem !important;
+        margin-bottom: 0.25rem !important;
+    }
+
+    /* Glass cards and panels */
+    .glass,
+    .kpi-glass,
+    .filter-panel,
+    .search-section,
+    .review-card,
+    .stat-card,
+    .center-card {
+        padding: 1rem !important;
+        border-radius: 1rem !important;
+    }
+
+    /* Flex containers - stack vertically by default */
+    .flex.items-center.justify-between,
+    .flex.flex-col.md\:flex-row,
+    .flex.flex-wrap.items-center.gap-4,
+    .flex.flex-wrap.items-center.gap-2 {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 0.75rem !important;
+    }
+
+    .flex.items-center.justify-between>*,
+    .flex.flex-col.md\:flex-row>*,
+    .flex.flex-wrap.items-center.gap-4>*,
+    .flex.flex-wrap.items-center.gap-2>* {
+        width: 100%;
+    }
+
+    /* Specific overrides for elements that should remain inline or have specific layout */
+    .flex.items-center.gap-3:not(:has(h1)),
+    .flex.items-center.gap-2:not(:has(input, select, button)) {
+        flex-direction: row !important;
+        width: auto !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        gap: 0.5rem !important;
+    }
+
+    /* Icons */
+    [data-lucide] {
+        width: 1.25rem !important;
+        height: 1.25rem !important;
+        flex-shrink: 0;
+    }
+
+    .w-12.h-12 [data-lucide] {
+        width: 1.5rem !important;
+        height: 1.5rem !important;
+    }
+
+    /* Tables - horizontal scroll */
+    .overflow-x-auto {
+        margin: 0 -1rem !important;
+        /* Extend to edges */
+        padding: 0 1rem !important;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    table {
+        min-width: 600px;
+        /* Ensure table content doesn't collapse too much */
+        font-size: 0.8125rem !important;
+    }
+
+    table th,
+    table td {
+        padding: 0.75rem 0.5rem !important;
+        white-space: nowrap;
+    }
+
+    table th {
+        font-size: 0.75rem !important;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+    }
+
+    /* Badges and tags */
+    .px-2.py-1.text-xs,
+    .status-badge {
+        font-size: 0.6875rem !important;
+        padding: 0.375rem 0.75rem !important;
+        white-space: nowrap;
+    }
+
+    /* Modals */
+    .fixed.inset-0.flex.items-center.justify-center>div {
+        width: calc(100% - 2rem) !important;
+        max-width: 100% !important;
+        margin: 1rem !important;
+        border-radius: 1.5rem !important;
+    }
+
+    /* Specific components */
+    .logo-enhanced {
+        height: 4rem !important;
+    }
+
+    .kpi-glass .w-10,
+    .kpi-glass .w-12 {
+        width: 2.5rem !important;
+        height: 2.5rem !important;
+    }
+
+    .kpi-glass .text-2xl {
+        font-size: 1.25rem !important;
+    }
+
+    .kpi-glass .text-sm {
+        font-size: 0.8125rem !important;
+    }
+
+    /* Charts */
+    canvas {
+        max-height: 250px !important;
+    }
+
+    /* Hide desktop-only elements */
+    .hidden.md\:block,
+    .hidden.lg\:block,
+    .hidden.xl\:block {
+        display: none !important;
+    }
+}
+
+/* Small mobile (iPhone SE, etc.) */
+@media (max-width: 375px) {
+    h1.text-3xl {
+        font-size: 1.25rem !important;
+    }
+
+    h2.text-2xl {
+        font-size: 1.125rem !important;
+    }
+
+    h3.text-xl {
+        font-size: 1rem !important;
+    }
+
+    button,
+    a.btn-glass,
+    a.btn-secondary-glass {
+        padding: 0.625rem 0.75rem !important;
+        font-size: 0.8125rem !important;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="date"],
+    input[type="time"],
+    select,
+    textarea {
+        padding: 0.625rem !important;
+    }
+
+    .logo-enhanced {
+        height: 3.5rem !important;
+    }
+
+    table {
+        min-width: 500px !important;
+        font-size: 0.75rem !important;
+    }
+
+    table th,
+    table td {
+        padding: 0.5rem 0.375rem !important;
+    }
+
+    .px-2.py-1.text-xs,
+    .status-badge {
+        font-size: 0.625rem !important;
+        padding: 0.25rem 0.5rem !important;
+    }
+}
+
+/* Landscape mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+
+    .flex.items-center.justify-between,
+    .flex.flex-col.md\:flex-row,
+    .flex.flex-wrap.items-center.gap-4,
+    .flex.flex-wrap.items-center.gap-2 {
+        flex-direction: row !important;
+        flex-wrap: wrap;
+        align-items: center !important;
+        justify-content: space-between !important;
+    }
+
+    .flex.items-center.justify-between>*,
+    .flex.flex-col.md\:flex-row>*,
+    .flex.flex-wrap.items-center.gap-4>*,
+    .flex.flex-wrap.items-center.gap-2>* {
+        width: auto;
+        flex: 1;
+    }
+
+    .p-6 {
+        padding: 0.75rem !important;
+    }
+
+    canvas {
+        max-height: 180px !important;
+    }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+
+    button,
+    a,
+    input,
+    select,
+    textarea,
+    label {
+        cursor: pointer;
+        -webkit-tap-highlight-color: rgba(242, 139, 178, 0.2);
+    }
+
+    * {
+        -webkit-overflow-scrolling: touch;
+    }
+
+    button:active,
+    a:active {
+        opacity: 0.85;
+        transform: scale(0.98);
+    }
+}
+
+/* iOS Safari fixes */
+@supports (-webkit-touch-callout: none) {
+
+    input,
+    select,
+    textarea {
+        font-size: max(16px, 1rem) !important;
+    }
+
+    .min-h-screen,
+    .h-screen {
+        min-height: -webkit-fill-available;
+    }
+
+    body {
+        padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    }
+}
