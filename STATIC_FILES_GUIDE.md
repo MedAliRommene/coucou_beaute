@@ -136,6 +136,40 @@ STATICFILES_FINDERS = [
 
 ---
 
+## 🖼️ Assets vs Uploads: Différence Critique
+
+### ✅ `static/images/` - Assets du Site (Design)
+
+**À COMMITER dans Git**:
+- Logo du site (`logo-coucou-beaute.png`)
+- Images de fond/décoration
+- Icônes
+- Images marketing
+- Illustrations
+
+**Utilisation**:
+```html
+{% load static %}
+<img src="{% static 'images/logo-coucou-beaute.png' %}" alt="Logo">
+<img src="{% static 'images/hero-background.jpg' %}" alt="Hero">
+```
+
+### ❌ `media/` - Uploads Utilisateurs (Contenu)
+
+**NE PAS COMMITER dans Git**:
+- Photos de profil
+- Documents uploadés
+- Images de services
+- Photos de professionnels
+
+**Utilisation**:
+```html
+<img src="{{ professional.photo.url }}" alt="Photo">
+<img src="{{ MEDIA_URL }}applications/photo.jpg" alt="Upload">
+```
+
+---
+
 ## 🐳 Docker & Production
 
 ### Volume Mapping
