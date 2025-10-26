@@ -26,8 +26,174 @@ import base64
 from reviews.views import update_professional_rating
 
 
+def _extract_city_name(address_string: str) -> str:
+    """Extrait le nom de la ville d'une adresse complète"""
+    if not address_string:
+        return ''
+    
+    # Diviser l'adresse par les virgules
+    parts = [p.strip() for p in address_string.split(',')]
+    
+    # Chercher la partie qui contient "Délégation" ou qui est avant "Gouvernorat"
+    for i, part in enumerate(parts):
+        # Si on trouve "Délégation", la ville est généralement le mot d'après ou dans la même partie
+        if 'Délégation' in part or 'Delegation' in part:
+            # Extraire le mot après "Délégation"
+            words = part.split()
+            for j, word in enumerate(words):
+                if word in ['Délégation', 'Delegation']:
+                    if j + 1 < len(words):
+                        # Si c'est "Le", prendre les 2 mots suivants
+                        if words[j + 1] == 'Le' and j + 2 < len(words):
+                            return f"{words[j + 1]} {words[j + 2]}".rstrip(',')
+                        return words[j + 1].rstrip(',')
+        
+        # Si on trouve "Gouvernorat", la ville est généralement juste après
+        if 'Gouvernorat' in part or 'Governorat' in part:
+            words = part.split()
+            for j, word in enumerate(words):
+                if word in ['Gouvernorat', 'Governorat']:
+                    if j + 1 < len(words):
+                        # La ville est le mot après "Gouvernorat"
+                        return words[j + 1].rstrip(',')
+                    elif i + 1 < len(parts):
+                        # Ou dans la partie suivante
+                        return parts[i + 1].split()[0].rstrip(',')
+        
+        # Chercher les noms de villes tunisiennes communes
+        city_keywords = ['Tunis', 'Hammamet', 'Sousse', 'Sfax', 'Nabeul', 'Monastir', 'Bizerte', 'Gabès', 'Ariana', 'Gafsa', 'Kasserine', 'Kairouan', 'Tozeur', 'Bardo', 'Lac']
+        for keyword in city_keywords:
+            if keyword in part:
+                return keyword
+    
+    # Si rien n'est trouvé, retourner la première partie (par défaut)
+    return parts[0] if parts else ''
+
+
 def landing(request: HttpRequest) -> HttpResponse:
-    return render(request, 'front_web/landing.html')
+    """Page d'accueil avec les professionnelles 5 étoiles"""
+    # Récupérer les professionnelles avec 5 étoiles
+    professionals_5_stars = []
+    
+    try:
+        # Récupérer toutes les professionnelles avec leurs profils extra
+        professionals = Professional.objects.select_related('user').prefetch_related('extra').filter(
+            is_verified=True  # Seulement les professionnelles vérifiées
+        )
+        
+        for pro in professionals:
+            try:
+                # Vérifier si elle a un profil extra
+                if hasattr(pro, 'extra') and pro.extra:
+                    extra = pro.extra
+                    
+                    # Calculer la note moyenne des avis
+                    from django.db.models import Avg, Count
+                    reviews_stats = Review.objects.filter(
+                        professional=pro,
+                        is_public=True
+                    ).aggregate(
+                        avg_rating=Avg('rating'),
+                        total_reviews=Count('id')
+                    )
+                    
+                    avg_rating = reviews_stats['avg_rating'] or 0
+                    total_reviews = reviews_stats['total_reviews'] or 0
+                    
+                    # Afficher toutes les professionnelles vérifiées (avec ou sans avis)
+                    # Si elles ont des avis, vérifier qu'elles ont au moins 3.5 étoiles
+                    if total_reviews == 0 or avg_rating >= 3.5:
+                        # Préparer les services
+                        services_list = []
+                        if extra.services:
+                            if isinstance(extra.services, list):
+                                for service in extra.services[:5]:  # Max 5 services
+                                    if isinstance(service, dict):
+                                        services_list.append({
+                                            'name': str(service.get('name', service.get('Name', str(service)))).strip(),
+                                            'price': float(service.get('price', service.get('Price', 50))),
+                                            'duration': int(service.get('duration', service.get('Duration_Min', 30)))
+                                        })
+                                    else:
+                                        services_list.append({
+                                            'name': str(service).strip(),
+                                            'price': 50,
+                                            'duration': 30
+                                        })
+                            elif isinstance(extra.services, str):
+                                for service in extra.services.split(',')[:5]:
+                                    if service.strip():
+                                        services_list.append({
+                                            'name': service.strip(),
+                                            'price': 50,
+                                            'duration': 30
+                                        })
+                        
+                        # Préparer la galerie
+                        gallery_list = []
+                        if extra.gallery:
+                            if isinstance(extra.gallery, list):
+                                gallery_list = [str(img).strip() for img in extra.gallery[:6] if img and str(img).strip()]
+                            elif isinstance(extra.gallery, str):
+                                gallery_list = [img.strip() for img in extra.gallery.split(',')[:6] if img.strip()]
+                        
+                        # Informations de la professionnelle
+                        professional_data = {
+                            'id': pro.id,
+                            'full_name': pro.user.get_full_name() or f"{pro.user.first_name} {pro.user.last_name}".strip() or pro.user.username,
+                            'first_name': pro.user.first_name or '',
+                            'last_name': pro.user.last_name or '',
+                            'email': pro.user.email,
+                            'business_name': pro.business_name or pro.user.get_full_name(),
+                            'bio': extra.bio or "Professionnelle passionnée par l'art de la beauté",
+                            'city': extra.city or '',
+                            'address': extra.address or '',
+                            'city_only': _extract_city_name(extra.city or extra.address or ''),
+                            'phone_number': extra.phone_number or '',
+                            'rating': round(avg_rating, 1),
+                            'total_reviews': total_reviews,
+                            'price': extra.price or 50,
+                            'services': services_list,
+                            'gallery': gallery_list,
+                            'profile_photo': extra.profile_photo.url if extra.profile_photo else None,
+                            'social_instagram': extra.social_instagram or '',
+                            'social_facebook': extra.social_facebook or '',
+                            'social_tiktok': extra.social_tiktok or '',
+                            'working_days': extra.working_days or [],
+                            'working_hours': extra.working_hours or {},
+                            'specialty': extra.primary_service or 'Spécialiste beauté',
+                            'badge': 'Certifiée 5★' if avg_rating >= 4.9 else 'Expert ⭐' if avg_rating >= 4.5 else 'Professionnelle ⭐',
+                            'availability': 'Disponible' if extra.working_days else 'Sur demande',
+                            'profile_url': f'/professional/{pro.id}/'
+                        }
+                        
+                        professionals_5_stars.append(professional_data)
+                        
+            except Exception as e:
+                # En cas d'erreur avec une professionnelle, continuer avec les autres
+                continue
+        
+        # Trier par note décroissante puis par nombre d'avis
+        professionals_5_stars.sort(key=lambda x: (x['rating'], x['total_reviews']), reverse=True)
+        
+        # Limiter à 12 professionnelles maximum
+        professionals_5_stars = professionals_5_stars[:12]
+        
+    except Exception as e:
+        # En cas d'erreur, continuer avec une liste vide
+        professionals_5_stars = []
+    
+    # Extraire la liste unique des villes
+    cities = sorted(list(set([pro['city_only'] for pro in professionals_5_stars if pro.get('city_only')])))
+    
+    context = {
+        'professionals': professionals_5_stars,
+        'total_experts': len(professionals_5_stars),
+        'professionals_json': json.dumps({str(pro['id']): pro for pro in professionals_5_stars}),
+        'cities': cities
+    }
+    
+    return render(request, 'front_web/landing.html', context)
 
 
 @require_http_methods(["GET", "POST"])

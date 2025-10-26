@@ -9,6 +9,9 @@
     href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=Dancing+Script:wght@400;500;600;700&display=swap"
     rel="stylesheet">
 
+<!-- Facebook SDK pour les embeds -->
+<div id="fb-root"></div>
+
 <style>
     :root {
         /* Palette de couleurs artistique et raffinée */
@@ -771,6 +774,939 @@
             opacity: 1;
         }
     }
+
+    /* ==========================
+       CARTES EXPERTES ULTRA-MODERNES
+       ========================== */
+
+    .expert-card {
+        position: relative;
+        transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        transform-style: preserve-3d;
+    }
+
+    .expert-card:hover {
+        transform: translateY(-20px) rotateX(5deg) rotateY(5deg);
+        z-index: 10;
+    }
+
+    .expert-card .group {
+        position: relative;
+        overflow: hidden;
+        border-radius: 2rem;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow:
+            0 8px 32px rgba(0, 0, 0, 0.1),
+            0 0 0 1px rgba(255, 255, 255, 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    }
+
+    .expert-card:hover .group {
+        box-shadow:
+            0 25px 50px rgba(0, 0, 0, 0.15),
+            0 0 0 1px rgba(255, 255, 255, 0.2),
+            inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    }
+
+    /* Animation des étoiles */
+    .star-pulse {
+        animation: starPulse 2s ease-in-out infinite;
+    }
+
+    .star-delay-0 {
+        animation-delay: 0.1s;
+    }
+
+    .star-delay-1 {
+        animation-delay: 0.2s;
+    }
+
+    .star-delay-2 {
+        animation-delay: 0.3s;
+    }
+
+    .star-delay-3 {
+        animation-delay: 0.4s;
+    }
+
+    .star-delay-4 {
+        animation-delay: 0.5s;
+    }
+
+    @keyframes starPulse {
+
+        0%,
+        100% {
+            transform: scale(1);
+            opacity: 0.8;
+        }
+
+        50% {
+            transform: scale(1.2);
+            opacity: 1;
+        }
+    }
+
+    /* Effet de brillance sur les cartes */
+    .expert-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+        transition: left 0.6s ease;
+        z-index: 1;
+    }
+
+    .expert-card:hover::before {
+        left: 100%;
+    }
+
+    /* Effet de flou sur l'image au hover */
+    .expert-card .group:hover img {
+        filter: blur(1px) brightness(1.1);
+    }
+
+    /* Animation des badges */
+    .expert-card .animate-pulse {
+        animation: badgePulse 3s ease-in-out infinite;
+    }
+
+    @keyframes badgePulse {
+
+        0%,
+        100% {
+            transform: scale(1);
+            box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.7);
+        }
+
+        50% {
+            transform: scale(1.05);
+            box-shadow: 0 0 0 10px rgba(251, 191, 36, 0);
+        }
+    }
+
+    /* Effet de parallaxe sur les cartes */
+    .expert-card:nth-child(odd) {
+        transform: rotateY(-2deg);
+    }
+
+    .expert-card:nth-child(even) {
+        transform: rotateY(2deg);
+    }
+
+    .expert-card:hover {
+        transform: translateY(-20px) rotateX(5deg) rotateY(0deg) !important;
+    }
+
+    /* Effet de profondeur avec ombres multiples */
+    .expert-card .group::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: 2rem;
+        padding: 1px;
+        background: linear-gradient(135deg,
+                rgba(255, 255, 255, 0.3) 0%,
+                rgba(255, 255, 255, 0.1) 25%,
+                transparent 50%,
+                rgba(0, 0, 0, 0.1) 75%,
+                rgba(0, 0, 0, 0.2) 100%);
+        mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        mask-composite: xor;
+        -webkit-mask-composite: xor;
+        opacity: 0;
+        transition: opacity 0.6s ease;
+    }
+
+    .expert-card:hover .group::after {
+        opacity: 1;
+    }
+
+    /* Animation des boutons d'action */
+    .expert-card .group button,
+    .expert-card .group a {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .expert-card .group button::before,
+    .expert-card .group a::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .expert-card .group button:hover::before,
+    .expert-card .group a:hover::before {
+        left: 100%;
+    }
+
+    /* Effet de glassmorphism pour les informations */
+    .expert-card .bg-white\/80 {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    /* Animation d'apparition en cascade */
+    .expert-card[data-delay="0"] {
+        animation-delay: 0.1s;
+    }
+
+    .expert-card[data-delay="1"] {
+        animation-delay: 0.2s;
+    }
+
+    .expert-card[data-delay="2"] {
+        animation-delay: 0.3s;
+    }
+
+    .expert-card[data-delay="3"] {
+        animation-delay: 0.4s;
+    }
+
+    .expert-card[data-delay="4"] {
+        animation-delay: 0.5s;
+    }
+
+    .expert-card[data-delay="5"] {
+        animation-delay: 0.6s;
+    }
+
+    .expert-card[data-delay="6"] {
+        animation-delay: 0.7s;
+    }
+
+    .expert-card[data-delay="7"] {
+        animation-delay: 0.8s;
+    }
+
+    /* Responsive pour mobile */
+    @media (max-width: 768px) {
+        .expert-card {
+            transform: none !important;
+        }
+
+        .expert-card:hover {
+            transform: translateY(-10px) !important;
+        }
+
+        .expert-card .group {
+            border-radius: 1.5rem;
+        }
+
+        .expert-card .group::after {
+            border-radius: 1.5rem;
+        }
+
+        /* Amélioration de la lisibilité mobile */
+        .expert-card .group h3 {
+            font-size: 1.1rem;
+            line-height: 1.3;
+        }
+
+        .expert-card .group p {
+            font-size: 0.9rem;
+        }
+
+        .expert-card .group .text-2xl {
+            font-size: 1.5rem;
+        }
+
+        /* Espacement optimisé pour mobile */
+        .expert-card .group .p-6 {
+            padding: 1rem;
+        }
+
+        /* Boutons plus grands pour le tactile */
+        .expert-card .group button,
+        .expert-card .group a {
+            min-height: 44px;
+            min-width: 44px;
+        }
+    }
+
+    /* Améliorations pour tablettes */
+    @media (max-width: 1024px) and (min-width: 769px) {
+        .expert-card .group h3 {
+            font-size: 1.2rem;
+        }
+
+        .expert-card .group p {
+            font-size: 0.95rem;
+        }
+    }
+
+    /* Cartes visibles par défaut - design épuré sans animations */
+    #professionalsCarousel {
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    .expert-card {
+        opacity: 1 !important;
+        transform: none !important;
+        animation: none !important;
+        display: block !important;
+        visibility: visible !important;
+        min-height: 400px;
+    }
+
+    .expert-card * {
+        visibility: visible !important;
+    }
+
+    .expert-card .professional-card {
+        display: block !important;
+        opacity: 1 !important;
+    }
+
+    /* Classe pour masquer les cartes filtrées */
+    .expert-card.hidden-card {
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+    }
+
+    /* Classe pour afficher les cartes */
+    .expert-card.show {
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    /* Effet de focus pour l'accessibilité */
+    .expert-card:focus-within {
+        outline: 2px solid #ec4899;
+        outline-offset: 4px;
+    }
+
+    /* Amélioration des contrastes */
+    .expert-card .group .text-gray-600 {
+        color: #4b5563;
+    }
+
+    .expert-card .group .text-gray-500 {
+        color: #6b7280;
+    }
+
+    /* Effet de chargement des images */
+    .expert-card .group img {
+        transition: opacity 0.3s ease;
+    }
+
+    .expert-card .group img:not([src]) {
+        opacity: 0;
+    }
+
+    .expert-card .group img[src] {
+        opacity: 1;
+    }
+
+    /* Styles pour le modal responsive */
+    .modal-content {
+        max-height: 90vh;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Smooth scrolling pour le modal */
+    .modal-content {
+        scroll-behavior: smooth;
+    }
+
+    @media (max-width: 768px) {
+        .modal-content {
+            margin: 0.5rem;
+            max-height: 95vh;
+            border-radius: 1.5rem;
+        }
+
+        .modal-content .p-8 {
+            padding: 1.5rem;
+        }
+
+        .modal-content h2 {
+            font-size: 1.5rem;
+        }
+
+        .modal-content h3 {
+            font-size: 1.1rem;
+        }
+
+        .modal-content .grid {
+            gap: 0.75rem;
+        }
+
+        .modal-content .flex {
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .modal-content .flex.flex-col.sm\\:flex-row {
+            flex-direction: column;
+        }
+    }
+
+    /* Animation du modal */
+    .modal-content {
+        animation: modalSlideIn 0.3s ease-out;
+    }
+
+    @keyframes modalSlideIn {
+        from {
+            opacity: 0;
+            transform: scale(0.9) translateY(-20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+    }
+
+    /* Amélioration des boutons du modal */
+    .modal-content button,
+    .modal-content a {
+        transition: all 0.2s ease;
+    }
+
+    .modal-content button:hover,
+    .modal-content a:hover {
+        transform: translateY(-1px);
+    }
+
+    /* Scrollbar personnalisée pour le modal */
+    .modal-content::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .modal-content::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 3px;
+    }
+
+    .modal-content::-webkit-scrollbar-thumb {
+        background: #ec4899;
+        border-radius: 3px;
+    }
+
+    .modal-content::-webkit-scrollbar-thumb:hover {
+        background: #db2777;
+    }
+
+    /* Styles pour le filtre de ville */
+    #cityFilter {
+        font-weight: 500;
+        box-shadow: 0 2px 8px rgba(236, 72, 153, 0.1);
+    }
+
+    #cityFilter:hover {
+        box-shadow: 0 4px 12px rgba(236, 72, 153, 0.2);
+    }
+
+    /* Styles pour les boutons de carousel */
+    .carousel-btn {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3);
+    }
+
+    .carousel-btn:hover {
+        transform: translateY(-2px) scale(1.05);
+        box-shadow: 0 6px 20px rgba(236, 72, 153, 0.4);
+    }
+
+    .carousel-btn:active {
+        transform: translateY(0) scale(0.98);
+    }
+
+    .carousel-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .carousel-btn-prev {
+        background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
+    }
+
+    .carousel-btn-next {
+        background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+    }
+
+    /* Animation pour le changement de page */
+    @keyframes fadeInSlide {
+        from {
+            opacity: 0;
+            transform: translateX(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .expert-card.show {
+        animation: fadeInSlide 0.5s ease-out;
+    }
+
+    /* Responsive pour les contrôles */
+    @media (max-width: 768px) {
+        .carousel-btn {
+            width: 40px;
+            height: 40px;
+        }
+
+        #cityFilter {
+            font-size: 0.875rem;
+            padding: 0.5rem 0.75rem;
+        }
+    }
+
+    /* Styles pour les embeds de réseaux sociaux */
+    .social-embed-card {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
+        backdrop-filter: blur(10px);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        border: 1px solid rgba(236, 72, 153, 0.2);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+    }
+
+    .social-embed-card:hover {
+        box-shadow: 0 8px 20px rgba(236, 72, 153, 0.15);
+        transform: translateY(-2px);
+    }
+
+    .social-embed-card iframe {
+        border-radius: 0.75rem;
+    }
+
+    /* Loader pour les embeds */
+    .social-embed-card .relative::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 40px;
+        height: 40px;
+        border: 3px solid #f3f4f6;
+        border-top-color: #ec4899;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        to {
+            transform: translate(-50%, -50%) rotate(360deg);
+        }
+    }
+
+    /* Responsive pour les embeds sociaux */
+    @media (max-width: 768px) {
+        .social-embed-card {
+            padding: 1rem;
+        }
+
+        #modalSocial {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* ====================================
+       NOUVEAU DESIGN ÉPURÉ DES CARTES
+       ==================================== */
+
+    .professional-card {
+        background: white !important;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        transition: all 0.2s ease;
+        cursor: pointer;
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    .professional-card:hover {
+        box-shadow: 0 8px 24px rgba(236, 72, 153, 0.15);
+        transform: translateY(-4px);
+    }
+
+    .card-image-container {
+        position: relative;
+        height: 200px;
+        overflow: hidden;
+        background: linear-gradient(135deg, #fce4ec 0%, #f3e5f5 100%);
+    }
+
+    .card-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .card-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-center;
+    }
+
+    .placeholder-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #ec4899, #8b5cf6);
+        display: flex;
+        align-items: center;
+        justify-center;
+    }
+
+    .card-badges {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        right: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+
+    .badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .badge-city {
+        background: #3b82f6;
+        color: white;
+    }
+
+    .badge-cert {
+        background: #fbbf24;
+        color: #1f2937;
+    }
+
+    .card-content {
+        padding: 16px;
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 12px;
+    }
+
+    .card-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #1f2937;
+        margin: 0 0 4px 0;
+        line-height: 1.3;
+    }
+
+    .card-subtitle {
+        font-size: 13px;
+        color: #6b7280;
+        margin: 0 0 2px 0;
+    }
+
+    .card-specialty {
+        font-size: 11px;
+        color: #ec4899;
+        font-weight: 500;
+    }
+
+    .card-price {
+        text-align: right;
+        flex-shrink: 0;
+        margin-left: 12px;
+    }
+
+    .price-value {
+        font-size: 20px;
+        font-weight: 700;
+        color: #ec4899;
+        display: block;
+        line-height: 1;
+    }
+
+    .price-label {
+        font-size: 10px;
+        color: #9ca3af;
+        display: block;
+        margin-top: 2px;
+    }
+
+    .card-rating {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 12px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .rating-value {
+        font-weight: 700;
+        color: #1f2937;
+        font-size: 14px;
+    }
+
+    .rating-count {
+        font-size: 12px;
+        color: #9ca3af;
+    }
+
+    .card-services {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 12px;
+    }
+
+    .service-tag {
+        padding: 4px 10px;
+        background: #fce7f3;
+        color: #be185d;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 500;
+    }
+
+    .service-more {
+        padding: 4px 10px;
+        background: #f3f4f6;
+        color: #6b7280;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 500;
+    }
+
+    .card-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 12px;
+    }
+
+    .card-availability {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        color: #6b7280;
+    }
+
+    .card-button {
+        padding: 8px 20px;
+        background: linear-gradient(135deg, #ec4899, #8b5cf6);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .card-button:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3);
+    }
+
+    /* Adapter les styles existants */
+    .expert-card .p-6.bg-white\/90 {
+        background: white !important;
+        padding: 16px !important;
+        margin-top: 0 !important;
+        border-radius: 0 0 16px 16px !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    .expert-card .p-6.bg-white\/90 h3 {
+        font-size: 16px !important;
+        margin-bottom: 4px !important;
+    }
+
+    .expert-card .p-6.bg-white\/90 p.text-sm {
+        font-size: 13px !important;
+    }
+
+    .expert-card .p-6.bg-white\/90 p.text-xs {
+        font-size: 11px !important;
+    }
+
+    .expert-card .p-6.bg-white\/90 .text-2xl {
+        font-size: 20px !important;
+    }
+
+    .expert-card .p-6.bg-white\/90 button {
+        padding: 8px 20px !important;
+        background: linear-gradient(135deg, #ec4899, #8b5cf6) !important;
+        border-radius: 8px !important;
+        font-size: 13px !important;
+        transform: none !important;
+    }
+
+    .expert-card .p-6.bg-white\/90 button:hover {
+        transform: scale(1.05) !important;
+    }
+
+    /* Masquer la bio pour un design plus épuré */
+    .expert-card .line-clamp-2 {
+        display: none;
+    }
+
+    /* Ajuster les marges */
+    .expert-card .mb-4 {
+        margin-bottom: 12px !important;
+    }
+
+    /* Améliorer les tags de services */
+    .expert-card .bg-pink-100 {
+        background: #fce7f3 !important;
+        color: #be185d !important;
+        padding: 4px 10px !important;
+        border-radius: 12px !important;
+        font-size: 11px !important;
+    }
+
+    .expert-card .bg-gray-100 {
+        background: #f3f4f6 !important;
+        color: #6b7280 !important;
+        padding: 4px 10px !important;
+        border-radius: 12px !important;
+        font-size: 11px !important;
+    }
+
+    /* Améliorer le footer avec disponibilité */
+    .expert-card .flex.items-center.justify-between:last-child {
+        margin-top: 12px !important;
+        padding-top: 12px !important;
+        border-top: 1px solid #f3f4f6;
+    }
+
+    .expert-card .flex.items-center.text-sm.text-gray-500 {
+        font-size: 12px !important;
+        color: #6b7280 !important;
+    }
+
+    /* Séparer le rating */
+    .expert-card .flex.items-center.space-x-3 {
+        padding-bottom: 12px !important;
+        border-bottom: 1px solid #f3f4f6 !important;
+    }
+
+    /* Responsive cards */
+    @media (max-width: 768px) {
+        .card-image-container {
+            height: 180px;
+        }
+
+        .expert-card .p-6 {
+            padding: 12px !important;
+        }
+
+        .expert-card h3 {
+            font-size: 15px !important;
+        }
+
+        .expert-card .text-2xl {
+            font-size: 18px !important;
+        }
+
+        .expert-card button {
+            padding: 6px 16px !important;
+            font-size: 12px !important;
+        }
+
+        .expert-card .flex.flex-wrap.gap-1 {
+            gap: 4px !important;
+        }
+    }
+
+    /* ====================================
+       MODAL RESPONSIVE POUR MOBILE
+       ==================================== */
+
+    @media (max-width: 768px) {
+        .modal-content {
+            margin: 0;
+            max-height: 100vh;
+            border-radius: 0;
+        }
+
+        .modal-content h2 {
+            font-size: 1.25rem;
+        }
+
+        .modal-content h3 {
+            font-size: 1rem;
+        }
+
+        .modal-content .p-8 {
+            padding: 1.25rem;
+        }
+
+        #modalCoverImage {
+            height: 200px;
+        }
+
+        #modalServices .grid {
+            grid-template-columns: 1fr;
+        }
+
+        #modalGallery {
+            grid-template-columns: 2fr !important;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .modal-content .flex.flex-col.sm\\:flex-row {
+            flex-direction: column !important;
+        }
+
+        .modal-content .grid.grid-cols-1.md\\:grid-cols-2 {
+            grid-template-columns: 1fr !important;
+        }
+
+        #closeModal {
+            width: 36px;
+            height: 36px;
+        }
+    }
 </style>
 {% endblock %}
 
@@ -987,105 +1923,185 @@
                 <span class="artistic-text text-lg" style="color: var(--dore-vintage);">Nos Artistes</span>
             </div>
             <h2 class="text-4xl md:text-5xl font-bold mb-6" style="color: var(--noir-doux);">
+                {% if professionals %}
+                Nos professionnelles recommandées
+                {% else %}
                 Rencontrez nos expertes
+                {% endif %}
             </h2>
             <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                {% if professionals %}
+                Découvrez nos professionnelles les mieux notées, avec plus de 3.5 étoiles par nos clientes.
+                Des expertes passionnées qui transforment votre beauté avec art et excellence.
+                {% else %}
                 Des professionnelles passionnées et qualifiées, dédiées à révéler votre beauté naturelle avec art et
                 expertise.
+                {% endif %}
             </p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {% for pro in professionals %}
-            <div class="pro-card fade-in-up" data-delay="{{ forloop.counter0 }}">
-                <div class="relative overflow-hidden">
-                    <!-- Image de la professionnelle -->
-                    <div
-                        class="h-80 bg-gradient-to-br from-pink-200 via-purple-200 to-blue-200 flex items-center justify-center">
-                        {% if pro.avatar_url %}
-                        <img src="{{ pro.avatar_url }}" alt="{{ pro.full_name }}"
-                            class="w-32 h-32 rounded-full object-cover shadow-2xl border-4 border-white/70" />
-                        {% else %}
-                        <div
-                            class="w-32 h-32 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center shadow-2xl">
-                            <i data-lucide="user" class="w-16 h-16 text-white"></i>
-                        </div>
-                        {% endif %}
-                    </div>
+        {% if professionals %}
+        <!-- Barre de filtres et contrôles du carousel -->
+        <div class="flex flex-col md:flex-row items-center justify-between mb-8 gap-4">
+            <!-- Filtre par ville -->
+            <div class="flex items-center gap-3">
+                <label for="cityFilter" class="text-sm font-semibold text-gray-700">Filtrer par ville :</label>
+                <select id="cityFilter"
+                    class="px-4 py-2 bg-white border-2 border-pink-200 rounded-xl focus:border-pink-500 focus:outline-none transition-colors duration-300 cursor-pointer">
+                    <option value="">Toutes les villes</option>
+                    {% for city in cities %}
+                    <option value="{{ city }}">{{ city }}</option>
+                    {% endfor %}
+                </select>
+                <span id="resultCount" class="text-sm text-gray-500 ml-2"></span>
+            </div>
 
-                    <!-- Overlay avec informations -->
-                    <div class="pro-overlay">
-                        <div class="text-center">
-                            <h3 class="text-2xl font-bold mb-2" style="color: var(--blanc-creme);">{{ pro.full_name }}
-                            </h3>
-                            <p class="text-lg mb-4" style="color: var(--blanc-creme);">{{
-                                pro.specialty|default:'Spécialiste beauté' }}</p>
-                            <div class="flex justify-center mb-4">
-                                <div class="flex space-x-1">
-                                    {% for _ in pro.stars|default:5|make_list %}
-                                    <i data-lucide="star" class="w-5 h-5 text-yellow-400 fill-current"></i>
-                                    {% endfor %}
+            <!-- Contrôles du carousel -->
+            <div class="flex items-center gap-3">
+                <button id="prevBtn" class="carousel-btn carousel-btn-prev">
+                    <i data-lucide="chevron-left" class="w-6 h-6"></i>
+                </button>
+                <div class="flex items-center gap-2">
+                    <span id="currentPage" class="text-sm font-bold text-pink-500">1</span>
+                    <span class="text-sm text-gray-400">/</span>
+                    <span id="totalPages" class="text-sm text-gray-500">1</span>
+                </div>
+                <button id="nextBtn" class="carousel-btn carousel-btn-next">
+                    <i data-lucide="chevron-right" class="w-6 h-6"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Container du carousel -->
+        <div class="relative">
+            <!-- Section Ultra-Moderne des Professionnelles Recommandées -->
+            <div id="professionalsCarousel"
+                class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8 transition-all duration-500">
+                {% for pro in professionals %}
+                <div class="expert-card" data-delay="{{ forloop.counter0 }}" data-expert-id="{{ pro.id }}"
+                    data-city="{{ pro.city_only }}">
+                    <!-- Card Container simplifié et organisé -->
+                    <div class="professional-card">
+                        <!-- Image principale -->
+                        <div class="card-image-container">
+                            {% if pro.profile_photo %}
+                            <img src="{{ pro.profile_photo }}" alt="{{ pro.full_name }}" class="card-image"
+                                loading="lazy" />
+                            {% elif pro.gallery and pro.gallery|length > 0 %}
+                            <img src="{{ pro.gallery.0 }}" alt="{{ pro.full_name }} - Galerie" class="card-image"
+                                loading="lazy" />
+                            {% else %}
+                            <div class="card-placeholder">
+                                <div class="placeholder-icon">
+                                    <i data-lucide="user" class="w-12 h-12 text-white"></i>
                                 </div>
                             </div>
-                            <p class="text-sm mb-6 leading-relaxed" style="color: var(--blanc-creme);">
-                                {{ pro.bio|default:"Expert en beauté et bien‑être, passionnée par l'art de sublimer." }}
-                            </p>
-                            <div class="flex justify-center space-x-4">
+                            {% endif %}
+
+                            <!-- Badges sur l'image -->
+                            <div class="card-badges">
+                                <!-- Badge ville -->
+                                {% if pro.city_only %}
+                                <div class="badge badge-city">
+                                    <i data-lucide="map-pin" class="w-3 h-3 inline mr-1"></i>
+                                    {{ pro.city_only }}
+                                </div>
+                                {% endif %}
+
+                                <!-- Badge certification -->
+                                <div class="badge badge-cert">
+                                    {{ pro.badge }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Informations de base (toujours visibles) -->
+                        <div
+                            class="p-6 bg-white/90 backdrop-blur-sm rounded-2xl -mt-4 relative z-10 border border-white/50 shadow-xl">
+                            <!-- Nom et centre -->
+                            <div class="mb-4">
+                                <h3 class="text-xl font-bold text-gray-800 mb-1">{{ pro.full_name }}</h3>
+                                <p class="text-sm text-gray-600 mb-1">{{ pro.business_name }}</p>
+                                <p class="text-xs text-pink-500 font-medium">{{ pro.specialty }}</p>
+                            </div>
+
+                            <!-- Prix et note -->
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center space-x-3">
+                                    <div class="flex items-center">
+                                        <i data-lucide="star" class="w-4 h-4 text-yellow-400 mr-1"></i>
+                                        <span class="font-bold text-gray-800">{{ pro.rating }}</span>
+                                        <span class="text-sm text-gray-500 ml-1">({{ pro.total_reviews }} avis)</span>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-2xl font-bold text-pink-500">{{ pro.price }}€</div>
+                                    <div class="text-xs text-gray-500">à partir de</div>
+                                </div>
+                            </div>
+
+                            <!-- Bio courte -->
+                            <p class="text-sm text-gray-600 mb-4 line-clamp-2 leading-relaxed">{{
+                                pro.bio|truncatewords:12
+                                }}</p>
+
+                            <!-- Services preview -->
+                            {% if pro.services %}
+                            <div class="mb-4">
+                                <div class="flex flex-wrap gap-1">
+                                    {% for service in pro.services|slice:":2" %}
+                                    <span
+                                        class="px-2 py-1 bg-pink-100 text-pink-700 rounded-full text-xs font-medium">{{
+                                        service.name }}</span>
+                                    {% endfor %}
+                                    {% if pro.services|length > 2 %}
+                                    <span class="px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs">+{{
+                                        pro.services|length|add:"-2" }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- Disponibilité et actions -->
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center text-sm text-gray-500">
+                                    <i data-lucide="clock" class="w-4 h-4 mr-1"></i>
+                                    <span>{{ pro.availability }}</span>
+                                </div>
+
+                                <!-- Bouton d'action principal -->
                                 <button
-                                    class="w-10 h-10 rounded-full bg-white bg-opacity-20 flex items-center justify-center hover:bg-opacity-30 transition-all duration-300">
-                                    <i data-lucide="phone" class="w-5 h-5 text-white"></i>
-                                </button>
-                                <button
-                                    class="w-10 h-10 rounded-full bg-white bg-opacity-20 flex items-center justify-center hover:bg-opacity-30 transition-all duration-300">
-                                    <i data-lucide="message-circle" class="w-5 h-5 text-white"></i>
-                                </button>
-                                <button
-                                    class="w-10 h-10 rounded-full bg-white bg-opacity-20 flex items-center justify-center hover:bg-opacity-30 transition-all duration-300">
-                                    <i data-lucide="calendar" class="w-5 h-5 text-white"></i>
+                                    class="px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-lg text-sm font-semibold hover:from-pink-600 hover:to-purple-600 transition-all duration-300 transform hover:scale-105">
+                                    Voir détails
                                 </button>
                             </div>
                         </div>
                     </div>
                 </div>
-
-                <!-- Informations de base (visibles par défaut) -->
-                <div class="p-6">
-                    <div class="flex items-center gap-4 mb-4">
-                        <div
-                            class="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center">
-                            <i data-lucide="scissors" class="w-6 h-6 text-white"></i>
-                        </div>
-                        <div>
-                            <h3 class="text-xl font-bold" style="color: var(--noir-doux);">{{ pro.full_name }}</h3>
-                            <p class="text-sm text-gray-600">{{ pro.specialty|default:'Spécialiste beauté' }}</p>
-                        </div>
-                    </div>
-                    <p class="text-gray-600 text-sm leading-relaxed mb-4">{{ pro.short_bio|default:'Expérience confirmée
-                        et approche personnalisée.' }}</p>
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center text-sm font-medium" style="color: var(--dore-vintage);">
-                            <i data-lucide="award" class="w-4 h-4 mr-2"></i>
-                            <span>{{ pro.badge|default:'Certifiée' }}</span>
-                        </div>
-                        <div class="flex items-center text-sm text-gray-600">
-                            <i data-lucide="clock" class="w-4 h-4 mr-1"></i>
-                            <span>{{ pro.availability|default:'Disponible' }}</span>
-                        </div>
-                    </div>
-                </div>
+                {% endfor %}
             </div>
-            {% empty %}
-            <div class="text-center text-gray-600 col-span-full">Aucune professionnelle trouvée.</div>
-            {% endfor %}
         </div>
-
-        <!-- CTA Professionnels -->
-        <div class="text-center mt-16 fade-in-up">
-            <a href="/professionals/" class="btn-secondary inline-flex items-center">
-                <i data-lucide="users" class="w-5 h-5 mr-2"></i>
-                Voir toutes nos expertes
+        {% else %}
+        <!-- Message si aucune experte 5 étoiles -->
+        <div class="text-center py-16">
+            <div
+                class="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-pink-100 to-purple-100 rounded-full mb-6">
+                <i data-lucide="star" class="w-12 h-12 text-pink-500"></i>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">Nos professionnelles se préparent</h3>
+            <p class="text-gray-600 max-w-md mx-auto mb-8">
+                Nos professionnelles travaillent dur pour mériter leurs étoiles.
+                Revenez bientôt pour découvrir nos expertes recommandées !
+            </p>
+            <a href="/signup/" class="btn-primary inline-flex items-center">
+                <i data-lucide="user-plus" class="w-5 h-5 mr-2"></i>
+                Rejoindre notre communauté
             </a>
         </div>
+        {% endif %}
+
+        <!-- CTA Professionnels -->
+
     </div>
 </section>
 
@@ -1797,6 +2813,170 @@
         });
     })();
 
+    // Désactivé les animations GSAP excessives pour un design épuré
+    // Les cartes utilisent maintenant CSS pour les transitions simples
+    /*
+        expertCards.forEach((card, index) => {
+            // Animation d'entrée
+            gsap.fromTo(card, {
+                opacity: 0,
+                y: 100,
+                rotationX: -15,
+                rotationY: 10,
+                scale: 0.8
+            }, {
+                opacity: 1,
+                y: 0,
+                rotationX: 0,
+                rotationY: 0,
+                scale: 1,
+                duration: 1.2,
+                delay: index * 0.15,
+                ease: "back.out(1.7)"
+            });
+
+            // Animation de hover avec effet 3D
+            card.addEventListener('mouseenter', () => {
+                gsap.to(card, {
+                    duration: 0.6,
+                    y: -20,
+                    rotationX: 5,
+                    rotationY: 5,
+                    scale: 1.05,
+                    z: 50,
+                    ease: "power2.out"
+                });
+
+                // Animation des étoiles
+                const stars = card.querySelectorAll('.star-pulse');
+                stars.forEach((star, starIndex) => {
+                    gsap.to(star, {
+                        duration: 0.3,
+                        scale: 1.3,
+                        rotation: 360,
+                        delay: starIndex * 0.1,
+                        ease: "back.out(1.7)"
+                    });
+                });
+            });
+
+            card.addEventListener('mouseleave', () => {
+                gsap.to(card, {
+                    duration: 0.6,
+                    y: 0,
+                    rotationX: 0,
+                    rotationY: 0,
+                    scale: 1,
+                    z: 0,
+                    ease: "power2.out"
+                });
+
+                // Reset des étoiles
+                const stars = card.querySelectorAll('.star-pulse');
+                gsap.to(stars, {
+                    duration: 0.3,
+                    scale: 1,
+                    rotation: 0,
+                    ease: "power2.out"
+                });
+            });
+
+            // Animation de clic
+            card.addEventListener('click', () => {
+                gsap.to(card, {
+                    duration: 0.1,
+                    scale: 0.95,
+                    yoyo: true,
+                    repeat: 1,
+                    ease: "power2.inOut"
+                });
+            });
+        });
+
+        // Animation des badges flottants
+        const badges = document.querySelectorAll('.animate-pulse');
+        badges.forEach((badge, index) => {
+            gsap.to(badge, {
+                duration: 2,
+                y: -5,
+                ease: "sine.inOut",
+                yoyo: true,
+                repeat: -1,
+                delay: index * 0.2
+            });
+        });
+
+        // Effet de parallaxe sur le scroll
+        window.addEventListener('scroll', () => {
+            expertCards.forEach((card, index) => {
+                const rect = card.getBoundingClientRect();
+                const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
+
+                if (isVisible) {
+                    const speed = (index % 2 === 0) ? 0.5 : -0.5;
+                    const yPos = -(rect.top - window.innerHeight / 2) * speed;
+
+                    gsap.to(card, {
+                        duration: 0.3,
+                        y: yPos,
+                        ease: "power2.out"
+                    });
+                }
+            });
+        });
+
+        // Animation des boutons d'action
+        const actionButtons = document.querySelectorAll('.expert-card button, .expert-card a');
+        actionButtons.forEach(btn => {
+            btn.addEventListener('mouseenter', () => {
+                gsap.to(btn, {
+                    duration: 0.3,
+                    scale: 1.1,
+                    rotation: 5,
+                    ease: "back.out(1.7)"
+                });
+            });
+
+            btn.addEventListener('mouseleave', () => {
+                gsap.to(btn, {
+                    duration: 0.3,
+                    scale: 1,
+                    rotation: 0,
+                    ease: "power2.out"
+                });
+            });
+        });
+
+        // Effet de brillance sur les cartes
+        expertCards.forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                const rotateX = (y - centerY) / 10;
+                const rotateY = (centerX - x) / 10;
+
+                gsap.to(card, {
+                    duration: 0.3,
+                    rotationX: rotateX,
+                    rotationY: rotateY,
+                    ease: "power2.out"
+                });
+            });
+
+            card.addEventListener('mouseleave', () => {
+                gsap.to(card, {
+                    duration: 0.6,
+                    rotationX: 0,
+                    rotationY: 0,
+                    ease: "power2.out"
+                });
+            });
+        });
+    */
+
     // Three.js background artistique
     (function () {
         const canvas = document.getElementById('hero3d');
@@ -1905,5 +3085,536 @@
 
         animate();
     })();
+</script>
+
+<!-- Modal Popup pour les détails des professionnelles -->
+<div id="professionalModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+    <div class="flex items-center justify-center min-h-screen px-4 py-8 text-center">
+        <!-- Overlay -->
+        <div class="fixed inset-0 transition-opacity bg-black bg-opacity-75 modal-overlay"></div>
+
+        <!-- Modal Content -->
+        <div
+            class="relative inline-block w-full max-w-4xl max-h-[90vh] overflow-y-auto p-0 text-left align-middle transition-all transform bg-white shadow-xl rounded-3xl modal-content">
+            <!-- Header -->
+            <div class="relative">
+                <button id="closeModal"
+                    class="absolute top-4 right-4 z-10 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white transition-colors duration-200">
+                    <i data-lucide="x" class="w-6 h-6 text-gray-600"></i>
+                </button>
+
+                <!-- Image de couverture -->
+                <div id="modalCoverImage"
+                    class="h-64 bg-gradient-to-br from-pink-100 via-purple-50 to-blue-100 rounded-t-3xl overflow-hidden">
+                    <img id="modalProfileImage" src="" alt="" class="w-full h-full object-cover">
+                </div>
+
+                <!-- Informations de base dans l'header -->
+                <div class="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent">
+                    <div class="flex items-end justify-between text-white">
+                        <div>
+                            <h2 id="modalName" class="text-3xl font-bold mb-2"></h2>
+                            <p id="modalBusiness" class="text-xl text-pink-200 mb-3"></p>
+                            <div class="flex items-center mb-4">
+                                <div class="flex space-x-1 mr-3">
+                                    <i data-lucide="star" class="w-6 h-6 text-yellow-400 fill-current"></i>
+                                    <i data-lucide="star" class="w-6 h-6 text-yellow-400 fill-current"></i>
+                                    <i data-lucide="star" class="w-6 h-6 text-yellow-400 fill-current"></i>
+                                    <i data-lucide="star" class="w-6 h-6 text-yellow-400 fill-current"></i>
+                                    <i data-lucide="star" class="w-6 h-6 text-yellow-400 fill-current"></i>
+                                </div>
+                                <span id="modalRating" class="text-2xl font-bold mr-2"></span>
+                                <span id="modalReviews" class="text-lg text-gray-300"></span>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div id="modalPrice" class="text-3xl font-bold"></div>
+                            <div class="text-sm text-gray-300">à partir de</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contenu principal -->
+            <div class="p-8">
+                <!-- Badges et statut -->
+                <div class="flex flex-wrap gap-3 mb-6">
+                    <div id="modalBadge"
+                        class="px-4 py-2 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black rounded-full text-sm font-bold">
+                    </div>
+                    <div id="modalCity"
+                        class="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-full text-sm font-semibold">
+                    </div>
+                    <div id="modalAvailability"
+                        class="px-4 py-2 bg-green-500 text-white rounded-full text-sm font-semibold"></div>
+                </div>
+
+                <!-- Bio -->
+                <div class="mb-8">
+                    <h3 class="text-xl font-bold text-gray-800 mb-3">À propos</h3>
+                    <p id="modalBio" class="text-gray-600 leading-relaxed"></p>
+                </div>
+
+                <!-- Services -->
+                <div class="mb-8">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Services proposés</h3>
+                    <div id="modalServices" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                </div>
+
+                <!-- Galerie -->
+                <div class="mb-8" id="modalGallerySection" style="display: none;">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Galerie</h3>
+                    <div id="modalGallery" class="grid grid-cols-2 md:grid-cols-3 gap-4"></div>
+                </div>
+
+                <!-- Informations de contact -->
+                <div class="mb-8">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Contact</h3>
+                    <div class="grid grid-cols-1 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="flex items-center p-4 bg-gray-50 rounded-xl">
+                                <i data-lucide="mail" class="w-5 h-5 text-pink-500 mr-3 flex-shrink-0"></i>
+                                <span id="modalEmail" class="text-gray-700 text-sm break-all"></span>
+                            </div>
+                            <div class="flex items-center p-4 bg-gray-50 rounded-xl">
+                                <i data-lucide="phone" class="w-5 h-5 text-pink-500 mr-3 flex-shrink-0"></i>
+                                <span id="modalPhone" class="text-gray-700 text-sm"></span>
+                            </div>
+                        </div>
+                        <div class="flex items-start p-4 bg-gray-50 rounded-xl">
+                            <i data-lucide="map-pin" class="w-5 h-5 text-pink-500 mr-3 flex-shrink-0 mt-1"></i>
+                            <span id="modalAddress" class="text-gray-700 text-sm leading-relaxed"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Réseaux sociaux -->
+                <div class="mb-8" id="modalSocialSection" style="display: none;">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Réseaux sociaux</h3>
+                    <div id="modalSocial" class="grid grid-cols-1 lg:grid-cols-2 gap-6"></div>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <a id="modalProfileLink" href="#"
+                        class="flex-1 bg-gradient-to-r from-pink-500 to-purple-500 text-white px-6 py-3 rounded-xl text-center font-semibold hover:from-pink-600 hover:to-purple-600 transition-all duration-300 transform hover:scale-105">
+                        Voir le profil complet
+                    </a>
+                    <button
+                        class="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-colors duration-300">
+                        Prendre rendez-vous
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Passer les données des professionnelles au JavaScript
+    window.professionalsData = {{ professionals_json | safe }};
+
+    // Gestion du modal
+    document.addEventListener('DOMContentLoaded', function () {
+        const modal = document.getElementById('professionalModal');
+        const closeModal = document.getElementById('closeModal');
+        const modalOverlay = document.querySelector('.modal-overlay');
+
+        // Fonction pour ouvrir le modal
+        function openModal(professionalData) {
+            // Remplir les données
+            document.getElementById('modalName').textContent = professionalData.full_name;
+            document.getElementById('modalBusiness').textContent = professionalData.business_name;
+            document.getElementById('modalRating').textContent = professionalData.rating;
+            document.getElementById('modalReviews').textContent = `(${professionalData.total_reviews} avis)`;
+            document.getElementById('modalPrice').textContent = `${professionalData.price}€`;
+            document.getElementById('modalBadge').textContent = professionalData.badge;
+            document.getElementById('modalCity').textContent = professionalData.city_only || professionalData.city || 'Non spécifié';
+            document.getElementById('modalAvailability').textContent = professionalData.availability;
+            document.getElementById('modalBio').textContent = professionalData.bio;
+            document.getElementById('modalEmail').textContent = professionalData.email;
+            document.getElementById('modalPhone').textContent = professionalData.phone_number || 'Non renseigné';
+            document.getElementById('modalAddress').textContent = professionalData.address || 'Non renseigné';
+            document.getElementById('modalProfileLink').href = professionalData.profile_url || '#';
+
+            // Image de profil
+            const profileImg = document.getElementById('modalProfileImage');
+            if (professionalData.profile_photo) {
+                profileImg.src = professionalData.profile_photo;
+                profileImg.alt = professionalData.full_name;
+            } else {
+                profileImg.style.display = 'none';
+            }
+
+            // Services
+            const servicesContainer = document.getElementById('modalServices');
+            servicesContainer.innerHTML = '';
+            if (professionalData.services && professionalData.services.length > 0) {
+                professionalData.services.forEach(service => {
+                    const serviceDiv = document.createElement('div');
+                    serviceDiv.className = 'p-4 bg-gradient-to-br from-pink-50 to-purple-50 rounded-xl border border-pink-200';
+                    serviceDiv.innerHTML = `
+                    <h4 class="font-semibold text-gray-800 mb-2">${service.name}</h4>
+                    <div class="flex justify-between items-center text-sm text-gray-600">
+                        <span>${service.price}€</span>
+                        <span>${service.duration} min</span>
+                    </div>
+                `;
+                    servicesContainer.appendChild(serviceDiv);
+                });
+            } else {
+                servicesContainer.innerHTML = '<p class="text-gray-500">Aucun service renseigné</p>';
+            }
+
+            // Galerie
+            const gallerySection = document.getElementById('modalGallerySection');
+            const galleryContainer = document.getElementById('modalGallery');
+            if (professionalData.gallery && professionalData.gallery.length > 0) {
+                gallerySection.style.display = 'block';
+                galleryContainer.innerHTML = '';
+                professionalData.gallery.forEach(image => {
+                    const imgDiv = document.createElement('div');
+                    imgDiv.className = 'aspect-square overflow-hidden rounded-xl';
+                    imgDiv.innerHTML = `<img src="${image}" alt="Galerie" class="w-full h-full object-cover hover:scale-110 transition-transform duration-300">`;
+                    galleryContainer.appendChild(imgDiv);
+                });
+            } else {
+                gallerySection.style.display = 'none';
+            }
+
+            // Réseaux sociaux avec embeds
+            const socialSection = document.getElementById('modalSocialSection');
+            const socialContainer = document.getElementById('modalSocial');
+
+            // Fonction pour extraire le username Instagram d'une URL
+            function getInstagramUsername(url) {
+                if (!url) return null;
+                const match = url.match(/instagram\.com\/([^\/\?]+)/);
+                return match ? match[1] : null;
+            }
+
+            // Fonction pour extraire le page ID Facebook d'une URL
+            function getFacebookPageId(url) {
+                if (!url) return null;
+                const match = url.match(/facebook\.com\/([^\/\?]+)/);
+                return match ? match[1] : null;
+            }
+
+            const socialEmbeds = [];
+
+            // Instagram Embed
+            if (professionalData.social_instagram) {
+                const username = getInstagramUsername(professionalData.social_instagram);
+                if (username) {
+                    socialEmbeds.push(`
+                        <div class="social-embed-card">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full flex items-center justify-center mr-3">
+                                        <i data-lucide="instagram" class="w-5 h-5 text-white"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold text-gray-800">Instagram</h4>
+                                        <a href="${professionalData.social_instagram}" target="_blank" class="text-sm text-pink-500 hover:underline">@${username}</a>
+                                    </div>
+                                </div>
+                                <a href="${professionalData.social_instagram}" target="_blank" class="px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-lg text-sm font-semibold hover:from-pink-600 hover:to-purple-600 transition-all">
+                                    Suivre
+                                </a>
+                            </div>
+                            <div class="relative w-full overflow-hidden rounded-xl bg-gray-100" style="padding-bottom: 125%; min-height: 400px;">
+                                <iframe src="https://www.instagram.com/${username}/embed" 
+                                    class="absolute top-0 left-0 w-full h-full border-0" 
+                                    frameborder="0" 
+                                    scrolling="no" 
+                                    allowtransparency="true"
+                                    loading="lazy">
+                                </iframe>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-2 text-center">Contenu public Instagram de @${username}</p>
+                        </div>
+                    `);
+                }
+            }
+
+            // Facebook Embed
+            if (professionalData.social_facebook) {
+                const pageId = getFacebookPageId(professionalData.social_facebook);
+                if (pageId) {
+                    socialEmbeds.push(`
+                        <div class="social-embed-card">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center mr-3">
+                                        <i data-lucide="facebook" class="w-5 h-5 text-white"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold text-gray-800">Facebook</h4>
+                                        <a href="${professionalData.social_facebook}" target="_blank" class="text-sm text-blue-600 hover:underline">${pageId}</a>
+                                    </div>
+                                </div>
+                                <a href="${professionalData.social_facebook}" target="_blank" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-all">
+                                    Suivre
+                                </a>
+                            </div>
+                            <div class="relative w-full overflow-hidden rounded-xl bg-gray-100">
+                                <div class="fb-page" 
+                                    data-href="${professionalData.social_facebook}" 
+                                    data-tabs="timeline" 
+                                    data-width="500" 
+                                    data-height="500" 
+                                    data-small-header="false" 
+                                    data-adapt-container-width="true" 
+                                    data-hide-cover="false" 
+                                    data-show-facepile="true">
+                                </div>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-2 text-center">Contenu public Facebook</p>
+                        </div>
+                    `);
+                }
+            }
+
+            // TikTok Link (TikTok n'a pas d'embed simple sans authentification)
+            if (professionalData.social_tiktok) {
+                socialEmbeds.push(`
+                    <div class="social-embed-card">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 bg-black rounded-full flex items-center justify-center mr-3">
+                                    <i data-lucide="music" class="w-5 h-5 text-white"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-gray-800">TikTok</h4>
+                                    <a href="${professionalData.social_tiktok}" target="_blank" class="text-sm text-gray-700 hover:underline">Voir le profil</a>
+                                </div>
+                            </div>
+                            <a href="${professionalData.social_tiktok}" target="_blank" class="px-4 py-2 bg-black text-white rounded-lg text-sm font-semibold hover:bg-gray-800 transition-all">
+                                Suivre
+                            </a>
+                        </div>
+                        <a href="${professionalData.social_tiktok}" target="_blank" class="block">
+                            <div class="relative w-full h-64 overflow-hidden rounded-xl bg-gradient-to-br from-pink-100 via-purple-100 to-blue-100 flex items-center justify-center hover:scale-105 transition-transform duration-300">
+                                <div class="text-center">
+                                    <i data-lucide="music" class="w-16 h-16 text-gray-600 mx-auto mb-4"></i>
+                                    <p class="text-lg font-semibold text-gray-700">Voir le profil TikTok</p>
+                                    <p class="text-sm text-gray-500 mt-2">Cliquez pour découvrir les vidéos</p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                `);
+            }
+
+            if (socialEmbeds.length > 0) {
+                socialSection.style.display = 'block';
+                socialContainer.innerHTML = socialEmbeds.join('');
+
+                // Charger le SDK Facebook si nécessaire
+                if (professionalData.social_facebook && !window.FB) {
+                    const script = document.createElement('script');
+                    script.async = true;
+                    script.defer = true;
+                    script.crossOrigin = 'anonymous';
+                    script.src = 'https://connect.facebook.net/fr_FR/sdk.js#xfbml=1&version=v18.0';
+                    document.body.appendChild(script);
+
+                    script.onload = () => {
+                        if (window.FB) {
+                            window.FB.XFBML.parse();
+                        }
+                    };
+                }
+            } else {
+                socialSection.style.display = 'none';
+            }
+
+            // Afficher le modal
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+
+            // Réinitialiser les icônes Lucide
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        }
+
+        // Fonction pour fermer le modal
+        function closeModalFunc() {
+            modal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Event listeners
+        closeModal.addEventListener('click', closeModalFunc);
+        modalOverlay.addEventListener('click', closeModalFunc);
+
+        // Fermer avec Escape
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+                closeModalFunc();
+            }
+        });
+
+        // Ajouter les event listeners aux cartes
+        function attachCardListeners() {
+            document.querySelectorAll('.expert-card').forEach(card => {
+                card.addEventListener('click', function () {
+                    const expertId = this.getAttribute('data-expert-id');
+                    const professionalData = window.professionalsData ? window.professionalsData[expertId] : null;
+                    if (professionalData) {
+                        openModal(professionalData);
+                    }
+                });
+            });
+        }
+
+        attachCardListeners();
+    });
+
+    // Gestion du filtre de ville et du carousel
+    document.addEventListener('DOMContentLoaded', function () {
+        const cityFilter = document.getElementById('cityFilter');
+        const carousel = document.getElementById('professionalsCarousel');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const currentPageSpan = document.getElementById('currentPage');
+        const totalPagesSpan = document.getElementById('totalPages');
+        const resultCount = document.getElementById('resultCount');
+
+        let currentPage = 1;
+        let itemsPerPage = 8; // 2 lignes de 4 cartes
+        let filteredCards = [];
+
+        // Ajuster items per page selon la taille de l'écran
+        function updateItemsPerPage() {
+            const width = window.innerWidth;
+            if (width < 768) {
+                itemsPerPage = 2; // Mobile: 2 cartes
+            } else if (width < 1024) {
+                itemsPerPage = 4; // Tablet: 4 cartes (2x2)
+            } else if (width < 1280) {
+                itemsPerPage = 6; // Desktop small: 6 cartes (2x3)
+            } else {
+                itemsPerPage = 8; // Desktop large: 8 cartes (2x4)
+            }
+            updateDisplay();
+        }
+
+        // Filtrer les cartes par ville
+        function filterCards() {
+            const selectedCity = cityFilter.value;
+            const allCards = Array.from(carousel.querySelectorAll('.expert-card'));
+
+            if (selectedCity === '') {
+                filteredCards = allCards;
+            } else {
+                filteredCards = allCards.filter(card => card.getAttribute('data-city') === selectedCity);
+            }
+
+            currentPage = 1;
+            updateDisplay();
+        }
+
+        // Mettre à jour l'affichage du carousel
+        function updateDisplay() {
+            const allCards = Array.from(carousel.querySelectorAll('.expert-card'));
+            const totalPages = Math.ceil(filteredCards.length / itemsPerPage);
+
+            // Masquer toutes les cartes
+            allCards.forEach(card => {
+                card.classList.add('hidden-card');
+                card.classList.remove('show');
+            });
+
+            // Afficher les cartes de la page courante
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const cardsToShow = filteredCards.slice(start, end);
+
+            cardsToShow.forEach((card, index) => {
+                card.classList.remove('hidden-card');
+                card.classList.add('show');
+            });
+
+            // Mettre à jour les contrôles
+            currentPageSpan.textContent = totalPages > 0 ? currentPage : 0;
+            totalPagesSpan.textContent = totalPages;
+            resultCount.textContent = `(${filteredCards.length} résultat${filteredCards.length > 1 ? 's' : ''})`;
+
+            // Activer/désactiver les boutons
+            prevBtn.disabled = currentPage === 1;
+            nextBtn.disabled = currentPage >= totalPages;
+
+            // Réinitialiser les icônes Lucide
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        }
+
+        // Event listeners
+        cityFilter.addEventListener('change', filterCards);
+
+        prevBtn.addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                updateDisplay();
+                carousel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            const totalPages = Math.ceil(filteredCards.length / itemsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                updateDisplay();
+                carousel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        });
+
+        // Support du swipe sur mobile
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        carousel.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+
+        carousel.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+
+        function handleSwipe() {
+            const swipeThreshold = 50;
+            const diff = touchStartX - touchEndX;
+
+            if (Math.abs(diff) > swipeThreshold) {
+                if (diff > 0) {
+                    // Swipe left - next page
+                    nextBtn.click();
+                } else {
+                    // Swipe right - previous page
+                    prevBtn.click();
+                }
+            }
+        }
+
+        // Navigation au clavier
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') {
+                prevBtn.click();
+            } else if (e.key === 'ArrowRight') {
+                nextBtn.click();
+            }
+        });
+
+        // Initialiser et gérer le redimensionnement
+        window.addEventListener('resize', updateItemsPerPage);
+
+        // Initialisation
+        filteredCards = Array.from(carousel.querySelectorAll('.expert-card'));
+        updateItemsPerPage();
+    });
 </script>
 {% endblock %}
