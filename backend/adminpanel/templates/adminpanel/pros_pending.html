@@ -311,7 +311,7 @@
         </div>
         <div class=\"flex flex-col gap-2 items-end\">
           <a href="/dashboard/pros/pending/${a.id}/" class="btn-glass">Voir les détails</a>
-          <button class="btn-secondary-glass text-red-700" data-action="delete" data-id="${a.id}">Supprimer</button>
+          <button class="btn-secondary-glass text-red-700 js-delete" data-method="delete" data-action="/api/applications/${a.id}/delete/" data-name="${(a.email || '').replace(/"/g, '&quot;')}">Supprimer</button>
         </div>
       </div>
     `;
@@ -350,7 +350,7 @@
                             <td class="px-3 py-2">${new Date(a.created_at).toLocaleString()}</td>
                             <td class="px-3 py-2">${a.processed_at ? new Date(a.processed_at).toLocaleString() : '—'}</td>
                             <td class="px-3 py-2 text-right"><a class="btn-secondary-glass text-xs" href="/dashboard/pros/pending/${a.id}/">Détails</a>
-                                <button class="btn-secondary-glass text-xs text-red-700 ml-2" onclick="openDeleteModal(${a.id}, '${a.email?.replace(/'/g, "\'") || ''}')">Supprimer</button>
+                                <button class="btn-secondary-glass text-xs text-red-700 ml-2 js-delete" data-method="delete" data-action="/api/applications/${a.id}/delete/" data-name="${(a.email || '').replace(/"/g, '&quot;')}">Supprimer</button>
                             </td>`;
             body.appendChild(tr);
         });

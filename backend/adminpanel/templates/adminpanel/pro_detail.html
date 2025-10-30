@@ -199,12 +199,13 @@
        RESPONSIVE MOBILE OPTIMIZATIONS
        ========================== */
     @media (max-width: 768px) {
+
         /* Container mobile */
         .p-6 {
             padding: 1rem !important;
         }
 
-        .space-y-6 > * + * {
+        .space-y-6>*+* {
             margin-top: 1rem !important;
         }
 
@@ -224,7 +225,7 @@
             flex-direction: column !important;
         }
 
-        .flex.items-center.gap-2 > * {
+        .flex.items-center.gap-2>* {
             width: 100%;
         }
 
@@ -389,27 +390,27 @@
             gap: 0.75rem !important;
         }
 
-        .flex.flex-col.gap-2 > * {
+        .flex.flex-col.gap-2>* {
             font-size: 0.875rem !important;
             padding: 0.75rem !important;
         }
 
         /* Modals mobile */
-        .fixed.inset-0 > div:not(.absolute) {
+        .fixed.inset-0>div:not(.absolute) {
             width: calc(100% - 2rem) !important;
             max-width: 100% !important;
             margin: 1rem !important;
         }
 
-        .fixed.inset-0 > div h3 {
+        .fixed.inset-0>div h3 {
             font-size: 1.125rem !important;
         }
 
-        .fixed.inset-0 > div textarea {
+        .fixed.inset-0>div textarea {
             font-size: 16px !important;
         }
 
-        .fixed.inset-0 > div input {
+        .fixed.inset-0>div input {
             font-size: 16px !important;
             padding: 0.75rem !important;
         }
@@ -653,8 +654,9 @@
                                 class="w-4 h-4"></i> Horaires</div>
                         <button class="btn-secondary-glass" onclick="openModal('modalHours')">Modifier</button>
                     </div>
-                    <div id="hoursText" class="text-gray-900 mt-1">{{ pro.extra.working_hours.start }} - {{  pro.extra.working_hours.end }}</div>
-                      
+                    <div id="hoursText" class="text-gray-900 mt-1">{{ pro.extra.working_hours.start }} - {{
+                        pro.extra.working_hours.end }}</div>
+
 
 
                 </div>
@@ -723,7 +725,8 @@
             <div class="flex flex-col gap-2">
                 <button class="btn-glass">Envoyer une invitation</button>
                 <button class="btn-secondary-glass">Désactiver le profil</button>
-                <button class="btn-secondary-glass text-red-700">Supprimer</button>
+                <button class="btn-secondary-glass text-red-700 js-delete" data-method="delete"
+                    data-action="/api/professionals/{{ pro.id }}/delete/" data-name="{{ pro.email }}">Supprimer</button>
             </div>
         </div>
     </div>

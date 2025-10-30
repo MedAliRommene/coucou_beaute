@@ -58,6 +58,7 @@ class ProfessionalProfileExtra(models.Model):
     professional = models.OneToOneField(Professional, on_delete=models.CASCADE, related_name="extra")
     bio = models.TextField(blank=True)
     city = models.CharField(max_length=128, blank=True)
+    governorate = models.CharField(max_length=64, blank=True)
     address = models.TextField(blank=True)
     phone_number = models.CharField(max_length=32, blank=True)
     latitude = models.FloatField(null=True, blank=True)
@@ -120,6 +121,7 @@ class ProfessionalApplication(models.Model):
     spoken_languages = models.JSONField(default=list, help_text="Liste de codes langues")
 
     # Adresse du centre pour paiement/facturation
+    governorate = models.CharField(max_length=64, blank=True)
     address = models.TextField()
     latitude = models.FloatField(null=True, blank=True)
     longitude = models.FloatField(null=True, blank=True)

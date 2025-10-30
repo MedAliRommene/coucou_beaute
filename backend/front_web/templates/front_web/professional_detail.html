@@ -112,6 +112,26 @@
         color: #FCD34D;
     }
 
+    /* Social embeds (aligné avec landing) */
+    .social-embed-card {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
+        backdrop-filter: blur(10px);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        border: 1px solid rgba(236, 72, 153, 0.2);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+    }
+
+    .social-embed-card:hover {
+        box-shadow: 0 8px 20px rgba(236, 72, 153, 0.15);
+        transform: translateY(-2px);
+    }
+
+    .social-embed-card iframe {
+        border-radius: 0.75rem;
+    }
+
     /* Inline review stars */
     #inlineReview .inline-star i {
         color: #d1d5db;
@@ -879,7 +899,8 @@
                     <i data-lucide="share-2" class="w-5 h-5 text-rosePastel"></i>
                     Réseaux sociaux
                 </h3>
-                <div class="flex flex-wrap gap-3">
+                <!-- Boutons liens rapides (conservés) -->
+                <div class="flex flex-wrap gap-3 mb-4">
                     {% if pro.extra.social_instagram %}
                     <a href="{{ pro.extra.social_instagram }}" target="_blank"
                         class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-xl hover:from-pink-600 hover:to-purple-600 transition-all">
@@ -902,6 +923,8 @@
                     </a>
                     {% endif %}
                 </div>
+                <!-- Zone des embeds dynamiques -->
+                <div id="proSocialEmbeds" class="grid grid-cols-1 lg:grid-cols-2 gap-6"></div>
             </div>
             {% endif %}
         </div>
@@ -1097,6 +1120,127 @@
                 const stars = document.querySelectorAll('#inlineReview .inline-star i');
                 stars.forEach((icon, idx) => { icon.classList.toggle('filled', idx < rate); });
             });
+        </script>
+        <script>
+            // Embeds sociaux (Instagram, Facebook, TikTok) - même logique que landing.html
+            (function () {
+                const container = document.getElementById('proSocialEmbeds');
+                if (!container) return;
+                const social = {
+                    instagram: "{{ pro.extra.social_instagram|default:''|escapejs }}",
+                    facebook: "{{ pro.extra.social_facebook|default:''|escapejs }}",
+                    tiktok: "{{ pro.extra.social_tiktok|default:''|escapejs }}",
+                };
+
+                function getInstagramUsername(url) {
+                    if (!url) return null;
+                    const m = url.match(/instagram\.com\/([^\/?#]+)/i);
+                    return m ? m[1] : null;
+                }
+                function getFacebookPageId(url) {
+                    if (!url) return null;
+                    const m = url.match(/facebook\.com\/([^\/?#]+)/i);
+                    return m ? m[1] : null;
+                }
+
+                const blocks = [];
+                // Instagram embed
+                if (social.instagram) {
+                    const username = getInstagramUsername(social.instagram);
+                    if (username) {
+                        blocks.push(`
+                        <div class="social-embed-card">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full flex items-center justify-center mr-3">
+                                        <i data-lucide="instagram" class="w-5 h-5 text-white"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold text-gray-800">Instagram</h4>
+                                        <a href="${social.instagram}" target="_blank" class="text-sm text-pink-500 hover:underline">@${username}</a>
+                                    </div>
+                                </div>
+                                <a href="${social.instagram}" target="_blank" class="px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-lg text-sm font-semibold hover:from-pink-600 hover:to-purple-600 transition-all">
+                                    Suivre
+                                </a>
+                            </div>
+                            <div class="relative w-full overflow-hidden rounded-xl bg-gray-100" style="padding-bottom: 125%; min-height: 400px;">
+                                <iframe src="https://www.instagram.com/${username}/embed"
+                                    class="absolute top-0 left-0 w-full h-full border-0" frameborder="0" scrolling="no" allowtransparency="true" loading="lazy"></iframe>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-2 text-center">Contenu public Instagram de @${username}</p>
+                        </div>`);
+                    }
+                }
+                // Facebook Page embed
+                if (social.facebook) {
+                    const pageId = getFacebookPageId(social.facebook);
+                    if (pageId) {
+                        blocks.push(`
+                        <div class="social-embed-card">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center mr-3">
+                                        <i data-lucide="facebook" class="w-5 h-5 text-white"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold text-gray-800">Facebook</h4>
+                                        <a href="${social.facebook}" target="_blank" class="text-sm text-blue-600 hover:underline">${pageId}</a>
+                                    </div>
+                                </div>
+                                <a href="${social.facebook}" target="_blank" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-all">Suivre</a>
+                            </div>
+                            <div class="relative w-full overflow-hidden rounded-xl bg-gray-100">
+                                <div class="fb-page" data-href="${social.facebook}" data-tabs="timeline" data-width="500" data-height="500" data-small-header="false" data-adapt-container-width="true" data-hide-cover="false" data-show-facepile="true"></div>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-2 text-center">Contenu public Facebook</p>
+                        </div>`);
+                    }
+                }
+                // TikTok link card
+                if (social.tiktok) {
+                    blocks.push(`
+                    <div class="social-embed-card">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 bg-black rounded-full flex items-center justify-center mr-3">
+                                    <i data-lucide="music" class="w-5 h-5 text-white"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-gray-800">TikTok</h4>
+                                    <a href="${social.tiktok}" target="_blank" class="text-sm text-gray-700 hover:underline">Voir le profil</a>
+                                </div>
+                            </div>
+                            <a href="${social.tiktok}" target="_blank" class="px-4 py-2 bg-black text-white rounded-lg text-sm font-semibold hover:bg-gray-800 transition-all">Suivre</a>
+                        </div>
+                        <a href="${social.tiktok}" target="_blank" class="block">
+                            <div class="relative w-full h-64 overflow-hidden rounded-xl bg-gradient-to-br from-pink-100 via-purple-100 to-blue-100 flex items-center justify-center hover:scale-105 transition-transform duration-300">
+                                <div class="text-center">
+                                    <i data-lucide="music" class="w-16 h-16 text-gray-600 mx-auto mb-4"></i>
+                                    <p class="text-lg font-semibold text-gray-700">Voir le profil TikTok</p>
+                                    <p class="text-sm text-gray-500 mt-2">Cliquez pour découvrir les vidéos</p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>`);
+                }
+
+                if (blocks.length > 0) {
+                    container.innerHTML = blocks.join('');
+                    // Charger Facebook SDK si nécessaire
+                    if (social.facebook && !window.FB) {
+                        const script = document.createElement('script');
+                        script.async = true; script.defer = true; script.crossOrigin = 'anonymous';
+                        script.src = 'https://connect.facebook.net/fr_FR/sdk.js#xfbml=1&version=v18.0';
+                        document.body.appendChild(script);
+                        script.onload = () => { if (window.FB) { window.FB.XFBML.parse(); } };
+                    } else if (window.FB) {
+                        window.FB.XFBML.parse();
+                    }
+                    // Rafraîchir les icônes
+                    if (window.lucide) window.lucide.createIcons();
+                }
+            })();
         </script>
         {% endblock %}
 

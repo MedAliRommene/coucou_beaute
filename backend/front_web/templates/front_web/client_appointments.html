@@ -570,6 +570,12 @@
                         Annulés ({{ cancelled_count }})
                     </button>
                     {% endif %}
+                    <button class="filter-btn" id="quickToday">
+                        <i data-lucide="sun" class="w-4 h-4 mr-2"></i> Aujourd'hui
+                    </button>
+                    <button class="filter-btn" id="quickUpcoming">
+                        <i data-lucide="calendar" class="w-4 h-4 mr-2"></i> À venir
+                    </button>
                 </div>
                 <div class="flex gap-3">
                     <input type="date" id="dateFrom" class="date-picker" placeholder="Date de début">
@@ -613,8 +619,14 @@
                             </div>
                         </div>
                     </div>
-                    {% if a.professional_email or a.professional_phone or a.professional_address or a.business_name or a.map_url %}
-                
+                    <div class="flex items-center gap-2 ml-4">
+                        <a href="{% url 'front_web:client_calendar' %}" class="filter-btn">
+                            <i data-lucide="calendar-plus" class="w-4 h-4 mr-1"></i> Calendrier
+                        </a>
+                    </div>
+                    {% if a.professional_email or a.professional_phone or a.professional_address or a.business_name or   a.map_url %}
+                  
+
 
 
                     <div class="professional-info ml-4">
@@ -727,6 +739,8 @@
         const dateFrom = document.getElementById('dateFrom');
         const dateTo = document.getElementById('dateTo');
         const resetBtn = document.getElementById('resetFilters');
+        const quickToday = document.getElementById('quickToday');
+        const quickUpcoming = document.getElementById('quickUpcoming');
 
         function applyFilters() {
             const active = document.querySelector('.filter-btn.active')?.dataset.filter || 'all';
@@ -758,6 +772,28 @@
             document.querySelector('[data-filter="all"]').classList.add('active');
             if (dateFrom) dateFrom.value = '';
             if (dateTo) dateTo.value = '';
+            applyFilters();
+        });
+
+        quickToday?.addEventListener('click', function () {
+            const t = new Date();
+            const yyyy = t.getFullYear();
+            const mm = String(t.getMonth() + 1).padStart(2, '0');
+            const dd = String(t.getDate()).padStart(2, '0');
+            const todayStr = `${yyyy}-${mm}-${dd}`;
+            dateFrom.value = todayStr;
+            dateTo.value = todayStr;
+            applyFilters();
+        });
+
+        quickUpcoming?.addEventListener('click', function () {
+            const t = new Date();
+            const yyyy = t.getFullYear();
+            const mm = String(t.getMonth() + 1).padStart(2, '0');
+            const dd = String(t.getDate()).padStart(2, '0');
+            const todayStr = `${yyyy}-${mm}-${dd}`;
+            dateFrom.value = todayStr;
+            dateTo.value = '';
             applyFilters();
         });
     });

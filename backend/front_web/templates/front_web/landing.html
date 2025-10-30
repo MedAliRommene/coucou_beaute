@@ -1375,7 +1375,7 @@
         height: 100%;
         display: flex;
         align-items: center;
-        justify-center;
+        justify-content: center;
     }
 
     .placeholder-icon {
@@ -1385,7 +1385,7 @@
         background: linear-gradient(135deg, #ec4899, #8b5cf6);
         display: flex;
         align-items: center;
-        justify-center;
+        justify-content: center;
     }
 
     .card-badges {
@@ -1944,13 +1944,21 @@
         <!-- Barre de filtres et contrôles du carousel -->
         <div class="flex flex-col md:flex-row items-center justify-between mb-8 gap-4">
             <!-- Filtre par ville -->
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-3 flex-wrap">
                 <label for="cityFilter" class="text-sm font-semibold text-gray-700">Filtrer par ville :</label>
                 <select id="cityFilter"
                     class="px-4 py-2 bg-white border-2 border-pink-200 rounded-xl focus:border-pink-500 focus:outline-none transition-colors duration-300 cursor-pointer">
                     <option value="">Toutes les villes</option>
                     {% for city in cities %}
                     <option value="{{ city }}">{{ city }}</option>
+                    {% endfor %}
+                </select>
+                <label for="governorateFilter" class="text-sm font-semibold text-gray-700">Gouvernorat :</label>
+                <select id="governorateFilter"
+                    class="px-4 py-2 bg-white border-2 border-pink-200 rounded-xl focus:border-pink-500 focus:outline-none transition-colors duration-300 cursor-pointer">
+                    <option value="">Tous</option>
+                    {% for g in governorates %}
+                    <option value="{{ g }}">{{ g }}</option>
                     {% endfor %}
                 </select>
                 <span id="resultCount" class="text-sm text-gray-500 ml-2"></span>
@@ -1979,7 +1987,7 @@
                 class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8 transition-all duration-500">
                 {% for pro in professionals %}
                 <div class="expert-card" data-delay="{{ forloop.counter0 }}" data-expert-id="{{ pro.id }}"
-                    data-city="{{ pro.city_only }}">
+                    data-city="{{ pro.city_only }}" data-governorate="{{ pro.governorate }}">
                     <!-- Card Container simplifié et organisé -->
                     <div class="professional-card">
                         <!-- Image principale -->
@@ -2051,12 +2059,12 @@
                                 <div class="flex flex-wrap gap-1">
                                     {% for service in pro.services|slice:":2" %}
                                     <span
-                                        class="px-2 py-1 bg-pink-100 text-pink-700 rounded-full text-xs font-medium">{{
-                                        service.name }}</span>
+                                        class="px-2 py-1 bg-pink-100 text-pink-700 rounded-full text-xs font-medium">
+                                        {{ service.name }}</span>
                                     {% endfor %}
                                     {% if pro.services|length > 2 %}
-                                    <span class="px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs">+{{
-                                        pro.services|length|add:"-2" }}</span>
+                                    <span class="px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs">+{{ pro.services|length|add:"-2" }}</span>
+                                       
                                     {% endif %}
                                 </div>
                             </div>
@@ -3475,6 +3483,7 @@
     // Gestion du filtre de ville et du carousel
     document.addEventListener('DOMContentLoaded', function () {
         const cityFilter = document.getElementById('cityFilter');
+        const governorateFilter = document.getElementById('governorateFilter');
         const carousel = document.getElementById('professionalsCarousel');
         const prevBtn = document.getElementById('prevBtn');
         const nextBtn = document.getElementById('nextBtn');
@@ -3501,16 +3510,17 @@
             updateDisplay();
         }
 
-        // Filtrer les cartes par ville
+        // Filtrer les cartes par ville/gouvernorat
         function filterCards() {
             const selectedCity = cityFilter.value;
+            const selectedGov = governorateFilter ? governorateFilter.value : '';
             const allCards = Array.from(carousel.querySelectorAll('.expert-card'));
 
-            if (selectedCity === '') {
-                filteredCards = allCards;
-            } else {
-                filteredCards = allCards.filter(card => card.getAttribute('data-city') === selectedCity);
-            }
+            filteredCards = allCards.filter(card => {
+                const byCity = !selectedCity || card.getAttribute('data-city') === selectedCity;
+                const byGov = !selectedGov || card.getAttribute('data-governorate') === selectedGov;
+                return byCity && byGov;
+            });
 
             currentPage = 1;
             updateDisplay();
@@ -3554,6 +3564,7 @@
 
         // Event listeners
         cityFilter.addEventListener('change', filterCards);
+        if (governorateFilter) governorateFilter.addEventListener('change', filterCards);
 
         prevBtn.addEventListener('click', () => {
             if (currentPage > 1) {

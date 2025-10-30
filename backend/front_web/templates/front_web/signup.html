@@ -610,8 +610,16 @@
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-sm text-textMuted mb-1">Ville</label>
-                            <input id="proCity" name="city" class="w-full border rounded-xl px-3 py-2 bg-white/60" />
+                            <label class="block text-sm text-textMuted mb-1">Gouvernorat</label>
+                            <input id="governorateInput" name="governorate" list="governorateList"
+                                placeholder="Sélectionner un gouvernorat"
+                                class="w-full border rounded-xl px-3 py-2 bg-white/60" />
+                            <datalist id="governorateList"></datalist>
+                        </div>
+                        <div>
+                            <label class="block text-sm text-textMuted mb-1">Adresse (ligne)</label>
+                            <input id="proCity" name="city" placeholder="Ex: Rue, Ville"
+                                class="w-full border rounded-xl px-3 py-2 bg-white/60" />
                         </div>
                     </div>
                     <div class="space-y-2">
@@ -669,6 +677,15 @@
         const pro = document.getElementById('proFields');
         const profileFile = document.getElementById('profileFile');
         const idDocFile = document.getElementById('idDocFile');
+        const govInput = document.getElementById('governorateInput');
+        const govList = document.getElementById('governorateList');
+        // 24 gouvernorats (Tunisie)
+        const TN_GOV = [
+            'Tunis', 'Ariana', 'Ben Arous', 'Manouba', 'Nabeul', 'Zaghouan', 'Bizerte', 'Béja', 'Jendouba', 'Kef', 'Siliana', 'Sousse', 'Monastir', 'Mahdia', 'Sfax', 'Kairouan', 'Kasserine', 'Sidi Bouzid', 'Gabès', 'Medenine', 'Tataouine', 'Gafsa', 'Tozeur', 'Kebili'
+        ];
+        if (govList && govList.children.length === 0) {
+            TN_GOV.forEach(n => { const o = document.createElement('option'); o.value = n; govList.appendChild(o); });
+        }
 
         function sync() {
             const role = document.querySelector('input[name="role"]:checked')?.value || 'client';

@@ -162,6 +162,8 @@ def approve_professional_application(request, app_id: int):
     # Transférer TOUTES les données de l'application vers le profil extra
     # Forcer la mise à jour même si les champs sont vides
     
+    if getattr(app, 'governorate', ''):
+        extra.governorate = app.governorate
     if app.address:
         extra.address = app.address
     if app.latitude is not None:

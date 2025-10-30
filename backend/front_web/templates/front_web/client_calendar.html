@@ -57,8 +57,9 @@
     }
 
     .calendar-day.has-appointment {
-        background-color: #FEF3C7;
-        border: 2px solid #F59E0B;
+        background: linear-gradient(135deg, #fde68a 0%, #fca5a5 100%);
+        border: 2px solid #f59e0b;
+        color: #111827;
     }
 
     .calendar-day.has-appointment.today {
@@ -79,6 +80,27 @@
 
     .appointment-dot.today {
         background-color: white;
+    }
+
+    /* Popover for day details */
+    .day-popover {
+        position: absolute;
+        top: -8px;
+        left: 50%;
+        transform: translate(-50%, -100%);
+        pointer-events: none;
+        background: #fff;
+        border: 1px solid rgba(0, 0, 0, .08);
+        border-radius: 10px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, .12);
+        padding: 10px 12px;
+        min-width: 180px;
+        z-index: 30;
+        display: none;
+    }
+
+    .calendar-day:hover .day-popover {
+        display: block;
     }
 
     .appointment-card {
@@ -155,6 +177,13 @@
         .calendar-header {
             gap: 4px !important;
             margin-bottom: 0.75rem !important;
+        }
+
+        .calendar-day.selected {
+            background: linear-gradient(135deg, #F28BB2, #6CA9E0) !important;
+            color: white !important;
+            font-weight: 600;
+            border: 2px solid #F59E0B;
         }
 
         .calendar-day-header {
@@ -442,25 +471,23 @@
         </div>
     </div>
 </div>
-
 <script>
-    // Données des rendez-vous depuis Django
+    // Données des rendez-vous depuis Django - CORRIGÉ
     const appointmentsList = [
         {% for appointment in appointments %}
-    {
-        id: { { appointment.id } },
-        date: '{{ appointment.start|date:"Y-m-d" }}',
+        {
+            id: {{ appointment.id }},
+            date: '{{ appointment.start|date:"Y-m-d" }}',
             time: '{{ appointment.start|date:"H:i" }}',
-                endTime: '{{ appointment.end|date:"H:i" }}',
-                    duration: '{{ appointment.start|timesince:appointment.end }}',
-                        professional: '{{ appointment.professional_name|escapejs }}',
-                            service: '{{ appointment.title|escapejs }}',
-                                price: { { appointment.price } },
-        status: '{{ appointment.status }}',
+            endTime: '{{ appointment.end|date:"H:i" }}',
+            professional: '{{ appointment.professional_name|escapejs }}',
+            service: '{{ appointment.title|escapejs }}',
+            price: {{ appointment.price|floatformat:0 }},
+            status: '{{ appointment.status }}',
             center_name: '{{ appointment.center_name|escapejs }}',
-                notes: '{{ appointment.notes|escapejs }}'
-    } {% if not forloop.last %}, {% endif %}
-    {% endfor %}
+            notes: '{{ appointment.notes|escapejs }}'
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
     ];
 
     // Index par date -> tableau de rendez-vous
@@ -471,11 +498,13 @@
     });
 
     let currentDate = new Date();
-    let selectedDate = null;
+    let selectedDate = new Date().toISOString().split('T')[0]; // string au format YYYY-MM-DD
 
     function initCalendar() {
         updateCalendar();
         setupEventListeners();
+        // Afficher les rendez-vous du jour actuel
+        updateDayAppointments(selectedDate);
     }
 
     function updateCalendar() {
@@ -486,14 +515,17 @@
         document.getElementById('currentMonth').textContent = `${monthNames[month]} ${year}`;
 
         const firstDay = new Date(year, month, 1);
-        const lastDay = new Date(year, month + 1, 0);
         const startDate = new Date(firstDay);
-        const weekday = firstDay.getDay() === 0 ? 7 : firstDay.getDay();
-        startDate.setDate(startDate.getDate() - (weekday - 1));
+
+        // Ajuster pour commencer le lundi
+        const firstDayWeekday = firstDay.getDay();
+        const daysToSubtract = firstDayWeekday === 0 ? 6 : firstDayWeekday - 1;
+        startDate.setDate(startDate.getDate() - daysToSubtract);
 
         const calendarGrid = document.getElementById('calendarGrid');
         calendarGrid.innerHTML = '';
 
+        // Générer 42 cases (6 semaines)
         for (let i = 0; i < 42; i++) {
             const date = new Date(startDate);
             date.setDate(startDate.getDate() + i);
@@ -502,18 +534,33 @@
             dayElement.className = 'calendar-day';
             dayElement.textContent = date.getDate();
 
+            // Vérifier si c'est aujourd'hui
             const today = new Date();
             if (date.toDateString() === today.toDateString()) {
                 dayElement.classList.add('today');
             }
 
+            // Vérifier si c'est le mois courant
+            if (date.getMonth() !== month) {
+                dayElement.classList.add('text-gray-400');
+            } else {
+                dayElement.classList.add('text-gray-800');
+            }
+
             const dateString = date.toISOString().split('T')[0];
-            if (appointmentsByDate[dateString]) {
+
+            // Vérifier s'il y a des rendez-vous
+            if (appointmentsByDate[dateString] && date.getMonth() === month) {
                 dayElement.classList.add('has-appointment');
                 const dot = document.createElement('div');
                 dot.className = 'appointment-dot';
                 if (dayElement.classList.contains('today')) dot.classList.add('today');
                 dayElement.appendChild(dot);
+            }
+
+            // Vérifier si c'est la date sélectionnée
+            if (dateString === selectedDate) {
+                dayElement.classList.add('selected');
             }
 
             dayElement.addEventListener('click', () => {
@@ -524,15 +571,30 @@
 
             calendarGrid.appendChild(dayElement);
         }
+        
+        updateDaySelection(); // Mettre à jour la sélection après le rendu
     }
 
     function updateDaySelection() {
-        document.querySelectorAll('.calendar-day').forEach(day => day.classList.remove('selected'));
+        document.querySelectorAll('.calendar-day').forEach(day => {
+            day.classList.remove('selected');
+        });
+
         if (!selectedDate) return;
+
+        const selectedDateObj = new Date(selectedDate);
         const dayElements = document.querySelectorAll('.calendar-day');
+        
         dayElements.forEach(day => {
-            const dayDate = new Date(selectedDate);
-            if (day.textContent == dayDate.getDate() && dayDate.getMonth() === currentDate.getMonth()) {
+            const dayNumber = parseInt(day.textContent);
+            const dayDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), dayNumber);
+            
+            // Vérifier si c'est un jour du mois précédent/suivant
+            const isCurrentMonth = !day.classList.contains('text-gray-400');
+            
+            if (isCurrentMonth && dayNumber === selectedDateObj.getDate() && 
+                currentDate.getMonth() === selectedDateObj.getMonth() &&
+                currentDate.getFullYear() === selectedDateObj.getFullYear()) {
                 day.classList.add('selected');
             }
         });
@@ -540,9 +602,9 @@
 
     function updateDayAppointments(dateString) {
         const dayAppointments = document.getElementById('dayAppointments');
-        const list = appointmentsByDate[dateString] || [];
+        const appointments = appointmentsByDate[dateString] || [];
 
-        if (list.length === 0) {
+        if (appointments.length === 0) {
             dayAppointments.innerHTML = `
                 <div class="text-center py-8 text-gray-500">
                     <i data-lucide="calendar" class="w-12 h-12 mx-auto mb-2 text-gray-300"></i>
@@ -550,22 +612,27 @@
                 </div>
             `;
         } else {
-            dayAppointments.innerHTML = list.map(apt => `
+            dayAppointments.innerHTML = appointments.map(apt => `
                 <div class="appointment-card">
                     <div class="flex items-center justify-between mb-2">
-                        <span class="font-semibold text-gray-900">${apt.time}</span>
+                        <span class="font-semibold text-gray-900">${apt.time}${apt.endTime ? ' - ' + apt.endTime : ''}</span>
                         <span class="px-2 py-1 text-xs rounded-full ${apt.status === 'confirmed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">
                             ${apt.status === 'confirmed' ? 'Confirmé' : 'En attente'}
                         </span>
                     </div>
                     <h4 class="font-medium text-gray-900">${apt.professional}</h4>
                     <p class="text-sm text-gray-600">${apt.service}</p>
-                    <p class="text-sm text-rosePastel font-medium">${apt.price} DT</p>
+                    <p class="text-sm text-gray-700">${apt.center_name}</p>
+                    <p class="text-sm text-rose-600 font-medium mt-1">${apt.price} DT</p>
                     ${apt.notes ? `<p class="mt-2 text-xs text-gray-500">${apt.notes}</p>` : ''}
                 </div>
             `).join('');
         }
-        if (window.lucide) lucide.createIcons();
+
+        // Recréer les icônes Lucide
+        if (window.lucide) {
+            lucide.createIcons();
+        }
     }
 
     function setupEventListeners() {
@@ -573,15 +640,21 @@
             currentDate.setMonth(currentDate.getMonth() - 1);
             updateCalendar();
         });
+
         document.getElementById('nextMonth').addEventListener('click', () => {
             currentDate.setMonth(currentDate.getMonth() + 1);
             updateCalendar();
         });
     }
 
+    // Initialisation
     document.addEventListener('DOMContentLoaded', () => {
         initCalendar();
-        if (window.lucide) lucide.createIcons();
+        if (window.lucide) {
+            lucide.createIcons();
+        }
     });
 </script>
+
+
 {% endblock %}

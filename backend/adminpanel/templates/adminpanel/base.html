@@ -652,8 +652,9 @@
                                 {{ user.get_full_name|default:user.email|first|upper }}
                             </div>
                             <div class="hidden sm:block">
-                                <div class="text-sm font-semibold text-gray-900">{{ user.get_full_name|default:user.email }}</div>
-                                   
+                                <div class="text-sm font-semibold text-gray-900">
+                                    {{ user.get_full_name|default:user.email }}</div>
+
 
                                 <div class="text-xs text-gray-500">Administrateur</div>
                             </div>
@@ -677,6 +678,37 @@
             </main>
         </div>
     </div>
+
+    <!-- Global Delete Confirmation Modal (standardized) -->
+    <div id="globalDeleteModal" class="fixed inset-0 hidden items-center justify-center z-50">
+        <div class="absolute inset-0 bg-black/30"></div>
+        <div class="glass p-6 w-full max-w-md relative z-10">
+            <div class="flex items-start gap-3">
+                <div
+                    class="w-10 h-10 rounded-xl bg-gradient-to-br from-red-300 to-orange-300 flex items-center justify-center text-white">
+                    <i data-lucide="trash-2" class="w-5 h-5"></i>
+                </div>
+                <div class="flex-1">
+                    <h3 class="text-lg font-semibold text-gray-900">Confirmer la suppression</h3>
+                    <p class="text-sm text-gray-600 mt-1">
+                        Vous êtes sur le point de supprimer <span id="gdmName" class="font-medium"></span>. Cette action
+                        est irréversible.
+                    </p>
+                    <div class="mt-3 text-xs text-gray-500 space-y-1">
+                        <div id="gdmPreview"></div>
+                        <div id="gdmDate"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-center justify-end gap-2 mt-4">
+                <button id="gdmCancel" class="btn-secondary-glass">Annuler</button>
+                <button id="gdmConfirm" class="btn-glass text-red-700">Supprimer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden CSRF provider for JS-submitted forms -->
+    <form id="csrfForm" method="post" style="display:none;">{% csrf_token %}</form>
 
     <!-- Scripts -->
     <script>
@@ -803,6 +835,63 @@
                 }
             });
         });
+
+        // Global delete modal controller
+        (function () {
+            let pending = null;
+            function getCookie(name) {
+                const cookie = document.cookie.split(';').map(s => s.trim()).find(s => s.startsWith(name + '='));
+                return cookie ? decodeURIComponent(cookie.split('=').slice(1).join('=')) : '';
+            }
+            function openDeleteModal(payload) {
+                pending = payload;
+                document.getElementById('gdmName').textContent = payload.name || 'cet élément';
+                document.getElementById('gdmPreview').textContent = payload.preview || '';
+                document.getElementById('gdmDate').textContent = payload.date || '';
+                const m = document.getElementById('globalDeleteModal');
+                m.classList.remove('hidden'); m.classList.add('flex');
+                if (window.lucide) { window.lucide.createIcons(); }
+            }
+            function closeDeleteModal() {
+                const m = document.getElementById('globalDeleteModal');
+                m.classList.add('hidden'); m.classList.remove('flex');
+                pending = null;
+            }
+            document.addEventListener('click', function (e) {
+                const btn = e.target.closest('.js-delete');
+                if (!btn) return;
+                e.preventDefault();
+                const action = btn.getAttribute('data-action') || '';
+                if (!action) return;
+                const payload = {
+                    action,
+                    method: (btn.getAttribute('data-method') || 'post').toLowerCase(),
+                    name: btn.getAttribute('data-name') || btn.textContent.trim(),
+                    preview: btn.getAttribute('data-preview') || '',
+                    date: btn.getAttribute('data-date') || ''
+                };
+                openDeleteModal(payload);
+            });
+            document.getElementById('gdmCancel').addEventListener('click', closeDeleteModal);
+            document.getElementById('globalDeleteModal').addEventListener('click', function (e) { if (e.target === this) closeDeleteModal(); });
+            document.getElementById('gdmConfirm').addEventListener('click', async function () {
+                if (!pending) return;
+                try {
+                    if (pending.method === 'delete') {
+                        const r = await fetch(pending.action, { method: 'DELETE', headers: { 'X-CSRFToken': getCookie('csrftoken') } });
+                        if (!r.ok) throw new Error('Delete failed');
+                        location.reload();
+                    } else {
+                        const form = document.createElement('form');
+                        form.method = 'POST'; form.action = pending.action;
+                        const csrfNode = document.querySelector('#csrfForm [name=csrfmiddlewaretoken]');
+                        if (csrfNode) { const i = document.createElement('input'); i.type = 'hidden'; i.name = 'csrfmiddlewaretoken'; i.value = csrfNode.value; form.appendChild(i); }
+                        document.body.appendChild(form); form.submit();
+                    }
+                } catch (e) { console.error(e); }
+                finally { closeDeleteModal(); }
+            });
+        })();
     </script>
 
     {% block extra_js %}{% endblock %}

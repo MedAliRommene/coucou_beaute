@@ -5,20 +5,39 @@
 
 {% block extra_css %}
 <style>
-    /* Design ultra-moderne avec glassmorphism */
+    /* ========================================
+       DESIGN ULTRA-MODERNE COUCOU BEAUTÉ
+       Palette : Rose → Violet → Bleu pastel
+       ======================================== */
+
+    :root {
+        --rose-coucou: #F28BB2;
+        --bleu-coucou: #6CA9E0;
+        --violet-coucou: #9B7EBD;
+        --rose-light: #FDE2E4;
+        --bleu-light: #E1F1FF;
+        --glow-rose: rgba(242, 139, 178, 0.4);
+        --glow-bleu: rgba(108, 169, 224, 0.4);
+    }
+
+    /* Glassmorphism modernisé */
     .glass {
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        border-radius: 20px;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        background: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(20px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 8px 32px rgba(242, 139, 178, 0.08),
+            0 2px 8px rgba(108, 169, 224, 0.05);
+        border-radius: 24px;
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
     .glass:hover {
-        transform: translateY(-4px) scale(1.02);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-        background: rgba(255, 255, 255, 0.15);
+        transform: translateY(-6px) scale(1.01);
+        box-shadow: 0 20px 50px rgba(242, 139, 178, 0.15),
+            0 8px 20px rgba(108, 169, 224, 0.12),
+            0 0 40px var(--glow-rose);
+        background: rgba(255, 255, 255, 0.85);
+        border-color: rgba(242, 139, 178, 0.3);
     }
 
     .kpi-glass {
@@ -314,9 +333,135 @@
     }
 
     /* ==========================
+       LISTE MODERNE DES AVIS
+       ========================== */
+    .reviews-container {
+        overflow: hidden;
+        border-radius: 16px;
+        border: 1px solid rgba(0, 0, 0, 0.06);
+    }
+
+    .reviews-header {
+        display: grid;
+        grid-template-columns: 1.2fr 0.6fr 2fr 0.9fr 0.8fr;
+        gap: 16px;
+        padding: 16px 20px;
+        position: sticky;
+        top: 0;
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+        z-index: 5;
+        font-weight: 700;
+        color: #374151;
+    }
+
+    .review-row {
+        display: grid;
+        grid-template-columns: 1.2fr 0.6fr 2fr 0.9fr 0.8fr;
+        gap: 16px;
+        padding: 16px 20px;
+        align-items: center;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+        transition: background 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+        background: rgba(255, 255, 255, 0.6);
+    }
+
+    .review-row:hover {
+        background: linear-gradient(0deg, rgba(242, 139, 178, 0.06), rgba(108, 169, 224, 0.06));
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+        transform: translateY(-2px);
+    }
+
+    .col-client {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+    }
+
+    .col-client .avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 9999px;
+        background: linear-gradient(135deg, var(--rose-coucou), var(--bleu-coucou));
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        box-shadow: 0 6px 16px rgba(242, 139, 178, 0.25);
+        flex-shrink: 0;
+    }
+
+    .col-client .name {
+        font-weight: 700;
+        color: #111827;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .col-client .muted {
+        font-size: 0.85rem;
+        color: #6b7280;
+    }
+
+    .rating-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border-radius: 9999px;
+        background: rgba(251, 191, 36, 0.15);
+        color: #92400e;
+        font-weight: 700;
+        width: fit-content;
+    }
+
+    .comment-snippet {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        color: #374151;
+    }
+
+    .col-date {
+        color: #6b7280;
+        font-size: 0.95rem;
+        white-space: nowrap;
+    }
+
+    .col-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+    }
+
+    /* ==========================
        RESPONSIVE MOBILE OPTIMIZATIONS
        ========================== */
     @media (max-width: 768px) {
+        .reviews-header {
+            display: none;
+        }
+
+        .review-row {
+            grid-template-columns: 1fr;
+            gap: 8px;
+            padding: 12px 14px;
+        }
+
+        .comment-snippet {
+            white-space: normal;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+
+        .col-actions {
+            justify-content: flex-start;
+        }
 
         /* Container mobile */
         .p-6 {
@@ -599,8 +744,9 @@
                         <h1 class="text-5xl font-bold gradient-text mb-2">
                             Avis & Feedbacks
                         </h1>
-                        <p class="text-gray-600 text-xl">Gérez les avis pour <strong class="text-gray-800"> {{ professional.business_name|default:professional.user.get_full_name }}</strong></p>
-                               
+                        <p class="text-gray-600 text-xl">Gérez les avis pour <strong class="text-gray-800"> 
+                            {{ professional.business_name|default:professional.user.get_full_name }}</strong></p>
+
                     </div>
                 </div>
 
@@ -608,8 +754,9 @@
                 <div class="flex items-center gap-6 mt-4">
                     <div class="flex items-center gap-2 px-4 py-2 glass rounded-full">
                         <i data-lucide="map-pin" class="w-4 h-4 text-pink-500"></i>
-                        <span class="text-gray-700 font-medium">{{ professional.extra.city|default:"Ville non spécifiée" }}</span>
-                           
+                        <span class="text-gray-700 font-medium">{{ professional.extra.city|default:"Ville non spécifiée"}}</span>
+                            
+
 
 
 
@@ -761,68 +908,51 @@
         </form>
     </div>
 
-    <!-- Reviews List -->
-    <div class="space-y-6 animate-slide-up">
+    <!-- Reviews List (liste compacte et professionnelle) -->
+    <div class="animate-slide-up">
         {% if page_obj %}
-        {% for review in page_obj %}
-        <div class="glass p-8 animate-slide-up review-card">
-            <div class="flex items-center justify-between mb-6">
-                <div class="flex items-center gap-4">
-                    <div
-                        class="w-16 h-16 rounded-full bg-gradient-to-br from-pink-400 to-blue-400 flex items-center justify-center text-white font-bold text-xl">
+        <div class="glass reviews-container">
+            <div class="reviews-header">
+                <div>Client</div>
+                <div>Note</div>
+                <div>Commentaire</div>
+                <div>Date</div>
+                <div class="text-right">Actions</div>
+            </div>
+
+            {% for review in page_obj %}
+            <div class="review-row">
+                <div class="col-client">
+                    <div class="avatar">
                         {{ review.client.first_name|first|upper }}{{ review.client.last_name|first|upper }}
                     </div>
-                    <div>
-                        <h4 class="text-xl font-bold text-gray-900">{{ review.client.first_name }}
-                            {{review.client.last_name }}</h4>
-
-
-
-                        <p class="text-gray-600">{{ review.created_at|date:"d F Y à H:i" }}</p>
-                    </div>
-                </div>
-
-                <div class="flex items-center gap-4">
-                    <div class="flex items-center gap-2">
-                        <div class="rating-stars">
-                            {% for i in "12345" %}
-                            {% if forloop.counter <= review.rating %} <i data-lucide="star"
-                                class="w-4 h-4 text-yellow-400 fill-yellow-400"></i>
-                                {% else %}
-                                <i data-lucide="star" class="w-4 h-4 text-gray-300"></i>
-                                {% endif %}
-                                {% endfor %}
+                    <div class="min-w-0">
+                        <div class="name">{{ review.client.first_name }} {{ review.client.last_name }}</div>
+                        <div class="muted">
+                            <i data-lucide="user" class="w-3 h-3 mr-1"></i>
+                            Client
                         </div>
-                        <span class="text-2xl font-bold text-gray-900">{{ review.rating }}/5</span>
                     </div>
                 </div>
-            </div>
-
-            <div class="mb-6">
-                <p class="text-gray-700 leading-relaxed text-lg">{{ review.comment }}</p>
-            </div>
-
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-4">
-                    <div class="flex items-center gap-2 text-gray-600">
-                        <i data-lucide="calendar" class="w-4 h-4"></i>
-                        <span class="text-sm">{{ review.created_at|date:"d/m/Y à H:i" }}</span>
-                    </div>
-                    <div class="flex items-center gap-2 text-gray-600">
-                        <i data-lucide="user" class="w-4 h-4"></i>
-                        <span class="text-sm">{{ review.client.first_name }} {{ review.client.last_name }}</span>
-                    </div>
+                <div>
+                    <span class="rating-pill">
+                        <i data-lucide="star" class="w-4 h-4 text-yellow-400"></i>
+                        {{ review.rating }}/5
+                    </span>
                 </div>
-
-                <div class="flex gap-3">
+                <div>
+                    <span class="comment-snippet">{{ review.comment }}</span>
+                </div>
+                <div class="col-date">{{ review.created_at|date:"d/m/Y à H:i" }}</div>
+                <div class="col-actions">
                     <button type="button"
-                        class="group relative px-6 py-3 rounded-xl bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 text-red-600 hover:from-red-500 hover:to-pink-500 hover:text-white transition-all duration-300 shadow-lg hover:shadow-xl delete-btn"
-                        data-review-id="{{ review.id }}"
-                        data-client-name="{{ review.client.first_name }} {{ review.client.last_name }}"
-                        data-review-preview="{{ review.comment|truncatechars:50|escapejs }}">
+                        class="group relative px-4 py-2 rounded-xl bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 text-red-600 hover:from-red-500 hover:to-pink-500 hover:text-white transition-all duration-300 shadow-md hover:shadow-lg delete-btn js-delete"
+                        data-name="Avis de {{ review.client.first_name }} {{ review.client.last_name }}"
+                        data-preview="{{ review.comment|truncatechars:80|escapejs }}"
+                        data-date="{{ review.created_at|date:'d/m/Y à H:i' }}"
+                        data-action="{% url 'adminpanel:delete_review' review.id %}">
                         <div class="flex items-center gap-2">
-                            <i data-lucide="trash-2"
-                                class="w-5 h-5 group-hover:scale-110 transition-transform duration-300"></i>
+                            <i data-lucide="trash-2" class="w-5 h-5"></i>
                             <span class="font-medium">Supprimer</span>
                         </div>
                         <div
@@ -831,8 +961,8 @@
                     </button>
                 </div>
             </div>
+            {% endfor %}
         </div>
-        {% endfor %}
 
         <!-- Pagination -->
         {% if page_obj.has_other_pages %}
@@ -902,82 +1032,36 @@
     </button>
 </div>
 
-<!-- Delete Confirmation Modal -->
-<div id="deleteModal" class="modal fade" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content glass border-0 shadow-2xl">
-            <div class="modal-header glass border-0 rounded-t-3xl p-8">
-                <div class="flex items-center gap-4">
-                    <div
-                        class="w-16 h-16 rounded-full bg-gradient-to-br from-red-400 to-pink-500 flex items-center justify-center shadow-lg">
-                        <i data-lucide="alert-triangle" class="w-8 h-8 text-white"></i>
-                    </div>
-                    <div>
-                        <h5 class="modal-title text-2xl font-bold text-gray-900 mb-2">
-                            Supprimer l'avis
-                        </h5>
-                        <p class="text-gray-600">Cette action est définitive et irréversible</p>
-                    </div>
-                </div>
-                <button type="button" class="btn-close" data-bs-dismiss="modal">
-                    <i data-lucide="x" class="w-6 h-6"></i>
-                </button>
+<!-- Modal de confirmation de suppression (design aligné avec pros_pending.html) -->
+<div id="deleteModal" class="fixed inset-0 hidden items-center justify-center z-50">
+    <div class="absolute inset-0 bg-black/30"></div>
+    <div class="glass p-6 w-full max-w-md relative z-10">
+        <div class="flex items-start gap-3">
+            <div
+                class="w-10 h-10 rounded-xl bg-gradient-to-br from-red-300 to-orange-300 flex items-center justify-center text-white">
+                <i data-lucide="trash-2" class="w-5 h-5"></i>
             </div>
-            <div class="modal-body p-8">
-                <div class="glass p-6 rounded-2xl border-l-4 border-red-400 mb-6">
-                    <div class="flex items-start gap-4">
-                        <i data-lucide="info" class="w-6 h-6 text-red-500 mt-1"></i>
-                        <div>
-                            <h6 class="font-bold text-gray-900 mb-2">Avis de <span id="clientName"
-                                    class="text-red-600"></span></h6>
-                            <p class="text-gray-700 mb-3" id="reviewPreview"></p>
-                            <div class="flex items-center gap-2 text-sm text-gray-600">
-                                <i data-lucide="calendar" class="w-4 h-4"></i>
-                                <span id="reviewDate"></span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-gradient-to-r from-red-50 to-pink-50 p-6 rounded-2xl border border-red-200">
-                    <div class="flex items-center gap-3 mb-4">
-                        <i data-lucide="shield-alert" class="w-6 h-6 text-red-500"></i>
-                        <h6 class="font-bold text-red-800">Attention !</h6>
-                    </div>
-                    <ul class="text-sm text-red-700 space-y-2">
-                        <li class="flex items-center gap-2">
-                            <i data-lucide="check" class="w-4 h-4"></i>
-                            L'avis sera définitivement supprimé
-                        </li>
-                        <li class="flex items-center gap-2">
-                            <i data-lucide="check" class="w-4 h-4"></i>
-                            Les statistiques du centre seront mises à jour
-                        </li>
-                        <li class="flex items-center gap-2">
-                            <i data-lucide="check" class="w-4 h-4"></i>
-                            Cette action ne peut pas être annulée
-                        </li>
-                    </ul>
-                </div>
-            </div>
-            <div class="modal-footer glass border-0 rounded-b-3xl p-8">
-                <div class="flex gap-4 w-full">
-                    <button type="button" class="btn-secondary-glass px-8 py-4 rounded-xl flex-1"
-                        data-bs-dismiss="modal">
-                        <i data-lucide="x" class="w-5 h-5 me-2"></i>
-                        Annuler
-                    </button>
-                    <button type="button"
-                        class="px-8 py-4 rounded-xl flex-1 bg-gradient-to-r from-red-500 to-pink-500 text-white font-bold hover:from-red-600 hover:to-pink-600 transition-all duration-300 shadow-lg hover:shadow-xl"
-                        id="confirmDelete">
-                        <i data-lucide="trash-2" class="w-5 h-5 me-2"></i>
-                        Supprimer définitivement
-                    </button>
+            <div class="flex-1">
+                <h3 class="text-lg font-semibold text-gray-900">Confirmer la suppression</h3>
+                <p class="text-sm text-gray-600 mt-1">
+                    Vous êtes sur le point de supprimer cet avis (<span id="delClientName" class="font-medium"></span>).
+                    Cette action est irréversible.
+                </p>
+                <div class="mt-3 text-xs text-gray-500 space-y-1">
+                    <div id="delPreview" class=""></div>
+                    <div id="delDate" class=""></div>
                 </div>
             </div>
         </div>
+        <div class="flex items-center justify-end gap-2 mt-4">
+            <button id="cancelDeleteBtn" class="btn-secondary-glass">Annuler</button>
+            <button id="confirmDeleteBtn" class="btn-glass text-red-700">Supprimer</button>
+        </div>
     </div>
 </div>
+
+<!-- Hidden CSRF source for JS-submitted forms -->
+<form id="csrfForm" method="post" style="display:none;">{% csrf_token %}</form>
 
 <!-- Toast Notifications -->
 <div id="toast" class="toast glass">
@@ -988,6 +1072,17 @@
 </div>
 
 <script>
+    // Ouvrir le modal personnalisé depuis la liste
+    document.addEventListener('click', function (e) {
+        const btn = e.target.closest('.delete-btn');
+        if (!btn) return;
+        e.preventDefault();
+        const reviewId = btn.getAttribute('data-review-id');
+        const clientName = btn.getAttribute('data-client-name') || '';
+        const reviewPreview = btn.getAttribute('data-review-preview') || '';
+        showDeleteModal(reviewId, clientName, reviewPreview);
+    });
+
     // Scroll to top function
     function scrollToTop() {
         window.scrollTo({
@@ -1019,49 +1114,50 @@
         }, 3000);
     }
 
-    // Show delete modal with enhanced information
+    // Gestion du modal custom de suppression
     let reviewToDelete = null;
 
     function showDeleteModal(reviewId, clientName, reviewPreview) {
         reviewToDelete = reviewId;
 
-        // Get review date from the review card via data attributes
+        // Récupérer la date depuis la ligne
         const triggerBtn = document.querySelector(`button[data-review-id="${reviewId}"]`);
-        const reviewCard = triggerBtn ? triggerBtn.closest('.glass') : null;
-        const dateElement = reviewCard ? reviewCard.querySelector('[data-lucide="calendar"]').nextElementSibling : null;
-        const reviewDate = dateElement ? dateElement.textContent : 'Date inconnue';
+        const reviewRow = triggerBtn ? triggerBtn.closest('.review-row') : null;
+        const dateEl = reviewRow ? reviewRow.querySelector('.col-date') : null;
+        const reviewDate = dateEl ? dateEl.textContent : '';
 
-        // Update modal content
-        document.getElementById('clientName').textContent = clientName;
-        document.getElementById('reviewPreview').textContent = reviewPreview;
-        document.getElementById('reviewDate').textContent = reviewDate;
+        document.getElementById('delClientName').textContent = clientName;
+        document.getElementById('delPreview').textContent = reviewPreview;
+        document.getElementById('delDate').textContent = reviewDate;
 
-        const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
-        modal.show();
+        const modal = document.getElementById('deleteModal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
     }
 
-    // Confirm delete with enhanced UX
-    document.getElementById('confirmDelete').addEventListener('click', function () {
-        if (reviewToDelete) {
-            const deleteBtn = document.getElementById('confirmDelete');
-            const originalText = deleteBtn.innerHTML;
+    function closeDeleteModal() {
+        const modal = document.getElementById('deleteModal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        reviewToDelete = null;
+    }
 
-            // Show loading state
-            deleteBtn.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 me-2 animate-spin"></i>Suppression...';
-            deleteBtn.disabled = true;
-
-            // Reinitialize Lucide icons for the spinner
-            if (typeof lucide !== 'undefined') {
-                lucide.createIcons();
-            }
-
-            // Create form and submit
+    // Bouton annuler
+    (function () {
+        const cancelBtn = document.getElementById('cancelDeleteBtn');
+        if (cancelBtn) cancelBtn.addEventListener('click', () => closeDeleteModal());
+        // Fermer en cliquant sur l'overlay
+        const modal = document.getElementById('deleteModal');
+        if (modal) modal.addEventListener('click', (e) => { if (e.target === modal) closeDeleteModal(); });
+        // Confirmer suppression
+        const confirmBtn = document.getElementById('confirmDeleteBtn');
+        if (confirmBtn) confirmBtn.addEventListener('click', () => {
+            if (!reviewToDelete) return;
             const form = document.createElement('form');
             form.method = 'POST';
             form.action = `{% url 'adminpanel:delete_review' 0 %}`.replace('0', reviewToDelete);
 
-            // Add CSRF token (guard)
-            const csrfNode = document.querySelector('[name=csrfmiddlewaretoken]');
+            const csrfNode = document.querySelector('#csrfForm [name=csrfmiddlewaretoken]');
             if (csrfNode) {
                 const csrfInput = document.createElement('input');
                 csrfInput.type = 'hidden';
@@ -1070,19 +1166,10 @@
                 form.appendChild(csrfInput);
             }
 
-            // Add success animation to the review card before submission
-            const triggerBtn = document.querySelector(`button[data-review-id="${reviewToDelete}"]`);
-            const reviewCard = triggerBtn ? triggerBtn.closest('.glass') : null;
-            if (reviewCard) {
-                reviewCard.style.transition = 'all 0.5s ease-out';
-                reviewCard.style.transform = 'translateX(-100%)';
-                reviewCard.style.opacity = '0';
-            }
-
             document.body.appendChild(form);
             form.submit();
-        }
-    });
+        });
+    })();
 
     // Animation on scroll
     const observerOptions = {

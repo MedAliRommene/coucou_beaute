@@ -147,6 +147,7 @@ def landing(request: HttpRequest) -> HttpResponse:
                             'business_name': pro.business_name or pro.user.get_full_name(),
                             'bio': extra.bio or "Professionnelle passionnée par l'art de la beauté",
                             'city': extra.city or '',
+                            'governorate': getattr(extra, 'governorate', '') or '',
                             'address': extra.address or '',
                             'city_only': _extract_city_name(extra.city or extra.address or ''),
                             'phone_number': extra.phone_number or '',
@@ -183,14 +184,16 @@ def landing(request: HttpRequest) -> HttpResponse:
         # En cas d'erreur, continuer avec une liste vide
         professionals_5_stars = []
     
-    # Extraire la liste unique des villes
+    # Extraire la liste unique des villes et gouvernorats
     cities = sorted(list(set([pro['city_only'] for pro in professionals_5_stars if pro.get('city_only')])))
+    governorates = sorted(list(set([pro.get('governorate') for pro in professionals_5_stars if pro.get('governorate')])))
     
     context = {
         'professionals': professionals_5_stars,
         'total_experts': len(professionals_5_stars),
         'professionals_json': json.dumps({str(pro['id']): pro for pro in professionals_5_stars}),
-        'cities': cities
+        'cities': cities,
+        'governorates': governorates
     }
     
     return render(request, 'front_web/landing.html', context)
@@ -367,6 +370,8 @@ def signup_view(request: HttpRequest) -> HttpResponse:
         category = request.POST.get('activity_category') or 'other'
         service_type = request.POST.get('service_type') or 'mobile'
         address = request.POST.get('address') or ''
+        # Gouvernorat saisi par le pro
+        governorate = (request.POST.get('governorate') or '').strip()
         lat = request.POST.get('latitude') or None
         lng = request.POST.get('longitude') or None
         salon_name = request.POST.get('salon_name') or ''
@@ -395,6 +400,12 @@ def signup_view(request: HttpRequest) -> HttpResponse:
         except Exception:
             lat = lng = None
 
+        # Si l'adresse n'est pas fournie mais qu'une "ville" a été saisie côté UI, utiliser cette valeur
+        if not address:
+            city_as_address = request.POST.get('city') or ''
+            if city_as_address:
+                address = city_as_address
+
         payload = {
             'first_name': first_name or email.split('@')[0],
             'last_name': last_name or '',
@@ -403,6 +414,7 @@ def signup_view(request: HttpRequest) -> HttpResponse:
             'activity_category': category,
             'service_type': service_type,
             'spoken_languages': spoken_languages,
+            'governorate': governorate,
             'address': address,
             'latitude': lat,
             'longitude': lng,
@@ -639,10 +651,18 @@ def book_appointment(request, pro_id):
         try:
             pro = Professional.objects.get(id=pro_id)
             
-            # Get form data
+            # Get form data (robust parsing)
             service_name = request.POST.get('service_name', 'Service Général')
-            service_price = float(request.POST.get('service_price', 50))
-            service_duration = int(request.POST.get('service_duration', 60))
+            price_raw = (request.POST.get('service_price', '') or '').replace(',', '.').strip()
+            try:
+                service_price = float(price_raw) if price_raw != '' else 0.0
+            except Exception:
+                service_price = 0.0
+            duration_raw = (request.POST.get('service_duration', '') or '').strip()
+            try:
+                service_duration = int(duration_raw) if duration_raw != '' else 60
+            except Exception:
+                service_duration = 60
             appointment_date = request.POST.get('appointment_date')
             appointment_time = request.POST.get('appointment_time')
             client_notes = request.POST.get('client_notes', '')
@@ -657,8 +677,18 @@ def book_appointment(request, pro_id):
                 datetime.strptime(appointment_date, '%Y-%m-%d').date(),
                 datetime.strptime(appointment_time, '%H:%M').time()
             )
+
+            # Ensure timezone-aware datetimes
+            from django.utils import timezone
+            if timezone.is_naive(appointment_datetime):
+                appointment_datetime = timezone.make_aware(appointment_datetime, timezone.get_current_timezone())
+
+            # Server-side guard: reject past datetime
+            if appointment_datetime < timezone.now():
+                messages.error(request, "Cette date/heure est passée. Veuillez choisir un créneau futur.")
+                return redirect('front_web:book_appointment_page', pro_id=pro_id)
             
-            # Calculate end time
+            # Calculate end time (supports multi-services total duration)
             from datetime import timedelta
             end_datetime = appointment_datetime + timedelta(minutes=service_duration)
             
@@ -673,6 +703,9 @@ def book_appointment(request, pro_id):
             )
             
             if conflicting_appointments.exists():
+                if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                    from django.http import JsonResponse
+                    return JsonResponse({'ok': False, 'error': "Ce créneau n'est plus disponible."}, status=409)
                 messages.error(request, 'Ce créneau n\'est plus disponible. Veuillez choisir un autre horaire.')
                 return redirect('front_web:book_appointment_page', pro_id=pro_id)
             
@@ -696,13 +729,31 @@ def book_appointment(request, pro_id):
             
             # Notifications and emails are handled by signals automatically
             
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                from django.http import JsonResponse
+                return JsonResponse({
+                    'ok': True,
+                    'appointment_id': appointment.id,
+                    'status': appointment.status,
+                    'start': appointment.start.isoformat(),
+                    'end': appointment.end.isoformat(),
+                    'service_name': appointment.service_name,
+                    'price': float(appointment.price),
+                })
+            
             messages.success(request, 'Votre demande de rendez-vous a été envoyée avec succès! Vous recevrez une confirmation par email.')
             return redirect('front_web:client_appointments')
             
         except Professional.DoesNotExist:
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                from django.http import JsonResponse
+                return JsonResponse({'ok': False, 'error': 'Professionnel non trouvé.'}, status=404)
             messages.error(request, 'Professionnel non trouvé.')
             return redirect('front_web:client_dashboard')
         except Exception as e:
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                from django.http import JsonResponse
+                return JsonResponse({'ok': False, 'error': str(e)}, status=400)
             messages.error(request, f'Erreur lors de la réservation: {str(e)}')
             return redirect('front_web:professional_detail', pro_id=pro_id)
     
@@ -728,6 +779,14 @@ def get_available_slots(request, pro_id):
         except ValueError:
             return JsonResponse({'error': 'Invalid date format'}, status=400)
         
+        # Duration in minutes (optional) to ensure the slot can fit
+        try:
+            total_duration_min = int(request.GET.get('duration') or 0)
+            if total_duration_min < 0:
+                total_duration_min = 0
+        except Exception:
+            total_duration_min = 0
+
         # Get working hours and days from professional profile
         if pro.extra:
             working_hours_dict = pro.extra.working_hours if pro.extra.working_hours else {'start': '09:00', 'end': '18:00'}
@@ -752,39 +811,49 @@ def get_available_slots(request, pro_id):
             # Fallback for string format "09:00-18:00"
             start_time_str, end_time_str = str(working_hours_dict).split('-') if '-' in str(working_hours_dict) else ('09:00', '18:00')
         
-        start_hour = int(start_time_str.split(':')[0])
-        end_hour = int(end_time_str.split(':')[0])
+        start_hour, start_min = map(int, start_time_str.split(':'))
+        end_hour, end_min = map(int, end_time_str.split(':'))
         
         # Get existing appointments for this date
         existing_appointments = Appointment.objects.filter(
             professional=pro,
             start__date=requested_date,
             status__in=['confirmed', 'pending']  # Include pending appointments
-        ).values_list('start__time', 'end__time')
+        ).values_list('start__time', 'end__time', 'status')
         
-        # Generate available slots
+        # Generate available slots in 15-min steps (more précis)
         available_slots = []
-        for hour in range(start_hour, end_hour):
-            slot_start = f"{hour:02d}:00"
-            slot_end = f"{hour + 1:02d}:00"
-            
-            # Check if this slot conflicts with existing appointments
-            is_available = True
-            for appt_start, appt_end in existing_appointments:
-                appt_start_hour = appt_start.hour
-                appt_end_hour = appt_end.hour
-                
-                # Check for overlap
-                if hour >= appt_start_hour and hour < appt_end_hour:
-                    is_available = False
-                    break
-            
-            if is_available:
-                available_slots.append({
-                    'time': slot_start,
-                    'end_time': slot_end,
-                    'available': True
-                })
+        step_min = 15
+        from datetime import timedelta
+        start_dt = datetime.combine(requested_date, datetime.strptime(start_time_str, '%H:%M').time())
+        end_dt = datetime.combine(requested_date, datetime.strptime(end_time_str, '%H:%M').time())
+
+        cursor = start_dt
+        while cursor < end_dt:
+            slot_end_dt = cursor + timedelta(minutes=step_min)
+            # By default available
+            status = 'available'
+
+            # If a total duration is specified, ensure the block [cursor, cursor+duration] fits with no overlaps
+            block_end_dt = cursor + timedelta(minutes=total_duration_min or step_min)
+            if block_end_dt > end_dt:
+                status = 'reserved'
+            else:
+                # Check conflicts against existing appointments
+                for appt_start, appt_end, appt_status in existing_appointments:
+                    appt_start_dt = datetime.combine(requested_date, appt_start)
+                    appt_end_dt = datetime.combine(requested_date, appt_end)
+                    # Overlap if start < other_end and end > other_start
+                    if cursor < appt_end_dt and block_end_dt > appt_start_dt:
+                        status = 'pending' if appt_status == 'pending' else 'reserved'
+                        break
+
+            available_slots.append({
+                'time': cursor.strftime('%H:%M'),
+                'end_time': slot_end_dt.strftime('%H:%M'),
+                'status': status,
+            })
+            cursor += timedelta(minutes=step_min)
         
         return JsonResponse({
             'slots': available_slots,

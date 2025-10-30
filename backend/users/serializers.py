@@ -17,6 +17,7 @@ class ProfessionalApplicationSerializer(serializers.ModelSerializer):
             "activity_category",
             "service_type",
             "spoken_languages",
+            "governorate",
             "address",
             "latitude",
             "longitude",

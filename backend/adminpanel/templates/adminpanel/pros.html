@@ -386,7 +386,7 @@
             <div class="flex flex-col gap-2">
               <a class="btn-glass text-blue-700" href="/dashboard/pros/${p.id}/">Ouvrir</a>
 
-              <button class="btn-secondary-glass text-red-600" data-action="delete" data-id="${p.id}" data-email="${(p.user_email || '').replace(/"/g, '&quot;')}">Supprimer</button>
+              <button class="btn-secondary-glass text-red-600 js-delete" data-method="delete" data-action="/api/professionals/${p.id}/delete/" data-name="${(p.user_email || '').replace(/"/g, '&quot;')}" data-preview="${(p.business_name || '').replace(/"/g, '&quot;')}">Supprimer</button>
             </div>
           </div>
         `;
