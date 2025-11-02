@@ -1206,13 +1206,30 @@
     }
 
     /* Styles pour le filtre de ville */
-    #cityFilter {
-        font-weight: 500;
-        box-shadow: 0 2px 8px rgba(236, 72, 153, 0.1);
+    /* Nouveau design pour le filtre de gouvernorat */
+    .gov-filter-pill {
+        position: relative;
     }
 
-    #cityFilter:hover {
-        box-shadow: 0 4px 12px rgba(236, 72, 153, 0.2);
+    .gov-icon {
+        position: absolute;
+        left: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #ec4899;
+        /* rose */
+        pointer-events: none;
+    }
+
+    #governorateFilter {
+        font-weight: 600;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(236, 72, 153, 0.12);
+    }
+
+    #governorateFilter:hover {
+        box-shadow: 0 6px 14px rgba(236, 72, 153, 0.18);
     }
 
     /* Styles pour les boutons de carousel */
@@ -1905,7 +1922,8 @@
 
         <!-- CTA Services -->
         <div class="text-center mt-16 fade-in-up">
-            <a href="/booking/" class="btn-primary inline-flex items-center">
+            <a href="{% if user.is_authenticated %}/booking/{% else %}/signup/?next=/booking/{% endif %}"
+                class="btn-primary inline-flex items-center">
                 <i data-lucide="calendar-plus" class="w-5 h-5 mr-2"></i>
                 Réserver un service
             </a>
@@ -1943,24 +1961,18 @@
         {% if professionals %}
         <!-- Barre de filtres et contrôles du carousel -->
         <div class="flex flex-col md:flex-row items-center justify-between mb-8 gap-4">
-            <!-- Filtre par ville -->
+            <!-- Filtre par gouvernorat uniquement -->
             <div class="flex items-center gap-3 flex-wrap">
-                <label for="cityFilter" class="text-sm font-semibold text-gray-700">Filtrer par ville :</label>
-                <select id="cityFilter"
-                    class="px-4 py-2 bg-white border-2 border-pink-200 rounded-xl focus:border-pink-500 focus:outline-none transition-colors duration-300 cursor-pointer">
-                    <option value="">Toutes les villes</option>
-                    {% for city in cities %}
-                    <option value="{{ city }}">{{ city }}</option>
-                    {% endfor %}
-                </select>
-                <label for="governorateFilter" class="text-sm font-semibold text-gray-700">Gouvernorat :</label>
-                <select id="governorateFilter"
-                    class="px-4 py-2 bg-white border-2 border-pink-200 rounded-xl focus:border-pink-500 focus:outline-none transition-colors duration-300 cursor-pointer">
-                    <option value="">Tous</option>
-                    {% for g in governorates %}
-                    <option value="{{ g }}">{{ g }}</option>
-                    {% endfor %}
-                </select>
+                <div class="relative gov-filter-pill">
+                    <i data-lucide="map-pin" class="gov-icon w-4 h-4"></i>
+                    <select id="governorateFilter"
+                        class="pl-8 pr-9 py-2 bg-white border-2 border-pink-200 rounded-xl focus:border-pink-500 focus:outline-none transition-all duration-300 cursor-pointer shadow-sm hover:shadow">
+                        <option value="">Tous les gouvernorats</option>
+                        {% for g in governorates %}
+                        <option value="{{ g }}">{{ g }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
                 <span id="resultCount" class="text-sm text-gray-500 ml-2"></span>
             </div>
 
@@ -2058,13 +2070,13 @@
                             <div class="mb-4">
                                 <div class="flex flex-wrap gap-1">
                                     {% for service in pro.services|slice:":2" %}
-                                    <span
-                                        class="px-2 py-1 bg-pink-100 text-pink-700 rounded-full text-xs font-medium">
+                                    <span class="px-2 py-1 bg-pink-100 text-pink-700 rounded-full text-xs font-medium">
                                         {{ service.name }}</span>
                                     {% endfor %}
                                     {% if pro.services|length > 2 %}
-                                    <span class="px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs">+{{ pro.services|length|add:"-2" }}</span>
-                                       
+                                    <span class="px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs">+{{
+                                        pro.services|length|add:"-2" }}</span>
+
                                     {% endif %}
                                 </div>
                             </div>
@@ -2531,6 +2543,13 @@
 <script src="https://unpkg.com/lucide@latest"></script>
 <script>
     window.lucide && window.lucide.createIcons();
+</script>
+<script>
+    window.IS_AUTHENTICATED = {{ user.is_authenticated|yesno:"true,false"|lower|safe }};
+    window.redirectWithSignup = function (nextUrl) {
+        var next = encodeURIComponent(nextUrl || '/');
+        return '/signup/?next=' + next;
+    };
 </script>
 <!-- Three.js + Lottie + GSAP -->
 <script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
@@ -3208,11 +3227,17 @@
                         class="flex-1 bg-gradient-to-r from-pink-500 to-purple-500 text-white px-6 py-3 rounded-xl text-center font-semibold hover:from-pink-600 hover:to-purple-600 transition-all duration-300 transform hover:scale-105">
                         Voir le profil complet
                     </a>
-                    <button
+                    <button id="modalBookBtn"
                         class="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-colors duration-300">
                         Prendre rendez-vous
                     </button>
                 </div>
+                {% if not user.is_authenticated %}
+                <p class="mt-3 text-sm text-gray-600">
+                    Pour voir le profil complet ou prendre rendez‑vous, vous devez d'abord créer un compte
+                    ou vous connecter.
+                </p>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -3243,7 +3268,13 @@
             document.getElementById('modalEmail').textContent = professionalData.email;
             document.getElementById('modalPhone').textContent = professionalData.phone_number || 'Non renseigné';
             document.getElementById('modalAddress').textContent = professionalData.address || 'Non renseigné';
-            document.getElementById('modalProfileLink').href = professionalData.profile_url || '#';
+            const modalProfileLink = document.getElementById('modalProfileLink');
+            const profileUrl = professionalData.profile_url || '#';
+            if (window.IS_AUTHENTICATED) {
+                modalProfileLink.href = profileUrl;
+            } else {
+                modalProfileLink.href = window.redirectWithSignup(profileUrl);
+            }
 
             // Image de profil
             const profileImg = document.getElementById('modalProfileImage');
@@ -3437,6 +3468,16 @@
                 socialSection.style.display = 'none';
             }
 
+            // Configurer le bouton de réservation (redirige selon auth)
+            const bookBtn = document.getElementById('modalBookBtn');
+            if (bookBtn) {
+                const bookingUrl = professionalData.booking_url || ('/booking/' + (professionalData.id ? ('?pro_id=' + professionalData.id) : ''));
+                bookBtn.onclick = function () {
+                    const target = window.IS_AUTHENTICATED ? bookingUrl : window.redirectWithSignup(bookingUrl);
+                    window.location.href = target;
+                };
+            }
+
             // Afficher le modal
             modal.classList.remove('hidden');
             document.body.style.overflow = 'hidden';
@@ -3482,7 +3523,6 @@
 
     // Gestion du filtre de ville et du carousel
     document.addEventListener('DOMContentLoaded', function () {
-        const cityFilter = document.getElementById('cityFilter');
         const governorateFilter = document.getElementById('governorateFilter');
         const carousel = document.getElementById('professionalsCarousel');
         const prevBtn = document.getElementById('prevBtn');
@@ -3512,14 +3552,12 @@
 
         // Filtrer les cartes par ville/gouvernorat
         function filterCards() {
-            const selectedCity = cityFilter.value;
             const selectedGov = governorateFilter ? governorateFilter.value : '';
             const allCards = Array.from(carousel.querySelectorAll('.expert-card'));
 
             filteredCards = allCards.filter(card => {
-                const byCity = !selectedCity || card.getAttribute('data-city') === selectedCity;
                 const byGov = !selectedGov || card.getAttribute('data-governorate') === selectedGov;
-                return byCity && byGov;
+                return byGov;
             });
 
             currentPage = 1;
@@ -3563,7 +3601,6 @@
         }
 
         // Event listeners
-        cityFilter.addEventListener('change', filterCards);
         if (governorateFilter) governorateFilter.addEventListener('change', filterCards);
 
         prevBtn.addEventListener('click', () => {
