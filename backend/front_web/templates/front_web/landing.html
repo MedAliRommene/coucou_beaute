@@ -2055,7 +2055,7 @@
                                     </div>
                                 </div>
                                 <div class="text-right">
-                                    <div class="text-2xl font-bold text-pink-500">{{ pro.price }}€</div>
+                                    <div class="text-2xl font-bold text-pink-500">{{ pro.price }}D</div>
                                     <div class="text-xs text-gray-500">à partir de</div>
                                 </div>
                             </div>
@@ -3260,7 +3260,7 @@
             document.getElementById('modalBusiness').textContent = professionalData.business_name;
             document.getElementById('modalRating').textContent = professionalData.rating;
             document.getElementById('modalReviews').textContent = `(${professionalData.total_reviews} avis)`;
-            document.getElementById('modalPrice').textContent = `${professionalData.price}€`;
+            document.getElementById('modalPrice').textContent = `${professionalData.price}D`;
             document.getElementById('modalBadge').textContent = professionalData.badge;
             document.getElementById('modalCity').textContent = professionalData.city_only || professionalData.city || 'Non spécifié';
             document.getElementById('modalAvailability').textContent = professionalData.availability;
@@ -3295,7 +3295,7 @@
                     serviceDiv.innerHTML = `
                     <h4 class="font-semibold text-gray-800 mb-2">${service.name}</h4>
                     <div class="flex justify-between items-center text-sm text-gray-600">
-                        <span>${service.price}€</span>
+                        <span>${service.price}D</span>
                         <span>${service.duration} min</span>
                     </div>
                 `;
