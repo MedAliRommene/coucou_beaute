@@ -159,19 +159,27 @@ Beauté{%endblock%}
     /* Time slots as interactive cards */
     .time-slot {
         transition: all 0.25s ease;
-        border-radius: 14px;
+        border-radius: 12px;
+        padding: 0.75rem 0.5rem;
+        min-height: 70px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        border-width: 2px;
     }
 
-    .time-slot:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 14px 30px rgba(16, 24, 40, .15);
+    .time-slot:hover:not(.reserved):not(.pending):not([style*="cursor: not-allowed"]) {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(16, 185, 129, 0.25);
     }
 
     .time-slot .meta {
         opacity: 0;
         transform: translateY(6px);
         transition: .2s ease;
-        font-size: 11px;
+        font-size: 10px;
+        margin-top: 4px;
     }
 
     .time-slot:hover .meta {
@@ -180,9 +188,8 @@ Beauté{%endblock%}
     }
 
     .time-slot.selected {
-        background: linear-gradient(90deg, #F28BB2 0%, #6CA9E0 100%);
-        color: #fff;
-        border-color: transparent;
+        border-width: 3px;
+        transform: scale(1.05);
     }
 
     .time-slot.disabled {
@@ -194,10 +201,77 @@ Beauté{%endblock%}
     }
 
     .time-slot.pending {
-        background: #fef3c7;
-        border-color: #fde68a;
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        border-color: #f59e0b;
         color: #92400e;
         cursor: not-allowed;
+        position: relative;
+    }
+
+    .time-slot.pending::before {
+        content: '⏳';
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        font-size: 10px;
+    }
+
+    .time-slot.reserved {
+        background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+        border-color: #ef4444;
+        color: #991b1b;
+        cursor: not-allowed;
+        opacity: 0.7;
+    }
+
+    .time-slot.reserved::before {
+        content: '✕';
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        font-size: 12px;
+        color: #dc2626;
+    }
+
+    .time-slot.available {
+        background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+        border-color: #10b981;
+        color: #065f46;
+        cursor: pointer;
+    }
+
+    .time-slot.available::before {
+        content: '✓';
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        font-size: 12px;
+        color: #059669;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+    }
+
+    .time-slot.available:hover::before {
+        opacity: 1;
+    }
+
+    .time-slot.available:hover {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+    }
+
+    .time-slot.selected.available {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        border-color: #059669;
+        box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4);
+    }
+
+    .time-slot.selected.available::before {
+        opacity: 1;
+        color: white;
     }
 
     .service-card {
@@ -565,7 +639,7 @@ Beauté{%endblock%}
 
         /* Time slots mobile */
         #timeSlots {
-            grid-template-columns: 1fr 1fr !important;
+            grid-template-columns: repeat(3, 1fr) !important;
             gap: 0.5rem !important;
         }
 
@@ -880,8 +954,9 @@ Beauté{%endblock%}
                         <h2 class="text-xl font-bold text-gray-900">Choisir l'heure</h2>
                     </div>
 
-                    <div id="timeSlots" class="grid grid-cols-2 gap-3" role="list" aria-label="Créneaux horaires">
-                        <div class="col-span-2 text-center text-gray-500 py-8">
+                    <div id="timeSlots" class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 md:gap-3"
+                        role="list" aria-label="Créneaux horaires disponibles">
+                        <div class="col-span-full text-center text-gray-500 py-8">
                             Choisissez d'abord une date
                         </div>
                     </div>
@@ -958,6 +1033,7 @@ Beauté{%endblock%}
 
 {% block extra_js %}
 <script src="https://unpkg.com/lucide@latest"></script>
+<script type="application/json" id="working-days-json">{{ working_days_json|safe }}</script>
 <script>
     // Initialize Lucide icons
     window.lucide && window.lucide.createIcons();
@@ -969,7 +1045,15 @@ Beauté{%endblock%}
     let lastSlotsData = null; // Store last slots data for comparison
 
     const workingHours = "{{ working_hours }}";
-    const workingDays = {{ working_days| safe }};
+    let workingDays = ['mon', 'tue', 'wed', 'thu', 'fri'];
+    try {
+        const workingDaysEl = document.getElementById('working-days-json');
+        if (workingDaysEl && workingDaysEl.textContent) {
+            workingDays = JSON.parse(workingDaysEl.textContent);
+        }
+    } catch (e) {
+        console.warn('Could not parse working_days, using default');
+    }
 
     // Notification system
     function showNotification(message, type = 'success') {
@@ -1133,10 +1217,10 @@ Beauté{%endblock%}
     // Generate time slots with real-time availability
     async function generateTimeSlots() {
         const timeSlotsContainer = document.getElementById('timeSlots');
-        timeSlotsContainer.innerHTML = '<div class="col-span-2 text-center text-gray-500 py-4">Chargement des créneaux disponibles...</div>';
+        timeSlotsContainer.innerHTML = '<div class="col-span-full text-center text-gray-500 py-4">Chargement des créneaux disponibles...</div>';
 
         if (!selectedDate) {
-            timeSlotsContainer.innerHTML = '<div class="col-span-2 text-center text-gray-500 py-8">Choisissez d\'abord une date</div>';
+            timeSlotsContainer.innerHTML = '<div class="col-span-full text-center text-gray-500 py-8">Choisissez d\'abord une date</div>';
             return;
         }
 
@@ -1186,56 +1270,113 @@ Beauté{%endblock%}
             timeSlotsContainer.innerHTML = '';
 
             if (data.slots && data.slots.length > 0) {
-                // Group by hour for compact view
-                const groups = {};
-                data.slots.forEach(s => {
-                    const [h, m] = s.time.split(':');
-                    if (!groups[h]) groups[h] = [];
-                    groups[h].push(s);
-                });
+                // Calculate total duration needed
+                const totalDuration = selectedServices.reduce((sum, s) => sum + Number(s.duration || 0), 0) || 15;
 
-                const hours = Object.keys(groups).sort((a, b) => parseInt(a) - parseInt(b));
-                hours.forEach(h => {
-                    const list = groups[h];
-                    const firstAvail = list.find(x => (x.status || 'available') === 'available');
-                    const hourStatus = firstAvail ? 'available' : (list.some(x => x.status === 'pending') ? 'pending' : 'reserved');
+                // Helper function to check if consecutive slots are available for the duration
+                function canAccommodateDuration(startIndex, duration) {
+                    const slotsNeeded = Math.ceil(duration / 15);
+                    if (startIndex + slotsNeeded > data.slots.length) return false;
+
+                    for (let i = 0; i < slotsNeeded; i++) {
+                        const slot = data.slots[startIndex + i];
+                        if (!slot || slot.status !== 'available') return false;
+                    }
+                    return true;
+                }
+
+                // Display all individual slots (8:00, 8:15, 8:30, 8:45, etc.)
+                data.slots.forEach((slot, index) => {
+                    const status = slot.status || 'available';
+                    const time = slot.time;
+                    const [h, m] = time.split(':');
 
                     const el = document.createElement('div');
                     el.className = 'time-slot glass p-3 text-center border transition-all relative';
-                    if (hourStatus === 'available') el.classList.add('cursor-pointer', 'border-gray-200', 'hover:border-green-300');
-                    else if (hourStatus === 'pending') el.classList.add('pending', 'border-yellow-200');
-                    else el.classList.add('disabled', 'border-gray-200');
+                    el.dataset.time = time;
+                    el.dataset.status = status;
+                    el.dataset.index = index;
 
-                    el.setAttribute('role', 'button');
-                    el.setAttribute('tabindex', '0');
-                    el.innerHTML = `<div class="font-semibold">${h}:00</div>`;
-
-                    // Hover panel with quarter-hour details
-                    const panel = document.createElement('div');
-                    panel.className = 'absolute left-1/2 -translate-x-1/2 top-full mt-2 z-20 hidden bg-white border border-gray-200 rounded-xl shadow-lg p-2 text-sm min-w-[160px]';
-                    panel.innerHTML = list.map(s => {
-                        const st = s.status || 'available';
-                        const color = st === 'available' ? 'text-green-600' : (st === 'pending' ? 'text-yellow-700' : 'text-gray-500');
-                        const icon = st === 'available' ? 'check-circle' : (st === 'pending' ? 'hourglass' : 'x-circle');
-                        return `<div class="flex items-center gap-2 ${color}"><i data-lucide="${icon}" class="w-3 h-3"></i>${s.time}</div>`;
-                    }).join('');
-                    el.appendChild(panel);
-
-                    el.addEventListener('mouseenter', () => { panel.classList.remove('hidden'); window.lucide && window.lucide.createIcons(); });
-                    el.addEventListener('mouseleave', () => panel.classList.add('hidden'));
-
-                    if (firstAvail) {
-                        el.onclick = () => selectTime(firstAvail.time, el);
-                        el.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectTime(firstAvail.time, el); } };
+                    // Apply status classes
+                    if (status === 'available') {
+                        // Check if this slot can accommodate the total duration
+                        const canFit = canAccommodateDuration(index, totalDuration);
+                        if (canFit) {
+                            el.classList.add('available');
+                            el.setAttribute('role', 'button');
+                            el.setAttribute('tabindex', '0');
+                            el.onclick = () => selectTime(time, el);
+                            el.onkeydown = (e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    selectTime(time, el);
+                                }
+                            };
+                        } else {
+                            // Slot is available but can't fit duration - mark as partially available
+                            el.classList.add('available');
+                            el.style.opacity = '0.6';
+                            el.style.cursor = 'not-allowed';
+                            el.title = `Disponible mais durée insuffisante (${totalDuration} min requis)`;
+                            el.setAttribute('aria-label', `${time} - Disponible mais durée insuffisante`);
+                        }
+                    } else if (status === 'pending') {
+                        el.classList.add('pending');
+                        el.setAttribute('aria-label', `${time} - En attente de confirmation`);
+                        el.title = 'En attente de confirmation du professionnel';
+                    } else {
+                        el.classList.add('reserved');
+                        el.setAttribute('aria-label', `${time} - Réservé`);
+                        el.title = 'Créneau déjà réservé';
                     }
+
+                    // Display time with icon
+                    let icon = '';
+                    let statusText = '';
+                    if (status === 'available') {
+                        const canFit = canAccommodateDuration(index, totalDuration);
+                        icon = canFit ? '<i data-lucide="check-circle" class="w-4 h-4 absolute top-2 right-2 text-green-600"></i>' : '<i data-lucide="alert-circle" class="w-4 h-4 absolute top-2 right-2 text-yellow-600"></i>';
+                        statusText = canFit ? 'Disponible' : 'Durée insuffisante';
+                    } else if (status === 'pending') {
+                        icon = '<i data-lucide="hourglass" class="w-4 h-4 absolute top-2 right-2 text-yellow-700"></i>';
+                        statusText = 'En attente';
+                    } else {
+                        icon = '<i data-lucide="x-circle" class="w-4 h-4 absolute top-2 right-2 text-red-600"></i>';
+                        statusText = 'Réservé';
+                    }
+
+                    el.innerHTML = `
+                        ${icon}
+                        <div class="font-semibold text-sm">${h}:${m}</div>
+                        <div class="text-xs mt-1 opacity-75">${statusText}</div>
+                    `;
 
                     timeSlotsContainer.appendChild(el);
                 });
 
+                // Add legend for clarity
+                const legend = document.createElement('div');
+                legend.className = 'col-span-full grid grid-cols-3 gap-2 md:gap-4 mt-4 pt-4 border-t border-gray-200';
+                legend.innerHTML = `
+                    <div class="flex items-center gap-2 text-xs">
+                        <div class="w-4 h-4 rounded bg-gradient-to-r from-green-400 to-green-600"></div>
+                        <span class="text-gray-600">Disponible</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs">
+                        <div class="w-4 h-4 rounded bg-gradient-to-r from-yellow-400 to-yellow-600"></div>
+                        <span class="text-gray-600">En attente</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs">
+                        <div class="w-4 h-4 rounded bg-gradient-to-r from-red-400 to-red-600"></div>
+                        <span class="text-gray-600">Réservé</span>
+                    </div>
+                `;
+                timeSlotsContainer.appendChild(legend);
+
                 // Attempt to restore previously selected time
                 if (pendingRestoreTime) {
                     const toSelect = Array.from(document.querySelectorAll('#timeSlots .time-slot'))
-                        .find(el => el.querySelector('.font-semibold')?.textContent === pendingRestoreTime);
+                        .find(el => el.dataset.time === pendingRestoreTime && el.dataset.status === 'available');
                     if (toSelect) {
                         toSelect.click();
                         pendingRestoreTime = null;
@@ -1246,7 +1387,7 @@ Beauté{%endblock%}
                 window.lucide && window.lucide.createIcons();
             } else {
                 timeSlotsContainer.innerHTML = `
-                    <div class="col-span-2 text-center text-gray-500 py-8">
+                    <div class="col-span-full text-center text-gray-500 py-8">
                         <i data-lucide="calendar-x" class="w-12 h-12 mx-auto mb-2 text-gray-300"></i>
                         <p>Aucun créneau disponible pour cette date</p>
                         <p class="text-sm mt-1">${data.message || 'Essayez une autre date'}</p>
@@ -1257,7 +1398,7 @@ Beauté{%endblock%}
         } catch (error) {
             console.error('Erreur:', error);
             timeSlotsContainer.innerHTML = `
-                <div class="col-span-2 text-center text-red-500 py-8">
+                <div class="col-span-full text-center text-red-500 py-8">
                     <i data-lucide="alert-circle" class="w-12 h-12 mx-auto mb-2"></i>
                     <p>Erreur lors du chargement des créneaux</p>
                     <button onclick="generateTimeSlots()" class="text-sm text-blue-500 hover:text-blue-700 mt-2">

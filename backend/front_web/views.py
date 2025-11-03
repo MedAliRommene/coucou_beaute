@@ -917,12 +917,17 @@ def book_appointment_page(request, pro_id):
         else:
             working_hours = str(working_hours_dict) if working_hours_dict else "09:00-18:00"
         
+        # Convert working_days to JSON string for safe template rendering
+        import json
+        working_days_json = json.dumps(working_days) if working_days else json.dumps(['mon', 'tue', 'wed', 'thu', 'fri'])
+        
         context = {
             'pro': pro,
             'pro_id': pro_id,
             'services_list': services_list,
             'working_hours': working_hours,
             'working_days': working_days,
+            'working_days_json': working_days_json,
         }
         
         return render(request, 'front_web/book_appointment.html', context)
@@ -1652,22 +1657,86 @@ def client_calendar(request):
         ).order_by('start')
         
         # Préparer les données pour le calendrier
+        from urllib.parse import quote_plus
+        from django.urls import reverse
+        
         calendar_events = []
         for appt in calendar_qs:
+            # Récupération complète des informations professionnel
+            pro_info = {
+                'center_name': 'Centre',
+                'professional_name': 'Professionnel',
+                'email': '',
+                'phone': '',
+                'address': '',
+                'business_name': '',
+                'latitude': None,
+                'longitude': None,
+                'pro_id': None,
+            }
+            
             try:
-                center_name = appt.professional.business_name or appt.professional.user.get_full_name()
+                if appt.professional and appt.professional.user:
+                    user = appt.professional.user
+                    pro_info.update({
+                        'professional_name': user.get_full_name() or user.username,
+                        'email': user.email or '',
+                        'business_name': appt.professional.business_name or '',
+                        'pro_id': appt.professional.id,
+                    })
+                    
+                    # Le nom du centre est soit business_name soit le nom du professionnel
+                    pro_info['center_name'] = appt.professional.business_name or pro_info['professional_name']
+                    
+                    # Récupérer infos supplémentaires depuis ProfessionalProfileExtra
+                    if hasattr(appt.professional, 'extra') and appt.professional.extra:
+                        extra = appt.professional.extra
+                        if hasattr(extra, 'phone_number') and extra.phone_number:
+                            pro_info['phone'] = extra.phone_number
+                        if hasattr(extra, 'address') and extra.address:
+                            pro_info['address'] = extra.address
+                        if hasattr(extra, 'latitude') and extra.latitude is not None:
+                            pro_info['latitude'] = extra.latitude
+                        if hasattr(extra, 'longitude') and extra.longitude is not None:
+                            pro_info['longitude'] = extra.longitude
             except Exception:
-                center_name = "Centre"
+                # En cas d'erreur, garder les valeurs par défaut et continuer
+                pass
+            
+            # Construire l'URL Google Maps
+            map_url = ''
+            try:
+                if pro_info.get('latitude') is not None and pro_info.get('longitude') is not None:
+                    map_url = f"https://www.google.com/maps?q={pro_info['latitude']},{pro_info['longitude']}"
+                elif pro_info.get('address'):
+                    map_url = f"https://www.google.com/maps/search/?api=1&query={quote_plus(pro_info['address'])}"
+            except Exception:
+                # En cas d'erreur avec l'URL, continuer sans map_url
+                pass
+            
+            # Construire l'URL du profil professionnel (absolue)
+            profile_url = ''
+            try:
+                if pro_info.get('pro_id'):
+                    relative_url = reverse('front_web:professional_detail', args=[pro_info['pro_id']])
+                    profile_url = request.build_absolute_uri(relative_url)
+            except Exception:
+                pass
             
             calendar_events.append({
                 'id': appt.id,
                 'title': f"{appt.service_name}",
-                'start': appt.start.isoformat(),
-                'end': appt.end.isoformat(),
-                'center_name': center_name,
+                'start': appt.start,  # Passer l'objet datetime directement
+                'end': appt.end,  # Passer l'objet datetime directement
+                'center_name': pro_info['center_name'],
                 'price': float(appt.price or 0),
                 'status': appt.status,
-                'professional_name': appt.professional.user.get_full_name(),
+                'professional_name': pro_info['professional_name'],
+                'professional_email': pro_info['email'],
+                'professional_phone': pro_info['phone'],
+                'professional_address': pro_info['address'],
+                'map_url': map_url,
+                'profile_url': profile_url,
                 'notes': appt.notes or '',
             })
         

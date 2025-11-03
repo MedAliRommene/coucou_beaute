@@ -139,46 +139,316 @@
                 height: 2rem !important;
             }
         }
+
+        /* ====================================
+           HEADER MODERNE ÉLÉGANT
+           ==================================== */
+
+        .header-modern {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.75) 100%);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(248, 187, 208, 0.2);
+            box-shadow: 0 4px 20px rgba(248, 187, 208, 0.08);
+            opacity: 0;
+            transform: translateY(-10px);
+            animation: headerFadeIn 0.6s ease-out forwards;
+        }
+
+        @keyframes headerFadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Logo avec effet zoom */
+        .header-logo {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .logo-container {
+            position: relative;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .header-logo:hover .logo-container {
+            transform: scale(1.1) rotate(2deg);
+        }
+
+        .logo-img {
+            transition: filter 0.3s ease;
+            filter: drop-shadow(0 2px 8px rgba(248, 187, 208, 0.2));
+        }
+
+        .header-logo:hover .logo-img {
+            filter: drop-shadow(0 4px 12px rgba(248, 187, 208, 0.4));
+        }
+
+        .logo-text {
+            transition: all 0.3s ease;
+        }
+
+        .header-logo:hover .logo-text {
+            background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 50%, #3b82f6 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+        }
+
+        /* Menu navigation */
+        .nav-menu {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .nav-link {
+            color: #6b7280;
+            font-weight: 500;
+            position: relative;
+            text-decoration: none;
+        }
+
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 9999px;
+            background: linear-gradient(135deg, rgba(236, 72, 153, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: #ec4899;
+        }
+
+        .nav-link:hover::before {
+            opacity: 1;
+        }
+
+        .nav-link.active {
+            color: #ec4899;
+            background: linear-gradient(135deg, rgba(236, 72, 153, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%);
+            font-weight: 600;
+        }
+
+        .nav-link.active::before {
+            opacity: 1;
+        }
+
+        /* Boutons header avec dégradés synchronisés */
+        .btn-header {
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .btn-header::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 12px;
+            padding: 1px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.1));
+            -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .btn-header:hover::before {
+            opacity: 1;
+        }
+
+        .btn-login {
+            background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+            color: white;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(236, 72, 153, 0.3);
+            background: linear-gradient(135deg, #db2777 0%, #be185d 100%);
+        }
+
+        .btn-signup {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+        }
+
+        .btn-signup:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        }
+
+        /* Menu mobile */
+        .mobile-menu {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.9) 100%);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(248, 187, 208, 0.2);
+            box-shadow: 0 4px 20px rgba(248, 187, 208, 0.1);
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .mobile-nav-link {
+            color: #6b7280;
+            font-weight: 500;
+            text-decoration: none;
+        }
+
+        .mobile-nav-link:hover {
+            color: #ec4899;
+            background: linear-gradient(135deg, rgba(236, 72, 153, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+        }
+
+        .mobile-nav-link.active {
+            color: #ec4899;
+            background: linear-gradient(135deg, rgba(236, 72, 153, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%);
+            font-weight: 600;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .nav-menu {
+                position: static;
+                transform: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-modern {
+                padding: 0;
+            }
+
+            .header-nav {
+                padding: 0.75rem 1rem !important;
+            }
+
+            .btn-header {
+                padding: 8px 14px;
+                font-size: 0.75rem;
+                min-height: 36px;
+            }
+
+            .header-buttons {
+                gap: 0.5rem;
+            }
+
+            /* Masquer les boutons sur très petits écrans, garder seulement hamburger */
+            @media (max-width: 480px) {
+                .btn-header {
+                    padding: 6px 12px;
+                    font-size: 0.6875rem;
+                }
+
+                .header-logo .logo-text {
+                    display: none;
+                }
+            }
+        }
+
+        /* Effet de scroll - header devient plus opaque */
+        .header-modern.scrolled {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.9) 100%);
+            box-shadow: 0 8px 30px rgba(248, 187, 208, 0.15);
+        }
     </style>
 </head>
 
 <body>
     <!-- Header -->
-    <header class="sticky top-0 z-40 backdrop-blur bg-white/70 border-b">
+    <header id="mainHeader" class="sticky top-0 z-40 header-modern">
         {% block header %}
-        <nav class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
-            <a href="/" class="flex items-center gap-2">
-                <img src="{% static 'images/logo-coucou-beaute.png' %}" class="h-10 md:h-12" alt="Coucou Beauté" />
+        <nav class="max-w-7xl mx-auto px-4 md:px-6 py-3 md:py-4 flex items-center justify-between header-nav">
+            <!-- Logo avec effet zoom -->
+            <a href="/" class="flex items-center gap-2 header-logo group">
+                <div class="logo-container">
+                    <img src="{% static 'images/logo-coucou-beaute.png' %}" class="h-10 md:h-12 logo-img"
+                        alt="Coucou Beauté" />
+                </div>
                 <span
-                    class="hidden sm:inline-block font-extrabold text-lg md:text-xl tracking-tight bg-gradient-to-r from-pinkBeauty to-blueBeauty bg-clip-text text-transparent">
+                    class="hidden sm:inline-block font-extrabold text-lg md:text-xl tracking-tight bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent logo-text">
                     Coucou Beauté
                 </span>
             </a>
-            <div class="hidden md:flex items-center gap-3 text-sm">
-                <a href="/#services"
-                    class="px-3 py-2 rounded-full text-gray-600 hover:text-pinkBeauty hover:bg-gray-100 transition">
-                    Services
-                </a>
-                <a href="/#professionals"
-                    class="px-3 py-2 rounded-full text-gray-600 hover:text-pinkBeauty hover:bg-gray-100 transition">
+
+            <!-- Menu navigation centré -->
+            <div class="hidden lg:flex items-center gap-1 md:gap-2 text-sm nav-menu">
+                <a href="/#professionals" data-section="professionals"
+                    class="nav-link px-4 py-2 rounded-full transition-all duration-300">
                     Professionnels
                 </a>
-                <a href="/#testimonials"
-                    class="px-3 py-2 rounded-full text-gray-600 hover:text-pinkBeauty hover:bg-gray-100 transition">
+                <a href="/#services" data-section="services"
+                    class="nav-link px-4 py-2 rounded-full transition-all duration-300">
+                    Services
+                </a>
+                <a href="/#testimonials" data-section="testimonials"
+                    class="nav-link px-4 py-2 rounded-full transition-all duration-300">
                     Avis
                 </a>
-                <a href="/#contact"
-                    class="px-3 py-2 rounded-full text-gray-600 hover:text-pinkBeauty hover:bg-gray-100 transition">
-                    Contact
-                </a>
+            
             </div>
-            <div class="flex items-center gap-3">
-                <a href="/login/" class="px-4 py-2 rounded-xl bg-pink-500 text-white hover:bg-pink-600 shadow-sm">Se
-                    connecter</a>
-                <a href="/signup/"
-                    class="px-4 py-2 rounded-xl bg-blueBeauty text-white hover:brightness-95 shadow-sm">S'inscrire</a>
+
+            <!-- Boutons CTA avec dégradés synchronisés -->
+            <div class="flex items-center gap-2 md:gap-3 header-buttons">
+                <a href="/login/" class="btn-header btn-login">
+                    Se connecter
+                </a>
+                <a href="/signup/" class="btn-header btn-signup">
+                    S'inscrire
+                </a>
+                <!-- Menu mobile hamburger -->
+                <button id="mobileMenuBtn"
+                    class="lg:hidden w-10 h-10 flex items-center justify-center rounded-xl bg-gradient-to-r from-pink-500/10 to-purple-500/10 hover:from-pink-500/20 hover:to-purple-500/20 transition-all duration-300">
+                    <i data-lucide="menu" class="w-6 h-6 text-pink-500"></i>
+                </button>
             </div>
         </nav>
+
+        <!-- Menu mobile -->
+        <div id="mobileMenu" class="lg:hidden hidden mobile-menu">
+            <div class="max-w-7xl mx-auto px-4 py-4 space-y-2">
+                <a href="/#professionals" data-section="professionals"
+                    class="mobile-nav-link block px-4 py-3 rounded-xl transition-all duration-300">
+                    Professionnels
+                </a>
+                <a href="/#services" data-section="services"
+                    class="mobile-nav-link block px-4 py-3 rounded-xl transition-all duration-300">
+                    Services
+                </a>
+                <a href="/#testimonials" data-section="testimonials"
+                    class="mobile-nav-link block px-4 py-3 rounded-xl transition-all duration-300">
+                    Avis
+                </a>
+              
+            </div>
+        </div>
         {% endblock %}
     </header>
 
@@ -212,6 +482,121 @@
                 el.addEventListener('mouseleave', () => { el.style.transform = '' });
             });
             // premium cursor disabled per user request
+        })();
+
+        // ====================================
+        // HEADER MODERNE - JAVASCRIPT
+        // ====================================
+        (function () {
+            const header = document.getElementById('mainHeader');
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            const mobileMenu = document.getElementById('mobileMenu');
+            const navLinks = document.querySelectorAll('.nav-link, .mobile-nav-link');
+            const sections = ['professionals', 'services', 'testimonials', 'contact'];
+
+            // Menu mobile toggle
+            if (mobileMenuBtn && mobileMenu) {
+                mobileMenuBtn.addEventListener('click', () => {
+                    const isHidden = mobileMenu.classList.contains('hidden');
+                    mobileMenu.classList.toggle('hidden');
+
+                    // Animation de l'icône
+                    const icon = mobileMenuBtn.querySelector('i');
+                    if (icon) {
+                        if (isHidden) {
+                            icon.setAttribute('data-lucide', 'x');
+                        } else {
+                            icon.setAttribute('data-lucide', 'menu');
+                        }
+                        if (window.lucide) {
+                            window.lucide.createIcons();
+                        }
+                    }
+                });
+
+                // Fermer le menu mobile au clic sur un lien
+                navLinks.forEach(link => {
+                    link.addEventListener('click', () => {
+                        if (window.innerWidth < 1024) {
+                            mobileMenu.classList.add('hidden');
+                            const icon = mobileMenuBtn.querySelector('i');
+                            if (icon) {
+                                icon.setAttribute('data-lucide', 'menu');
+                                if (window.lucide) window.lucide.createIcons();
+                            }
+                        }
+                    });
+                });
+            }
+
+            // Scroll spy - détection de section active
+            function updateActiveSection() {
+                const scrollPos = window.scrollY + 150; // Offset pour détection
+
+                sections.forEach(sectionId => {
+                    const section = document.getElementById(sectionId);
+                    if (!section) return;
+
+                    const sectionTop = section.offsetTop;
+                    const sectionHeight = section.offsetHeight;
+                    const sectionBottom = sectionTop + sectionHeight;
+
+                    const links = document.querySelectorAll(`[data-section="${sectionId}"]`);
+
+                    if (scrollPos >= sectionTop && scrollPos < sectionBottom) {
+                        links.forEach(link => link.classList.add('active'));
+                    } else {
+                        links.forEach(link => link.classList.remove('active'));
+                    }
+                });
+
+                // Gestion du scroll pour l'opacité du header
+                if (header) {
+                    if (window.scrollY > 50) {
+                        header.classList.add('scrolled');
+                    } else {
+                        header.classList.remove('scrolled');
+                    }
+                }
+            }
+
+            // Smooth scrolling pour les liens d'ancrage
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    const href = this.getAttribute('href');
+                    if (href === '#' || href === '#top') return;
+
+                    const target = document.querySelector(href);
+                    if (target) {
+                        e.preventDefault();
+                        const headerHeight = header ? header.offsetHeight : 0;
+                        const targetPosition = target.offsetTop - headerHeight - 20;
+
+                        window.scrollTo({
+                            top: targetPosition,
+                            behavior: 'smooth'
+                        });
+
+                        // Mettre à jour la section active après le scroll
+                        setTimeout(updateActiveSection, 500);
+                    }
+                });
+            });
+
+            // Écouter le scroll pour mettre à jour la section active
+            let ticking = false;
+            window.addEventListener('scroll', () => {
+                if (!ticking) {
+                    window.requestAnimationFrame(() => {
+                        updateActiveSection();
+                        ticking = false;
+                    });
+                    ticking = true;
+                }
+            });
+
+            // Initialiser au chargement
+            updateActiveSection();
         })();
     </script>
     <script src="{% static 'js/global.js' %}"></script>

@@ -1205,7 +1205,19 @@
         background: #db2777;
     }
 
-    /* Styles pour le filtre de ville */
+    /* Visually hidden utility */
+    .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 1px, 1px);
+        white-space: nowrap;
+        border: 0;
+    }
+
     /* Nouveau design pour le filtre de gouvernorat */
     .gov-filter-pill {
         position: relative;
@@ -1295,9 +1307,24 @@
             height: 40px;
         }
 
-        #cityFilter {
+        #governorateFilter {
             font-size: 0.875rem;
-            padding: 0.5rem 0.75rem;
+            padding: 0.5rem 2rem 0.5rem 2rem;
+        }
+    }
+
+    /* Réduction des animations pour accessibilité */
+    @media (prefers-reduced-motion: reduce) {
+
+        *,
+        *::before,
+        *::after {
+            animation: none !important;
+            transition: none !important;
+        }
+
+        .particle {
+            display: none !important;
         }
     }
 
@@ -1814,7 +1841,7 @@
                 <div class="relative">
                     <div class="sculpture-frame">
                         <img src="{% static 'images/image2.jpg' %}" alt="Esthétique classique – sculpture et marbre"
-                            class="sculpture" />
+                            class="sculpture" loading="eager" decoding="async" fetchpriority="high" />
                         <div class="gold-corners" aria-hidden="true">
                             <span></span><span></span><span></span><span></span>
                         </div>
@@ -1837,6 +1864,207 @@
                 </div>
             </div>
         </div>
+    </div>
+</section>
+
+<!-- Professionals Section Artistique (moved above services) -->
+<section id="professionals" class="py-24"
+    style="background: linear-gradient(135deg, var(--blanc-creme) 0%, var(--gris-tres-clair) 100%);">
+    <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center mb-20 fade-in-up">
+            <div class="inline-flex items-center px-6 py-3 rounded-full glass-card mb-6">
+                <i data-lucide="users" class="w-12 h-12 text-pink-500 mr-3"></i>
+                <span class="artistic-text text-lg" style="color: var(--dore-vintage);">Nos Artistes</span>
+            </div>
+            <h2 class="text-4xl md:text-5xl font-bold mb-6" style="color: var(--noir-doux);">
+                {% if professionals %}
+                Nos professionnelles recommandées
+                {% else %}
+                Rencontrez nos expertes
+                {% endif %}
+            </h2>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                {% if professionals %}
+                Découvrez nos professionnelles les mieux notées, avec plus de 3.5 étoiles par nos clientes.
+                Des expertes passionnées qui transforment votre beauté avec art et excellence.
+                {% else %}
+                Des professionnelles passionnées et qualifiées, dédiées à révéler votre beauté naturelle avec art et
+                expertise.
+                {% endif %}
+            </p>
+        </div>
+
+        {% if professionals %}
+        <!-- Barre de filtres et contrôles du carousel -->
+        <div class="flex flex-col md:flex-row items-center justify-between mb-8 gap-4">
+            <!-- Filtre par gouvernorat uniquement -->
+            <div class="flex items-center gap-3 flex-wrap">
+                <label for="governorateFilter" class="sr-only">Filtrer par gouvernorat</label>
+                <div class="relative gov-filter-pill">
+                    <i data-lucide="map-pin" class="gov-icon w-4 h-4" aria-hidden="true"></i>
+                    <select id="governorateFilter" name="governorate" aria-label="Filtrer par gouvernorat"
+                        title="Filtrer par gouvernorat"
+                        class="pl-8 pr-9 py-2 bg-white border-2 border-pink-200 rounded-xl focus:border-pink-500 focus:outline-none transition-all duration-300 cursor-pointer shadow-sm hover:shadow min-h-[44px]">
+                        <option value="">Tous les gouvernorats</option>
+                        {% for g in governorates %}
+                        <option value="{{ g }}">{{ g }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <span id="resultCount" class="text-sm text-gray-500 ml-2" role="status" aria-live="polite"></span>
+            </div>
+
+            <!-- Contrôles du carousel -->
+            <div class="flex items-center gap-3">
+                <button id="proPrevBtn" class="carousel-btn carousel-btn-prev" aria-label="Page précédente"
+                    aria-controls="professionalsCarousel">
+                    <i data-lucide="chevron-left" class="w-6 h-6"></i>
+                </button>
+                <div class="flex items-center gap-2">
+                    <span id="currentPage" class="text-sm font-bold text-pink-500">1</span>
+                    <span class="text-sm text-gray-400">/</span>
+                    <span id="totalPages" class="text-sm text-gray-500">1</span>
+                </div>
+                <button id="proNextBtn" class="carousel-btn carousel-btn-next" aria-label="Page suivante"
+                    aria-controls="professionalsCarousel">
+                    <i data-lucide="chevron-right" class="w-6 h-6"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Container du carousel -->
+        <div class="relative">
+            <!-- Section Ultra-Moderne des Professionnelles Recommandées -->
+            <div id="professionalsCarousel" role="region" aria-label="Liste des professionnelles"
+                class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8 transition-all duration-500">
+                {% for pro in professionals %}
+                <div class="expert-card" data-delay="{{ forloop.counter0 }}" data-expert-id="{{ pro.id }}"
+                    data-city="{{ pro.city_only }}" data-governorate="{{ pro.governorate }}">
+                    <!-- Card Container simplifié et organisé -->
+                    <div class="professional-card">
+                        <!-- Image principale -->
+                        <div class="card-image-container">
+                            {% if pro.profile_photo %}
+                            <img src="{{ pro.profile_photo }}" alt="{{ pro.full_name }}" class="card-image"
+                                loading="lazy" decoding="async"
+                                sizes="(min-width:1280px) 25vw, (min-width:1024px) 33vw, (min-width:768px) 50vw, 100vw" />
+                            {% elif pro.gallery and pro.gallery|length > 0 %}
+                            <img src="{{ pro.gallery.0 }}" alt="{{ pro.full_name }} - Galerie" class="card-image"
+                                loading="lazy" decoding="async"
+                                sizes="(min-width:1280px) 25vw, (min-width:1024px) 33vw, (min-width:768px) 50vw, 100vw" />
+                            {% else %}
+                            <div class="card-placeholder">
+                                <div class="placeholder-icon">
+                                    <i data-lucide="user" class="w-12 h-12 text-white"></i>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- Badges sur l'image -->
+                            <div class="card-badges">
+                                <!-- Badge ville -->
+                                {% if pro.city_only %}
+                                <div class="badge badge-city">
+                                    <i data-lucide="map-pin" class="w-3 h-3 inline mr-1"></i>
+                                    {{ pro.city_only }}
+                                </div>
+                                {% endif %}
+
+                                <!-- Badge certification -->
+                                <div class="badge badge-cert">
+                                    {{ pro.badge }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Informations de base (toujours visibles) -->
+                        <div
+                            class="p-6 bg-white/90 backdrop-blur-sm rounded-2xl -mt-4 relative z-10 border border-white/50 shadow-xl">
+                            <!-- Nom et centre -->
+                            <div class="mb-4">
+                                <h3 class="text-xl font-bold text-gray-800 mb-1">{{ pro.full_name }}</h3>
+                                <p class="text-sm text-gray-600 mb-1">{{ pro.business_name }}</p>
+                                <p class="text-xs text-pink-500 font-medium">{{ pro.specialty }}</p>
+                            </div>
+
+                            <!-- Prix et note -->
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex items-center space-x-3">
+                                    <div class="flex items-center">
+                                        <i data-lucide="star" class="w-4 h-4 text-yellow-400 mr-1"></i>
+                                        <span class="font-bold text-gray-800">{{ pro.rating }}</span>
+                                        <span class="text-sm text-gray-500 ml-1">({{ pro.total_reviews }} avis)</span>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-2xl font-bold text-pink-500">{{ pro.price }}D</div>
+                                    <div class="text-xs text-gray-500">à partir de</div>
+                                </div>
+                            </div>
+
+                            <!-- Bio courte -->
+                            <p class="text-sm text-gray-600 mb-4 line-clamp-2 leading-relaxed">{{
+                                pro.bio|truncatewords:12
+                                }}</p>
+
+                            <!-- Services preview -->
+                            {% if pro.services %}
+                            <div class="mb-4">
+                                <div class="flex flex-wrap gap-1">
+                                    {% for service in pro.services|slice:":2" %}
+                                    <span class="px-2 py-1 bg-pink-100 text-pink-700 rounded-full text-xs font-medium">
+                                        {{ service.name }}</span>
+                                    {% endfor %}
+                                    {% if pro.services|length > 2 %}
+                                    <span class="px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs">+{{
+                                        pro.services|length|add:"-2" }}</span>
+
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- Disponibilité et actions -->
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center text-sm text-gray-500">
+                                    <i data-lucide="clock" class="w-4 h-4 mr-1"></i>
+                                    <span>{{ pro.availability }}</span>
+                                </div>
+
+                                <!-- Bouton d'action principal -->
+                                <button
+                                    class="px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-lg text-sm font-semibold hover:from-pink-600 hover:to-purple-600 transition-all duration-300 transform hover:scale-105"
+                                    aria-label="Voir les détails de {{ pro.full_name }}">
+                                    Voir détails
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% else %}
+        <!-- Message si aucune experte 5 étoiles -->
+        <div class="text-center py-16">
+            <div
+                class="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-pink-100 to-purple-100 rounded-full mb-6">
+                <i data-lucide="star" class="w-12 h-12 text-pink-500"></i>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">Nos professionnelles se préparent</h3>
+            <p class="text-gray-600 max-w-md mx-auto mb-8">
+                Nos professionnelles travaillent dur pour mériter leurs étoiles.
+                Revenez bientôt pour découvrir nos expertes recommandées !
+            </p>
+            <a href="/signup/" class="btn-primary inline-flex items-center">
+                <i data-lucide="user-plus" class="w-5 h-5 mr-2"></i>
+                Rejoindre notre communauté
+            </a>
+        </div>
+        {% endif %}
+
+        <!-- CTA Professionnels -->
+
     </div>
 </section>
 
@@ -1931,199 +2159,7 @@
     </div>
 </section>
 
-<!-- Professionals Section Artistique -->
-<section id="professionals" class="py-24"
-    style="background: linear-gradient(135deg, var(--blanc-creme) 0%, var(--gris-tres-clair) 100%);">
-    <div class="max-w-7xl mx-auto px-6">
-        <div class="text-center mb-20 fade-in-up">
-            <div class="inline-flex items-center px-6 py-3 rounded-full glass-card mb-6">
-                <i data-lucide="users" class="w-12 h-12 text-pink-500 mr-3"></i>
-                <span class="artistic-text text-lg" style="color: var(--dore-vintage);">Nos Artistes</span>
-            </div>
-            <h2 class="text-4xl md:text-5xl font-bold mb-6" style="color: var(--noir-doux);">
-                {% if professionals %}
-                Nos professionnelles recommandées
-                {% else %}
-                Rencontrez nos expertes
-                {% endif %}
-            </h2>
-            <p class="text-xl text-gray-600 max-w-3xl mx-auto">
-                {% if professionals %}
-                Découvrez nos professionnelles les mieux notées, avec plus de 3.5 étoiles par nos clientes.
-                Des expertes passionnées qui transforment votre beauté avec art et excellence.
-                {% else %}
-                Des professionnelles passionnées et qualifiées, dédiées à révéler votre beauté naturelle avec art et
-                expertise.
-                {% endif %}
-            </p>
-        </div>
-
-        {% if professionals %}
-        <!-- Barre de filtres et contrôles du carousel -->
-        <div class="flex flex-col md:flex-row items-center justify-between mb-8 gap-4">
-            <!-- Filtre par gouvernorat uniquement -->
-            <div class="flex items-center gap-3 flex-wrap">
-                <div class="relative gov-filter-pill">
-                    <i data-lucide="map-pin" class="gov-icon w-4 h-4"></i>
-                    <select id="governorateFilter"
-                        class="pl-8 pr-9 py-2 bg-white border-2 border-pink-200 rounded-xl focus:border-pink-500 focus:outline-none transition-all duration-300 cursor-pointer shadow-sm hover:shadow">
-                        <option value="">Tous les gouvernorats</option>
-                        {% for g in governorates %}
-                        <option value="{{ g }}">{{ g }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <span id="resultCount" class="text-sm text-gray-500 ml-2"></span>
-            </div>
-
-            <!-- Contrôles du carousel -->
-            <div class="flex items-center gap-3">
-                <button id="prevBtn" class="carousel-btn carousel-btn-prev">
-                    <i data-lucide="chevron-left" class="w-6 h-6"></i>
-                </button>
-                <div class="flex items-center gap-2">
-                    <span id="currentPage" class="text-sm font-bold text-pink-500">1</span>
-                    <span class="text-sm text-gray-400">/</span>
-                    <span id="totalPages" class="text-sm text-gray-500">1</span>
-                </div>
-                <button id="nextBtn" class="carousel-btn carousel-btn-next">
-                    <i data-lucide="chevron-right" class="w-6 h-6"></i>
-                </button>
-            </div>
-        </div>
-
-        <!-- Container du carousel -->
-        <div class="relative">
-            <!-- Section Ultra-Moderne des Professionnelles Recommandées -->
-            <div id="professionalsCarousel"
-                class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8 transition-all duration-500">
-                {% for pro in professionals %}
-                <div class="expert-card" data-delay="{{ forloop.counter0 }}" data-expert-id="{{ pro.id }}"
-                    data-city="{{ pro.city_only }}" data-governorate="{{ pro.governorate }}">
-                    <!-- Card Container simplifié et organisé -->
-                    <div class="professional-card">
-                        <!-- Image principale -->
-                        <div class="card-image-container">
-                            {% if pro.profile_photo %}
-                            <img src="{{ pro.profile_photo }}" alt="{{ pro.full_name }}" class="card-image"
-                                loading="lazy" />
-                            {% elif pro.gallery and pro.gallery|length > 0 %}
-                            <img src="{{ pro.gallery.0 }}" alt="{{ pro.full_name }} - Galerie" class="card-image"
-                                loading="lazy" />
-                            {% else %}
-                            <div class="card-placeholder">
-                                <div class="placeholder-icon">
-                                    <i data-lucide="user" class="w-12 h-12 text-white"></i>
-                                </div>
-                            </div>
-                            {% endif %}
-
-                            <!-- Badges sur l'image -->
-                            <div class="card-badges">
-                                <!-- Badge ville -->
-                                {% if pro.city_only %}
-                                <div class="badge badge-city">
-                                    <i data-lucide="map-pin" class="w-3 h-3 inline mr-1"></i>
-                                    {{ pro.city_only }}
-                                </div>
-                                {% endif %}
-
-                                <!-- Badge certification -->
-                                <div class="badge badge-cert">
-                                    {{ pro.badge }}
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Informations de base (toujours visibles) -->
-                        <div
-                            class="p-6 bg-white/90 backdrop-blur-sm rounded-2xl -mt-4 relative z-10 border border-white/50 shadow-xl">
-                            <!-- Nom et centre -->
-                            <div class="mb-4">
-                                <h3 class="text-xl font-bold text-gray-800 mb-1">{{ pro.full_name }}</h3>
-                                <p class="text-sm text-gray-600 mb-1">{{ pro.business_name }}</p>
-                                <p class="text-xs text-pink-500 font-medium">{{ pro.specialty }}</p>
-                            </div>
-
-                            <!-- Prix et note -->
-                            <div class="flex items-center justify-between mb-4">
-                                <div class="flex items-center space-x-3">
-                                    <div class="flex items-center">
-                                        <i data-lucide="star" class="w-4 h-4 text-yellow-400 mr-1"></i>
-                                        <span class="font-bold text-gray-800">{{ pro.rating }}</span>
-                                        <span class="text-sm text-gray-500 ml-1">({{ pro.total_reviews }} avis)</span>
-                                    </div>
-                                </div>
-                                <div class="text-right">
-                                    <div class="text-2xl font-bold text-pink-500">{{ pro.price }}D</div>
-                                    <div class="text-xs text-gray-500">à partir de</div>
-                                </div>
-                            </div>
-
-                            <!-- Bio courte -->
-                            <p class="text-sm text-gray-600 mb-4 line-clamp-2 leading-relaxed">{{
-                                pro.bio|truncatewords:12
-                                }}</p>
-
-                            <!-- Services preview -->
-                            {% if pro.services %}
-                            <div class="mb-4">
-                                <div class="flex flex-wrap gap-1">
-                                    {% for service in pro.services|slice:":2" %}
-                                    <span class="px-2 py-1 bg-pink-100 text-pink-700 rounded-full text-xs font-medium">
-                                        {{ service.name }}</span>
-                                    {% endfor %}
-                                    {% if pro.services|length > 2 %}
-                                    <span class="px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs">+{{
-                                        pro.services|length|add:"-2" }}</span>
-
-                                    {% endif %}
-                                </div>
-                            </div>
-                            {% endif %}
-
-                            <!-- Disponibilité et actions -->
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center text-sm text-gray-500">
-                                    <i data-lucide="clock" class="w-4 h-4 mr-1"></i>
-                                    <span>{{ pro.availability }}</span>
-                                </div>
-
-                                <!-- Bouton d'action principal -->
-                                <button
-                                    class="px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-lg text-sm font-semibold hover:from-pink-600 hover:to-purple-600 transition-all duration-300 transform hover:scale-105">
-                                    Voir détails
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-        {% else %}
-        <!-- Message si aucune experte 5 étoiles -->
-        <div class="text-center py-16">
-            <div
-                class="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-pink-100 to-purple-100 rounded-full mb-6">
-                <i data-lucide="star" class="w-12 h-12 text-pink-500"></i>
-            </div>
-            <h3 class="text-2xl font-bold text-gray-800 mb-4">Nos professionnelles se préparent</h3>
-            <p class="text-gray-600 max-w-md mx-auto mb-8">
-                Nos professionnelles travaillent dur pour mériter leurs étoiles.
-                Revenez bientôt pour découvrir nos expertes recommandées !
-            </p>
-            <a href="/signup/" class="btn-primary inline-flex items-center">
-                <i data-lucide="user-plus" class="w-5 h-5 mr-2"></i>
-                Rejoindre notre communauté
-            </a>
-        </div>
-        {% endif %}
-
-        <!-- CTA Professionnels -->
-
-    </div>
-</section>
+<!-- Professionals Section Artistique (moved) -->
 
 <!-- Modal profil pro (glass) -->
 <div id="proModal" class="modal">
@@ -2276,12 +2312,12 @@
             <div class="flex justify-center mt-8 space-x-4">
                 <button
                     class="w-12 h-12 rounded-full bg-white bg-opacity-20 flex items-center justify-center hover:bg-opacity-30 transition-all duration-300"
-                    id="prevBtn">
+                    id="tPrevBtn" aria-label="Témoignage précédent">
                     <i data-lucide="chevron-left" class="w-6 h-6 text-white"></i>
                 </button>
                 <button
                     class="w-12 h-12 rounded-full bg-white bg-opacity-20 flex items-center justify-center hover:bg-opacity-30 transition-all duration-300"
-                    id="nextBtn">
+                    id="tNextBtn" aria-label="Témoignage suivant">
                     <i data-lucide="chevron-right" class="w-6 h-6 text-white"></i>
                 </button>
             </div>
@@ -2544,24 +2580,35 @@
 <script>
     window.lucide && window.lucide.createIcons();
 </script>
+<script id="authState"
+    type="application/json">{% if user.is_authenticated %}{"isAuthenticated": true}{% else %}{"isAuthenticated": false}{% endif %}</script>
 <script>
-    window.IS_AUTHENTICATED = {{ user.is_authenticated|yesno:"true,false"|lower|safe }};
-    window.redirectWithSignup = function (nextUrl) {
-        var next = encodeURIComponent(nextUrl || '/');
-        return '/signup/?next=' + next;
-    };
+    (function () {
+        try {
+            var auth = JSON.parse(document.getElementById('authState').textContent);
+            window.IS_AUTHENTICATED = !!(auth && auth.isAuthenticated);
+        } catch (e) { window.IS_AUTHENTICATED = false; }
+        window.redirectWithSignup = function (nextUrl) {
+            var next = encodeURIComponent(nextUrl || '/');
+            return '/signup/?next=' + next;
+        };
+    })();
 </script>
 <!-- Three.js + Lottie + GSAP -->
-<script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
-<script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
-<script src="https://unpkg.com/gsap@3.12.5/dist/gsap.min.js"></script>
-<script src="https://unpkg.com/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script defer src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
+<script defer src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+<script defer src="https://unpkg.com/gsap@3.12.5/dist/gsap.min.js"></script>
+<script defer src="https://unpkg.com/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
 <script>
-    // Initialiser GSAP ScrollTrigger
-    gsap.registerPlugin(ScrollTrigger);
+    const REDUCE_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // Initialiser GSAP ScrollTrigger si animations autorisées
+    if (!REDUCE_MOTION && window.gsap && window.ScrollTrigger) {
+        gsap.registerPlugin(ScrollTrigger);
+    }
 
     // Typewriter effect artistique
     (function () {
+        if (REDUCE_MOTION) return;
         const el = document.getElementById('typewriter');
         if (!el) return;
 
@@ -2604,6 +2651,7 @@
 
     // Animations d'apparition au scroll
     (function () {
+        if (REDUCE_MOTION) return;
         const observerOptions = {
             threshold: 0.1,
             rootMargin: '0px 0px -50px 0px'
@@ -2626,8 +2674,8 @@
     // Carousel de témoignages artistique
     (function () {
         const track = document.getElementById('tTrack');
-        const prevBtn = document.getElementById('prevBtn');
-        const nextBtn = document.getElementById('nextBtn');
+        const prevBtn = document.getElementById('tPrevBtn');
+        const nextBtn = document.getElementById('tNextBtn');
 
         if (!track || !prevBtn || !nextBtn) return;
 
@@ -2658,7 +2706,7 @@
         prevBtn.addEventListener('click', prevSlide);
 
         // Auto-play
-        setInterval(nextSlide, 5000);
+        if (!REDUCE_MOTION) setInterval(nextSlide, 5000);
 
         // Effets 3D au hover
         cards.forEach((card, index) => {
@@ -2686,6 +2734,7 @@
 
     // Effets hover pour les cartes de services
     (function () {
+        if (REDUCE_MOTION) return;
         document.querySelectorAll('.service-card').forEach(card => {
             card.addEventListener('mouseenter', () => {
                 gsap.to(card, {
@@ -2709,6 +2758,7 @@
 
     // Effets hover pour les cartes de professionnelles
     (function () {
+        if (REDUCE_MOTION) return;
         document.querySelectorAll('.pro-card').forEach(card => {
             card.addEventListener('mouseenter', () => {
                 gsap.to(card, {
@@ -2732,6 +2782,7 @@
 
     // Effets de particules flottantes
     (function () {
+        if (REDUCE_MOTION) return;
         const particles = document.querySelectorAll('.particle');
         particles.forEach((particle, index) => {
             gsap.to(particle, {
@@ -2749,6 +2800,7 @@
 
     // Animation des étoiles
     (function () {
+        if (REDUCE_MOTION) return;
         document.querySelectorAll('.star-anim').forEach((star, index) => {
             gsap.to(star, {
                 duration: 2.5,
@@ -2764,6 +2816,7 @@
 
     // Effets de focus pour les inputs
     (function () {
+        if (REDUCE_MOTION) return;
         document.querySelectorAll('.form-input').forEach(input => {
             input.addEventListener('focus', () => {
                 gsap.to(input, {
@@ -3007,7 +3060,8 @@
     // Three.js background artistique
     (function () {
         const canvas = document.getElementById('hero3d');
-        if (!canvas || !window.THREE) return;
+        const skipHeavy = window.matchMedia('(prefers-reduced-motion: reduce)').matches || window.innerWidth < 768;
+        if (!canvas || !window.THREE || skipHeavy) return;
 
         const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
         const scene = new THREE.Scene();
@@ -3243,9 +3297,15 @@
     </div>
 </div>
 
+<script id="professionalsData" type="application/json">{{ professionals_json|safe }}</script>
 <script>
     // Passer les données des professionnelles au JavaScript
-    window.professionalsData = {{ professionals_json | safe }};
+    window.professionalsData = (function () {
+        try {
+            const el = document.getElementById('professionalsData');
+            return el ? JSON.parse(el.textContent) : {};
+        } catch (e) { return {}; }
+    })();
 
     // Gestion du modal
     document.addEventListener('DOMContentLoaded', function () {
@@ -3521,12 +3581,12 @@
         attachCardListeners();
     });
 
-    // Gestion du filtre de ville et du carousel
+    // Gestion du filtre de gouvernorat et du carousel
     document.addEventListener('DOMContentLoaded', function () {
         const governorateFilter = document.getElementById('governorateFilter');
         const carousel = document.getElementById('professionalsCarousel');
-        const prevBtn = document.getElementById('prevBtn');
-        const nextBtn = document.getElementById('nextBtn');
+        const prevBtn = document.getElementById('proPrevBtn');
+        const nextBtn = document.getElementById('proNextBtn');
         const currentPageSpan = document.getElementById('currentPage');
         const totalPagesSpan = document.getElementById('totalPages');
         const resultCount = document.getElementById('resultCount');
