@@ -4,6 +4,16 @@
 
 {% block extra_css %}
 <style>
+    /* CSS Variables for consistent theming */
+    :root {
+        --texte-principal: #1f2937;
+        --texte-secondaire: #6b7280;
+        --rose-pastel: #FFB6D9;
+        --bleu-lavande: #C9B8FF;
+        --vert-menthe: #34d399;
+        --orange-doux: #fbbf24;
+    }
+
     .gradient-text {
         background: linear-gradient(135deg, #ec4899 0%, #3b82f6 100%);
         -webkit-background-clip: text;
@@ -11,489 +21,342 @@
         background-clip: text;
     }
 
-    .appointment-card {
-        background: linear-gradient(135deg, rgba(255, 255, 255, .85), rgba(255, 255, 255, .65));
-        border: 1px solid rgba(255, 255, 255, .8);
-        border-radius: 20px;
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        box-shadow: 0 8px 32px rgba(16, 24, 40, .08);
+    /* Tab Navigation */
+    .tab-container {
+        background: rgba(255, 255, 255, 0.6);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-radius: 16px;
+        padding: 0.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        display: inline-flex;
+        gap: 0.5rem;
+    }
+
+    .tab-button {
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.9375rem;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        position: relative;
+        border: none;
+        background: transparent;
+        color: var(--texte-secondaire);
+    }
+
+    .tab-button.active {
+        background: linear-gradient(135deg, #FFB6D9, #C9B8FF);
+        color: white;
+        box-shadow: 0 4px 12px rgba(255, 182, 217, 0.4);
+    }
+
+    .tab-button:hover:not(.active) {
+        background: rgba(255, 182, 217, 0.1);
+        color: var(--texte-principal);
+    }
+
+    .tab-content {
+        display: none !important;
+        animation: fadeIn 0.3s ease-in-out;
+    }
+
+    .tab-content.active {
+        display: block !important;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Glassmorphism Cards */
+    .glass-card {
+        background: rgba(255, 255, 255, 0.75);
+        border: 1px solid rgba(255, 255, 255, 0.9);
+        border-radius: 20px;
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         position: relative;
         overflow: hidden;
     }
 
-    .appointment-card::before {
+    .glass-card::before {
         content: '';
         position: absolute;
         top: 0;
         left: 0;
         right: 0;
         height: 4px;
-        background: linear-gradient(90deg, #ec4899, #3b82f6);
+        background: linear-gradient(90deg, #FFB6D9, #C9B8FF);
         opacity: 0;
         transition: opacity 0.3s ease;
     }
 
-    .appointment-card:hover {
-        transform: translateY(-8px) scale(1.02);
-        box-shadow: 0 20px 40px rgba(16, 24, 40, .15);
-        border-color: rgba(255, 255, 255, .9);
+    .glass-card:hover {
+        transform: translateY(-4px) scale(1.01);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+        background: rgba(255, 255, 255, 0.85);
     }
 
-    .appointment-card:hover::before {
+    .glass-card:hover::before {
         opacity: 1;
     }
 
+    .glass-card.pending::before {
+        background: linear-gradient(90deg, #fbbf24, #f59e0b);
+    }
+
+    .glass-card.confirmed::before {
+        background: linear-gradient(90deg, #34d399, #14b8a6);
+    }
+
+    /* Status Badge */
     .status-badge {
-        padding: 6px 14px;
+        padding: 6px 12px;
         border-radius: 12px;
-        font-size: 12px;
-        font-weight: 600;
+        font-size: 11px;
+        font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        backdrop-filter: blur(8px);
-        border: 1px solid rgba(255, 255, 255, .4);
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     }
 
     .status-pending {
-        background: linear-gradient(135deg, rgba(251, 191, 36, .2), rgba(245, 158, 11, .2));
-        color: #b45309;
-        border-color: rgba(251, 191, 36, .3);
+        background: linear-gradient(135deg, #fbbf24, #facc15);
+        color: white;
     }
 
     .status-confirmed {
-        background: linear-gradient(135deg, rgba(34, 197, 94, .2), rgba(22, 163, 74, .2));
-        color: #15803d;
-        border-color: rgba(34, 197, 94, .3);
+        background: linear-gradient(135deg, #34d399, #14b8a6);
+        color: white;
     }
 
+    /* Action Buttons */
     .action-button {
         padding: 10px 18px;
         border-radius: 12px;
         font-weight: 600;
-        font-size: 14px;
+        font-size: 13px;
         border: none;
-        backdrop-filter: blur(8px);
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         cursor: pointer;
         display: inline-flex;
         align-items: center;
+        justify-content: center;
         gap: 6px;
+        position: relative;
+        overflow: hidden;
     }
 
     .action-accept {
-        background: linear-gradient(135deg, #10b981, #059669);
+        background: linear-gradient(135deg, #34d399, #14b8a6);
         color: white;
-        box-shadow: 0 4px 12px rgba(16, 185, 129, .3);
+        box-shadow: 0 4px 16px rgba(52, 211, 153, 0.3);
     }
 
     .action-accept:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(16, 185, 129, .4);
-        background: linear-gradient(135deg, #059669, #047857);
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: 0 8px 24px rgba(52, 211, 153, 0.4);
     }
 
     .action-reject {
-        background: linear-gradient(135deg, #ef4444, #dc2626);
+        background: linear-gradient(135deg, #fb7185, #f87171);
         color: white;
-        box-shadow: 0 4px 12px rgba(239, 68, 68, .3);
+        box-shadow: 0 4px 16px rgba(251, 113, 133, 0.3);
     }
 
     .action-reject:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(239, 68, 68, .4);
-        background: linear-gradient(135deg, #dc2626, #b91c1c);
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: 0 8px 24px rgba(251, 113, 133, 0.4);
     }
 
-    .notification-panel {
-        background: linear-gradient(135deg, rgba(255, 255, 255, .9), rgba(255, 255, 255, .7));
-        border: 1px solid rgba(255, 255, 255, .8);
-        border-radius: 24px;
-        backdrop-filter: blur(16px);
-        box-shadow: 0 12px 40px rgba(16, 24, 40, .1);
+    .action-view-details {
+        background: linear-gradient(135deg, #FFB6D9, #C9B8FF);
+        color: white;
+        box-shadow: 0 4px 16px rgba(255, 182, 217, 0.3);
     }
 
-    .notification-item {
-        background: linear-gradient(135deg, rgba(248, 250, 252, .8), rgba(241, 245, 249, .6));
-        border: 1px solid rgba(226, 232, 240, .5);
+    .action-view-details:hover {
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: 0 8px 24px rgba(255, 182, 217, 0.4);
+    }
+
+    /* Filters */
+    .filter-container {
+        background: rgba(255, 255, 255, 0.6);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
         border-radius: 16px;
+        padding: 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    }
+
+    .filter-select {
+        padding: 0.5rem 1rem;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 182, 217, 0.3);
+        background: rgba(255, 255, 255, 0.9);
+        font-size: 0.875rem;
         transition: all 0.2s ease;
     }
 
-    .notification-item:hover {
-        transform: translateX(4px);
-        box-shadow: 0 4px 12px rgba(16, 24, 40, .08);
+    .filter-select:focus {
+        outline: none;
+        border-color: #FFB6D9;
+        box-shadow: 0 0 0 3px rgba(255, 182, 217, 0.1);
     }
 
-    .stats-counter {
-        background: linear-gradient(135deg, rgba(255, 255, 255, .95), rgba(255, 255, 255, .85));
-        border: 1px solid rgba(255, 255, 255, .6);
-        border-radius: 16px;
-        padding: 8px 16px;
+    /* Time Period Sections */
+    .time-period-section {
+        margin-bottom: 2rem;
+    }
+
+    .time-period-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid rgba(255, 182, 217, 0.2);
+    }
+
+    .clickable-period {
+        cursor: pointer;
+        user-select: none;
+        transition: all 0.3s ease;
+        border-radius: 12px;
+        padding: 0.75rem 1rem;
+        margin: -0.75rem -1rem;
+    }
+
+    .clickable-period:hover {
+        background: rgba(255, 182, 217, 0.1);
+    }
+
+    .clickable-period.expanded .period-chevron {
+        transform: rotate(180deg);
+    }
+
+    .period-content {
+        margin-top: 1rem;
+        animation: slideDown 0.3s ease-out;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .time-period-title {
+        font-size: 1.125rem;
         font-weight: 700;
-        font-size: 13px;
-        letter-spacing: 0.5px;
-        backdrop-filter: blur(8px);
-        box-shadow: 0 4px 12px rgba(16, 24, 40, .06);
+        color: var(--texte-principal);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
     }
 
-    .counter-pending {
-        color: #d97706;
-        background: linear-gradient(135deg, rgba(251, 191, 36, .15), rgba(245, 158, 11, .1));
-        border-color: rgba(251, 191, 36, .2);
+    .appointments-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 1.5rem;
     }
 
-    .counter-confirmed {
-        color: #059669;
-        background: linear-gradient(135deg, rgba(34, 197, 94, .15), rgba(22, 163, 74, .1));
-        border-color: rgba(34, 197, 94, .2);
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: var(--texte-secondaire);
     }
 
-    /* ==========================
-       RESPONSIVE MOBILE OPTIMIZATIONS
-       ========================== */
+    .empty-state-icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 1rem;
+        background: linear-gradient(135deg, rgba(255, 182, 217, 0.2), rgba(201, 184, 255, 0.2));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Modal */
+    .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+        z-index: 1000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .modal-overlay.active {
+        display: flex;
+        opacity: 1;
+    }
+
+    .modal-content {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-radius: 24px;
+        padding: 2rem;
+        max-width: 600px;
+        width: 90%;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        transform: scale(0.9);
+        transition: transform 0.3s ease;
+    }
+
+    .modal-overlay.active .modal-content {
+        transform: scale(1);
+    }
+
+    /* Responsive */
     @media (max-width: 768px) {
-
-        /* Mobile body */
-        body {
-            font-size: 16px !important;
-            -webkit-text-size-adjust: 100%;
-        }
-
-        /* Hide blob animations on mobile */
-        .animate-blob-1,
-        .animate-blob-2 {
-            display: none !important;
-        }
-
-        /* Container mobile */
-        .max-w-7xl {
-            padding-left: 1rem !important;
-            padding-right: 1rem !important;
-        }
-
-        .px-6 {
-            padding-left: 1rem !important;
-            padding-right: 1rem !important;
-        }
-
-        .py-10 {
-            padding-top: 1.5rem !important;
-            padding-bottom: 1.5rem !important;
-        }
-
-        /* Header mobile */
-        .flex.items-center.justify-between.mb-10 {
-            flex-direction: column !important;
-            align-items: flex-start !important;
-            gap: 1rem !important;
-            margin-bottom: 1.5rem !important;
-        }
-
-        .w-16.h-16 {
-            width: 3rem !important;
-            height: 3rem !important;
-        }
-
-        .w-16.h-16 [data-lucide] {
-            width: 1.5rem !important;
-            height: 1.5rem !important;
-        }
-
-        h1.text-4xl {
-            font-size: 1.5rem !important;
-            margin-bottom: 0.5rem !important;
-        }
-
-        .text-gray-600.text-lg {
-            font-size: 0.9375rem !important;
-        }
-
-        /* Back button mobile */
-        .kpi-glass.px-6 {
+        .tab-container {
             width: 100%;
-            justify-content: center;
-            padding: 0.875rem 1rem !important;
+            flex-direction: column;
         }
 
-        /* Notifications panel mobile */
-        .notification-panel {
-            padding: 1rem !important;
-            border-radius: 1.5rem !important;
-            margin-bottom: 1.5rem !important;
+        .tab-button {
+            width: 100%;
         }
 
-        .notification-panel .w-12.h-12 {
-            width: 2.5rem !important;
-            height: 2.5rem !important;
+        .appointments-grid {
+            grid-template-columns: 1fr;
         }
 
-        .notification-panel h2.text-xl {
-            font-size: 1.125rem !important;
-        }
-
-        .notification-panel .text-sm {
-            font-size: 0.8125rem !important;
-        }
-
-        /* Notifications grid mobile */
-        .grid.grid-cols-1.lg\\:grid-cols-2 {
-            grid-template-columns: 1fr !important;
-            gap: 0.75rem !important;
-        }
-
-        .notification-item {
-            padding: 0.875rem !important;
-        }
-
-        .notification-item .w-10.h-10 {
-            width: 2rem !important;
-            height: 2rem !important;
-        }
-
-        .notification-item .w-10.h-10 [data-lucide] {
-            width: 1rem !important;
-            height: 1rem !important;
-        }
-
-        .notification-item .font-semibold {
-            font-size: 0.875rem !important;
-        }
-
-        .notification-item .text-sm {
-            font-size: 0.75rem !important;
-        }
-
-        .notification-item .text-xs {
-            font-size: 0.6875rem !important;
-        }
-
-        /* Appointments grid mobile */
-        .grid.grid-cols-1.xl\\:grid-cols-2 {
-            grid-template-columns: 1fr !important;
-            gap: 1.5rem !important;
-        }
-
-        /* KPI glass cards mobile */
-        .kpi-glass {
-            padding: 1rem !important;
-        }
-
-        .kpi-glass .w-12.h-12 {
-            width: 2.5rem !important;
-            height: 2.5rem !important;
-        }
-
-        .kpi-glass .w-12.h-12 [data-lucide] {
-            width: 1.25rem !important;
-            height: 1.25rem !important;
-        }
-
-        .kpi-glass h2.text-xl {
-            font-size: 1.125rem !important;
-        }
-
-        .kpi-glass .text-sm {
-            font-size: 0.8125rem !important;
-        }
-
-        /* Stats counter mobile */
-        .stats-counter {
-            padding: 0.5rem 0.875rem !important;
-            font-size: 0.75rem !important;
-        }
-
-        /* Appointment cards mobile */
-        .appointment-card {
-            padding: 1rem !important;
-            border-radius: 1rem !important;
-        }
-
-        .appointment-card .w-10.h-10 {
-            width: 2rem !important;
-            height: 2rem !important;
-        }
-
-        .appointment-card .w-10.h-10 [data-lucide] {
-            width: 1.125rem !important;
-            height: 1.125rem !important;
-        }
-
-        .appointment-card h3 {
-            font-size: 0.9375rem !important;
-        }
-
-        .appointment-card .text-sm {
-            font-size: 0.75rem !important;
-        }
-
-        .appointment-card .text-xs {
-            font-size: 0.6875rem !important;
-        }
-
-        /* Status badge mobile */
-        .status-badge {
-            padding: 0.375rem 0.75rem !important;
-            font-size: 0.625rem !important;
-        }
-
-        /* Info grids mobile */
-        .grid.grid-cols-2 {
-            grid-template-columns: 1fr 1fr !important;
-            gap: 0.75rem !important;
-        }
-
-        /* Client info mobile */
-        .appointment-card .p-3 {
-            padding: 0.75rem !important;
-        }
-
-        .appointment-card .w-4.h-4 {
-            width: 0.875rem !important;
-            height: 0.875rem !important;
-        }
-
-        .appointment-card .w-3.h-3 {
-            width: 0.75rem !important;
-            height: 0.75rem !important;
-        }
-
-        /* Action buttons mobile */
-        .action-button {
-            padding: 0.75rem 1rem !important;
-            font-size: 0.8125rem !important;
-            min-height: 44px;
-        }
-
-        .action-button [data-lucide] {
-            width: 0.875rem !important;
-            height: 0.875rem !important;
-        }
-
-        /* Empty state mobile */
-        .text-center.py-12 {
-            padding: 2rem 1rem !important;
-        }
-
-        .w-16.h-16.rounded-full {
-            width: 4rem !important;
-            height: 4rem !important;
-        }
-
-        .text-lg.font-semibold {
-            font-size: 1rem !important;
-        }
-
-        /* Scrollable areas mobile */
-        .space-y-4.max-h-96 {
-            max-height: none !important;
-        }
-
-        .space-y-4>*+* {
-            margin-top: 0.75rem !important;
-        }
-
-        /* Spacing adjustments */
-        .mb-6 {
-            margin-bottom: 1rem !important;
-        }
-
-        .mb-4 {
-            margin-bottom: 0.75rem !important;
-        }
-
-        .gap-8 {
-            gap: 1.5rem !important;
-        }
-
-        .gap-6 {
-            gap: 1rem !important;
-        }
-
-        .gap-4 {
-            gap: 0.75rem !important;
-        }
-
-        .gap-3 {
-            gap: 0.5rem !important;
-        }
-
-        .gap-2 {
-            gap: 0.375rem !important;
-        }
-    }
-
-    /* Small mobile (iPhone SE) */
-    @media (max-width: 375px) {
-        h1.text-4xl {
-            font-size: 1.25rem !important;
-        }
-
-        .kpi-glass,
-        .notification-panel {
-            padding: 0.75rem !important;
-        }
-
-        .appointment-card {
-            padding: 0.75rem !important;
-        }
-
-        .action-button {
-            padding: 0.625rem 0.875rem !important;
-            font-size: 0.75rem !important;
-        }
-
-        .grid.grid-cols-2 {
-            grid-template-columns: 1fr !important;
-            gap: 0.5rem !important;
-        }
-    }
-
-    /* Landscape mobile */
-    @media (max-width: 768px) and (orientation: landscape) {
-        .py-10 {
-            padding-top: 1rem !important;
-            padding-bottom: 1rem !important;
-        }
-
-        .grid.grid-cols-1.xl\\:grid-cols-2 {
-            grid-template-columns: repeat(2, 1fr) !important;
-        }
-
-        .space-y-4.max-h-96 {
-            max-height: 50vh !important;
-            overflow-y: auto !important;
-        }
-    }
-
-    /* Touch device optimizations */
-    @media (hover: none) and (pointer: coarse) {
-
-        .appointment-card,
-        .action-button,
-        .notification-item {
-            -webkit-tap-highlight-color: rgba(242, 139, 178, 0.2);
-        }
-
-        * {
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .action-button:active {
-            opacity: 0.85;
-            transform: scale(0.98);
-        }
-
-        .appointment-card:hover {
-            transform: translateY(-4px) scale(1.01);
-        }
-    }
-
-    /* iOS Safari fixes */
-    @supports (-webkit-touch-callout: none) {
-        .min-h-screen {
-            min-height: -webkit-fill-available;
+        .filter-container {
+            flex-direction: column;
         }
     }
 </style>
@@ -511,7 +374,7 @@
 
     <div class="relative z-10 max-w-7xl mx-auto px-6 py-10">
         <!-- Header Section -->
-        <div class="flex items-center justify-between mb-10">
+        <div class="flex items-center justify-between mb-8">
             <div class="flex items-center gap-4">
                 <div
                     class="w-16 h-16 rounded-2xl bg-gradient-to-br from-pink-400 to-blue-500 flex items-center justify-center shadow-xl">
@@ -523,76 +386,31 @@
                 </div>
             </div>
             <a href="{% url 'front_web:pro_dashboard' %}"
-                class="kpi-glass px-6 py-3 rounded-xl font-semibold text-gray-700 hover:text-pink-600 transition-colors flex items-center gap-2">
+                class="px-6 py-3 rounded-xl font-semibold text-gray-700 hover:text-pink-600 transition-colors flex items-center gap-2 glass-card">
                 <i data-lucide="arrow-left" class="w-5 h-5"></i>
                 Tableau de bord
             </a>
         </div>
 
-
-        <!-- Notifications Panel -->
-        {% if recent_notifications %}
-        <div class="notification-panel p-8 mb-8">
-            <div class="flex items-center justify-between mb-6">
-                <div class="flex items-center gap-3">
-                    <div
-                        class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center shadow-lg">
-                        <i data-lucide="bell-ring" class="w-6 h-6 text-white"></i>
-                    </div>
-                    <div>
-                        <h2 class="text-xl font-bold text-gray-900">Notifications récentes</h2>
-                        <p class="text-gray-600 text-sm">Suivez l'activité de vos rendez-vous</p>
-                    </div>
-                </div>
-                {% if unread_count > 0 %}
-                <div class="flex items-center gap-2">
-                    <div class="w-3 h-3 bg-red-400 rounded-full animate-pulse"></div>
-                    <span class="stats-counter bg-gradient-to-r from-red-100 to-red-50 text-red-700 border-red-200">
-                        {{ unread_count }} non lues</span>
-                </div>
-                {% endif %}
-            </div>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 max-h-80 overflow-y-auto">
-                {% for notification in recent_notifications|slice:":6" %}
-                <div
-                    class="notification-item p-4 {% if not notification.is_read %}border-l-4 border-l-blue-400{% endif %}">
-                    <div class="flex items-start gap-4">
-                        <div class="flex-shrink-0">
-                            <div
-                                class="w-10 h-10 rounded-xl flex items-center justify-center {% if 'demande' in notification.title %}bg-gradient-to-br from-blue-400 to-blue-500{% elif 'confirmé' in notification.title %}bg-gradient-to-br from-green-400 to-green-500{% elif 'annulé' in notification.title %}bg-gradient-to-br from-red-400 to-red-500{% else %}bg-gradient-to-br from-gray-400 to-gray-500{% endif %}">
-                                {% if 'demande' in notification.title %}
-                                <i data-lucide="calendar-plus" class="w-5 h-5 text-white"></i>
-                                {% elif 'confirmé' in notification.title %}
-                                <i data-lucide="check-circle-2" class="w-5 h-5 text-white"></i>
-                                {% elif 'annulé' in notification.title %}
-                                <i data-lucide="x-circle" class="w-5 h-5 text-white"></i>
-                                {% else %}
-                                <i data-lucide="bell" class="w-5 h-5 text-white"></i>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="font-semibold text-gray-900 mb-1">{{ notification.title }}</div>
-                            <div class="text-sm text-gray-600 mb-2 line-clamp-2">{{ notification.body }}</div>
-                            <div class="flex items-center gap-2">
-                                <i data-lucide="clock" class="w-3 h-3 text-gray-400"></i>
-                                <span class="text-xs text-gray-500">{{ notification.created_at|timesince }}</span>
-                                {% if not notification.is_read %}
-                                <span class="ml-auto w-2 h-2 bg-blue-400 rounded-full"></span>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
+        <!-- Tab Navigation -->
+        <div class="mb-8">
+            <div class="tab-container">
+                <button class="tab-button active" data-tab="pending">
+                    <i data-lucide="clock" class="w-4 h-4"></i>
+                    Demandes en attente
+                    <span class="ml-2 px-2 py-0.5 rounded-full bg-white/30 text-xs">{{ pending|length }}</span>
+                </button>
+                <button class="tab-button" data-tab="confirmed">
+                    <i data-lucide="calendar-check" class="w-4 h-4"></i>
+                    Rendez-vous confirmés
+                    <span class="ml-2 px-2 py-0.5 rounded-full bg-white/30 text-xs">{{ confirmed|length }}</span>
+                </button>
             </div>
         </div>
-        {% endif %}
 
-        <!-- Appointments Sections -->
-        <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
-            <!-- Demandes en attente -->
-            <div class="kpi-glass p-8">
+        <!-- Tab Content: Pending -->
+        <div id="tab-pending" class="tab-content active">
+            <div class="glass-card p-8">
                 <div class="flex items-center justify-between mb-6">
                     <div class="flex items-center gap-3">
                         <div
@@ -604,13 +422,16 @@
                             <p class="text-gray-600 text-sm">Nouvelles demandes de vos clients</p>
                         </div>
                     </div>
-                    <span class="stats-counter counter-pending">{{ pending|length }}</span>
+                    <span
+                        class="px-4 py-2 rounded-full bg-gradient-to-r from-amber-100 to-orange-100 text-amber-700 font-semibold text-sm">
+                        {{ pending|length }} demande{{ pending|length|pluralize }}
+                    </span>
                 </div>
 
                 {% if pending %}
-                <div class="space-y-4 max-h-96 overflow-y-auto">
+                <div class="space-y-4 max-h-[600px] overflow-y-auto pr-2">
                     {% for a in pending %}
-                    <div class="appointment-card p-6">
+                    <div class="glass-card pending p-6">
                         <div class="flex items-start justify-between mb-4">
                             <div class="flex items-center gap-3">
                                 <div
@@ -622,7 +443,10 @@
                                     <p class="text-sm text-gray-600">{{ a.service_name }}</p>
                                 </div>
                             </div>
-                            <span class="status-badge status-pending">En attente</span>
+                            <span class="status-badge status-pending">
+                                <i data-lucide="clock" class="w-3 h-3"></i>
+                                En attente
+                            </span>
                         </div>
 
                         <div class="grid grid-cols-2 gap-4 mb-6">
@@ -640,55 +464,58 @@
                             </div>
                             <div class="flex items-center gap-2">
                                 <i data-lucide="timer" class="w-4 h-4 text-gray-500"></i>
-                                <span class="text-sm text-gray-600">1h</span>
+                                <span class="text-sm text-gray-600">
+                                    {% with duration=a.end|date:"U"|add:"-"|add:a.start|date:"U" %}
+                                    {% widthratio duration 3600 1 %}h
+                                    {% endwith %}
+                                </span>
                             </div>
                         </div>
 
-                        <!-- Informations client détaillées -->
-                        <div class="mb-4 p-3 bg-blue-50 rounded-lg">
-                            <div class="flex items-center gap-2 mb-2">
+                        <!-- Informations client -->
+                        <div
+                            class="mb-4 p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
+                            <div class="flex items-center gap-2 mb-3">
                                 <i data-lucide="user" class="w-4 h-4 text-blue-500"></i>
-                                <span class="text-sm font-medium text-blue-700">Informations client</span>
+                                <span class="text-sm font-semibold text-blue-700">Informations client</span>
                             </div>
                             <div class="grid grid-cols-1 gap-2 text-xs">
                                 {% if a.client_email %}
-                                <div class="flex items-center gap-2">
-                                    <i data-lucide="mail" class="w-3 h-3 text-blue-400"></i>
-                                    <span class="text-blue-600">{{ a.client_email }}</span>
+                                <div class="flex items-center gap-2 p-2 bg-white/60 rounded-lg">
+                                    <i data-lucide="mail" class="w-3.5 h-3.5 text-blue-400"></i>
+                                    <a href="mailto:{{ a.client_email }}"
+                                        class="text-blue-600 font-medium hover:text-blue-700">{{ a.client_email }}</a>
                                 </div>
                                 {% endif %}
                                 {% if a.client_phone %}
-                                <div class="flex items-center gap-2">
-                                    <i data-lucide="phone" class="w-3 h-3 text-blue-400"></i>
-                                    <span class="text-blue-600">{{ a.client_phone }}</span>
-                                </div>
-                                {% endif %}
-                                {% if a.client_first_name and a.client_last_name %}
-                                <div class="flex items-center gap-2">
-                                    <i data-lucide="user-check" class="w-3 h-3 text-blue-400"></i>
-                                    <span class="text-blue-600">{{ a.client_first_name }} {{ a.client_last_name
-                                        }}</span>
+                                <div class="flex items-center gap-2 p-2 bg-white/60 rounded-lg">
+                                    <i data-lucide="phone" class="w-3.5 h-3.5 text-blue-400"></i>
+                                    <a href="tel:{{ a.client_phone }}"
+                                        class="text-blue-600 font-medium hover:text-blue-700">{{ a.client_phone }}</a>
                                 </div>
                                 {% endif %}
                             </div>
                         </div>
 
                         {% if a.notes %}
-                        <div class="mb-4 p-3 bg-gray-50 rounded-lg">
-                            <div class="flex items-center gap-2 mb-1">
+                        <div
+                            class="mb-4 p-4 bg-gradient-to-br from-gray-50 to-slate-50 rounded-xl border border-gray-100">
+                            <div class="flex items-center gap-2 mb-2">
                                 <i data-lucide="message-circle" class="w-4 h-4 text-gray-500"></i>
-                                <span class="text-sm font-medium text-gray-700">Note du client</span>
+                                <span class="text-sm font-semibold text-gray-700">Note du client</span>
                             </div>
-                            <p class="text-sm text-gray-600">{{ a.notes }}</p>
+                            <p class="text-sm text-gray-600 leading-relaxed">{{ a.notes }}</p>
                         </div>
                         {% endif %}
 
                         <div class="flex gap-3">
-                            <button onclick="proAccept({{ a.id }})" class="action-button action-accept flex-1">
+                            <button data-appointment-id="{{ a.id }}" data-action="accept"
+                                class="action-button action-accept flex-1">
                                 <i data-lucide="check" class="w-4 h-4"></i>
                                 Accepter
                             </button>
-                            <button onclick="proReject({{ a.id }})" class="action-button action-reject flex-1">
+                            <button data-appointment-id="{{ a.id }}" data-action="reject"
+                                class="action-button action-reject flex-1">
                                 <i data-lucide="x" class="w-4 h-4"></i>
                                 Refuser
                             </button>
@@ -697,137 +524,492 @@
                     {% endfor %}
                 </div>
                 {% else %}
-                <div class="text-center py-12">
-                    <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
-                        <i data-lucide="calendar-check" class="w-8 h-8 text-gray-400"></i>
+                <div class="empty-state">
+                    <div class="empty-state-icon">
+                        <i data-lucide="calendar-check" class="w-10 h-10 text-gray-400"></i>
                     </div>
                     <h3 class="text-lg font-semibold text-gray-600 mb-2">Aucune demande en attente</h3>
                     <p class="text-gray-500">Toutes vos demandes ont été traitées</p>
                 </div>
                 {% endif %}
             </div>
+        </div>
 
-            <!-- Rendez-vous confirmés -->
-            <div class="kpi-glass p-8">
-                <div class="flex items-center justify-between mb-6">
-                    <div class="flex items-center gap-3">
-                        <div
-                            class="w-12 h-12 rounded-xl bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center shadow-lg">
-                            <i data-lucide="calendar-check" class="w-6 h-6 text-white"></i>
+        <!-- Tab Content: Confirmed -->
+        <div id="tab-confirmed" class="tab-content" style="display: none;">
+            <!-- Filters -->
+            <div class="filter-container mb-6 flex items-center gap-4 flex-wrap">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="filter" class="w-4 h-4 text-gray-500"></i>
+                    <span class="text-sm font-medium text-gray-700">Filtres:</span>
+                </div>
+                <select id="filter-sort" class="filter-select">
+                    <option value="date-asc">Date (croissant)</option>
+                    <option value="date-desc" selected>Date (décroissant)</option>
+                    <option value="price-asc">Prix (croissant)</option>
+                    <option value="price-desc">Prix (décroissant)</option>
+                    <option value="client-asc">Client (A-Z)</option>
+                    <option value="client-desc">Client (Z-A)</option>
+                </select>
+                <select id="filter-service" class="filter-select">
+                    <option value="">Tous les services</option>
+                </select>
+                <input type="text" id="filter-search" placeholder="Rechercher..."
+                    class="filter-select flex-1 min-w-[200px]">
+            </div>
+
+            <!-- Confirmed Appointments by Time Period -->
+            <div class="space-y-6">
+                <!-- Today -->
+                <div class="time-period-section" id="section-today">
+                    <div class="time-period-header clickable-period" data-period="today">
+                        <div class="time-period-title">
+                            <i data-lucide="sun" class="w-5 h-5 text-amber-500"></i>
+                            Aujourd'hui
                         </div>
-                        <div>
-                            <h2 class="text-xl font-bold text-gray-900">Rendez-vous confirmés</h2>
-                            <p class="text-gray-600 text-sm">Vos prochains rendez-vous</p>
+                        <div class="flex items-center gap-2">
+                            <span class="px-3 py-1 rounded-full bg-amber-100 text-amber-700 text-xs font-semibold"
+                                id="count-today">0</span>
+                            <i data-lucide="chevron-down"
+                                class="w-4 h-4 text-gray-400 period-chevron transition-transform"></i>
                         </div>
                     </div>
-                    <span class="stats-counter counter-confirmed">{{ confirmed|length }}</span>
+                    <div class="appointments-grid period-content" id="grid-today" style="display: none;"></div>
                 </div>
 
-                {% if confirmed %}
-                <div class="space-y-4 max-h-96 overflow-y-auto">
-                    {% for a in confirmed %}
-                    <div class="appointment-card p-6">
-                        <div class="flex items-start justify-between mb-4">
-                            <div class="flex items-center gap-3">
-                                <div
-                                    class="w-10 h-10 rounded-xl bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center">
-                                    <i data-lucide="user-check" class="w-5 h-5 text-green-600"></i>
-                                </div>
-                                <div>
-                                    <h3 class="font-semibold text-gray-900">{{ a.client_name }}</h3>
-                                    <p class="text-sm text-gray-600">{{ a.service_name }}</p>
-                                </div>
-                            </div>
-                            <span class="status-badge status-confirmed">Confirmé</span>
+                <!-- This Week -->
+                <div class="time-period-section" id="section-week">
+                    <div class="time-period-header clickable-period" data-period="week">
+                        <div class="time-period-title">
+                            <i data-lucide="calendar" class="w-5 h-5 text-blue-500"></i>
+                            Cette semaine
                         </div>
-
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="flex items-center gap-2">
-                                <i data-lucide="calendar" class="w-4 h-4 text-gray-500"></i>
-                                <span class="text-sm text-gray-600">{{ a.start|date:"d/m/Y" }}</span>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <i data-lucide="clock" class="w-4 h-4 text-gray-500"></i>
-                                <span class="text-sm text-gray-600">{{ a.start|date:"H:i" }}</span>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <i data-lucide="banknote" class="w-4 h-4 text-gray-500"></i>
-                                <span class="text-sm font-semibold text-gray-900">{{ a.price }} DT</span>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <i data-lucide="timer" class="w-4 h-4 text-gray-500"></i>
-                                <span class="text-sm text-gray-600">1h</span>
-                            </div>
+                        <div class="flex items-center gap-2">
+                            <span class="px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-semibold"
+                                id="count-week">0</span>
+                            <i data-lucide="chevron-down"
+                                class="w-4 h-4 text-gray-400 period-chevron transition-transform"></i>
                         </div>
-
-                        <!-- Informations client détaillées -->
-                        <div class="mt-4 p-3 bg-green-50 rounded-lg">
-                            <div class="flex items-center gap-2 mb-2">
-                                <i data-lucide="user" class="w-4 h-4 text-green-500"></i>
-                                <span class="text-sm font-medium text-green-700">Informations client</span>
-                            </div>
-                            <div class="grid grid-cols-1 gap-2 text-xs">
-                                {% if a.client_email %}
-                                <div class="flex items-center gap-2">
-                                    <i data-lucide="mail" class="w-3 h-3 text-green-400"></i>
-                                    <span class="text-green-600">{{ a.client_email }}</span>
-                                </div>
-                                {% endif %}
-                                {% if a.client_phone %}
-                                <div class="flex items-center gap-2">
-                                    <i data-lucide="phone" class="w-3 h-3 text-green-400"></i>
-                                    <span class="text-green-600">{{ a.client_phone }}</span>
-                                </div>
-                                {% endif %}
-                                {% if a.client_first_name and a.client_last_name %}
-                                <div class="flex items-center gap-2">
-                                    <i data-lucide="user-check" class="w-3 h-3 text-green-400"></i>
-                                    <span class="text-green-600">{{ a.client_first_name }} {{ a.client_last_name
-                                        }}</span>
-                                </div>
-                                {% endif %}
-                            </div>
-                        </div>
-
-                        {% if a.notes %}
-                        <div class="mt-4 p-3 bg-green-100 rounded-lg">
-                            <div class="flex items-center gap-2 mb-1">
-                                <i data-lucide="message-circle" class="w-4 h-4 text-green-500"></i>
-                                <span class="text-sm font-medium text-green-700">Note du client</span>
-                            </div>
-                            <p class="text-sm text-green-600">{{ a.notes }}</p>
-                        </div>
-                        {% endif %}
                     </div>
-                    {% endfor %}
+                    <div class="appointments-grid period-content" id="grid-week" style="display: none;"></div>
                 </div>
-                {% else %}
-                <div class="text-center py-12">
-                    <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
-                        <i data-lucide="calendar-x" class="w-8 h-8 text-gray-400"></i>
+
+                <!-- Upcoming -->
+                <div class="time-period-section" id="section-upcoming">
+                    <div class="time-period-header clickable-period" data-period="upcoming">
+                        <div class="time-period-title">
+                            <i data-lucide="calendar-days" class="w-5 h-5 text-purple-500"></i>
+                            À venir
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="px-3 py-1 rounded-full bg-purple-100 text-purple-700 text-xs font-semibold"
+                                id="count-upcoming">0</span>
+                            <i data-lucide="chevron-down"
+                                class="w-4 h-4 text-gray-400 period-chevron transition-transform"></i>
+                        </div>
                     </div>
-                    <h3 class="text-lg font-semibold text-gray-600 mb-2">Aucun rendez-vous confirmé</h3>
-                    <p class="text-gray-500">Vos futurs rendez-vous apparaîtront ici</p>
+                    <div class="appointments-grid period-content" id="grid-upcoming" style="display: none;"></div>
                 </div>
-                {% endif %}
+
+                <!-- Past -->
+                <div class="time-period-section" id="section-past">
+                    <div class="time-period-header clickable-period" data-period="past">
+                        <div class="time-period-title">
+                            <i data-lucide="history" class="w-5 h-5 text-gray-500"></i>
+                            Passés
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-xs font-semibold"
+                                id="count-past">0</span>
+                            <i data-lucide="chevron-down"
+                                class="w-4 h-4 text-gray-400 period-chevron transition-transform"></i>
+                        </div>
+                    </div>
+                    <div class="appointments-grid period-content" id="grid-past" style="display: none;"></div>
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div id="empty-confirmed" class="empty-state" style="display: none;">
+                <div class="empty-state-icon">
+                    <i data-lucide="calendar-x" class="w-10 h-10 text-gray-400"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-600 mb-2">Aucun rendez-vous confirmé</h3>
+                <p class="text-gray-500">Vos futurs rendez-vous apparaîtront ici</p>
             </div>
         </div>
     </div>
 </div>
 
+<!-- Modal for Client Details -->
+<div id="clientModal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-xl font-bold gradient-text">Détails du rendez-vous</h3>
+            <button id="closeModal"
+                class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+        </div>
+        <div id="modalBody"></div>
+    </div>
+</div>
+
+<!-- Appointments Data (JSON) -->
+{{ confirmed_json|json_script:"appointments-data" }}
+
 {% block extra_js %}
 <script src="https://unpkg.com/lucide@latest"></script>
 <script>
     // Initialize Lucide icons
-    window.lucide && window.lucide.createIcons();
+    if (window.lucide) {
+        window.lucide.createIcons();
+    }
 
-    async function proAccept(id) {
+    // Tab Navigation
+    document.querySelectorAll('.tab-button').forEach(button => {
+        button.addEventListener('click', () => {
+            const tabId = button.dataset.tab;
+
+            // Update buttons
+            document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+            button.classList.add('active');
+
+            // Update content
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            const tabContent = document.getElementById(`tab-${tabId}`);
+            if (tabContent) {
+                tabContent.classList.add('active');
+            }
+
+            // Load confirmed appointments if switching to confirmed tab
+            if (tabId === 'confirmed') {
+                // Small delay to ensure DOM is updated
+                setTimeout(() => {
+                    loadConfirmedAppointments();
+                }, 100);
+            }
+        });
+    });
+
+    // Store appointments data in memory
+    let appointmentsByPeriod = {
+        today: [],
+        week: [],
+        upcoming: [],
+        past: []
+    };
+
+    // Load confirmed appointments
+    function loadConfirmedAppointments() {
+        try {
+            const dataElement = document.getElementById('appointments-data');
+            if (!dataElement) {
+                console.error('Appointments data element not found');
+                return;
+            }
+
+            const rawData = dataElement.textContent.trim();
+            if (!rawData || rawData === '[]' || rawData === '') {
+                console.log('No appointments data found');
+                appointmentsByPeriod = { today: [], week: [], upcoming: [], past: [] };
+                updatePeriodCounts();
+                document.getElementById('empty-confirmed').style.display = 'block';
+                return;
+            }
+
+            let data;
+            try {
+                data = JSON.parse(rawData);
+                console.log('Loaded appointments data:', {
+                    count: data.length,
+                    rawDataPreview: rawData.substring(0, 200),
+                    firstAppointment: data[0] || null
+                });
+            } catch (parseError) {
+                console.error('JSON Parse Error:', parseError);
+                console.error('Raw data:', rawData.substring(0, 500));
+                throw parseError;
+            }
+
+            // Apply filters
+            data = applyFilters(data);
+
+            // Sort data
+            data = sortAppointments(data);
+
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            today.setHours(0, 0, 0, 0);
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const weekEnd = new Date(today);
+            weekEnd.setDate(weekEnd.getDate() + 7);
+
+            // Reset periods
+            appointmentsByPeriod.today = [];
+            appointmentsByPeriod.week = [];
+            appointmentsByPeriod.upcoming = [];
+            appointmentsByPeriod.past = [];
+
+            data.forEach(apt => {
+                if (!apt.start) {
+                    console.warn('Appointment missing start date:', apt);
+                    return;
+                }
+
+                // Parse date - handle both ISO format and other formats
+                let startDate;
+                try {
+                    startDate = new Date(apt.start);
+                    // Check if date is valid
+                    if (isNaN(startDate.getTime())) {
+                        console.warn('Invalid date for appointment:', apt.id, apt.start);
+                        return;
+                    }
+                } catch (e) {
+                    console.warn('Error parsing date for appointment:', apt.id, apt.start, e);
+                    return;
+                }
+
+                // Normalize to start of day for comparison
+                const startDateOnly = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+                startDateOnly.setHours(0, 0, 0, 0);
+
+                if (startDateOnly.getTime() === today.getTime()) {
+                    appointmentsByPeriod.today.push(apt);
+                } else if (startDateOnly >= tomorrow && startDateOnly < weekEnd) {
+                    appointmentsByPeriod.week.push(apt);
+                } else if (startDateOnly >= weekEnd) {
+                    appointmentsByPeriod.upcoming.push(apt);
+                } else if (startDateOnly < today) {
+                    appointmentsByPeriod.past.push(apt);
+                }
+            });
+
+            console.log('Appointments by period:', {
+                today: appointmentsByPeriod.today.length,
+                week: appointmentsByPeriod.week.length,
+                upcoming: appointmentsByPeriod.upcoming.length,
+                past: appointmentsByPeriod.past.length
+            });
+
+            // Update counts but don't display content by default
+            updatePeriodCounts();
+
+            // Show/hide empty state
+            const total = appointmentsByPeriod.today.length + appointmentsByPeriod.week.length +
+                appointmentsByPeriod.upcoming.length + appointmentsByPeriod.past.length;
+            document.getElementById('empty-confirmed').style.display = total === 0 ? 'block' : 'none';
+        } catch (error) {
+            console.error('Error loading appointments:', error);
+            console.error('Stack trace:', error.stack);
+            // Show error message to user
+            document.getElementById('empty-confirmed').innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">
+                        <i data-lucide="alert-circle" class="w-10 h-10 text-red-400"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-600 mb-2">Erreur de chargement</h3>
+                    <p class="text-gray-500">Impossible de charger les rendez-vous. Veuillez rafraîchir la page.</p>
+                </div>
+            `;
+            document.getElementById('empty-confirmed').style.display = 'block';
+            if (window.lucide) window.lucide.createIcons();
+        }
+    }
+
+    // Update period counts
+    function updatePeriodCounts() {
+        document.getElementById('count-today').textContent = appointmentsByPeriod.today.length;
+        document.getElementById('count-week').textContent = appointmentsByPeriod.week.length;
+        document.getElementById('count-upcoming').textContent = appointmentsByPeriod.upcoming.length;
+        document.getElementById('count-past').textContent = appointmentsByPeriod.past.length;
+    }
+
+    // Toggle period section
+    function togglePeriod(period) {
+        const header = document.querySelector(`[data-period="${period}"]`);
+        const content = document.getElementById(`grid-${period}`);
+
+        if (!header || !content) return;
+
+        const isExpanded = header.classList.contains('expanded');
+
+        if (isExpanded) {
+            // Collapse
+            header.classList.remove('expanded');
+            content.style.display = 'none';
+        } else {
+            // Expand - render appointments if not already rendered
+            header.classList.add('expanded');
+            content.style.display = 'grid';
+
+            // Only render if grid is empty
+            if (content.innerHTML.trim() === '') {
+                renderAppointments(period, appointmentsByPeriod[period]);
+            }
+        }
+
+        // Update icons
+        if (window.lucide) window.lucide.createIcons();
+    }
+
+    // Apply filters
+    function applyFilters(data) {
+        const searchTerm = (document.getElementById('filter-search')?.value || '').toLowerCase();
+        const serviceFilter = document.getElementById('filter-service')?.value || '';
+
+        return data.filter(apt => {
+            // Search filter
+            if (searchTerm) {
+                const matchesSearch =
+                    apt.client_name.toLowerCase().includes(searchTerm) ||
+                    apt.service_name.toLowerCase().includes(searchTerm) ||
+                    (apt.client_email && apt.client_email.toLowerCase().includes(searchTerm));
+                if (!matchesSearch) return false;
+            }
+
+            // Service filter
+            if (serviceFilter && apt.service_name !== serviceFilter) {
+                return false;
+            }
+
+            return true;
+        });
+    }
+
+    // Sort appointments
+    function sortAppointments(data) {
+        const sortValue = document.getElementById('filter-sort')?.value || 'date-desc';
+
+        return [...data].sort((a, b) => {
+            switch (sortValue) {
+                case 'date-asc':
+                    return new Date(a.start) - new Date(b.start);
+                case 'date-desc':
+                    return new Date(b.start) - new Date(a.start);
+                case 'price-asc':
+                    return a.price - b.price;
+                case 'price-desc':
+                    return b.price - a.price;
+                case 'client-asc':
+                    return a.client_name.localeCompare(b.client_name);
+                case 'client-desc':
+                    return b.client_name.localeCompare(a.client_name);
+                default:
+                    return 0;
+            }
+        });
+    }
+
+    // Render appointments for a period
+    function renderAppointments(period, appointments) {
+        const grid = document.getElementById(`grid-${period}`);
+        const countEl = document.getElementById(`count-${period}`);
+
+        if (!grid || !countEl) return;
+
+        countEl.textContent = appointments.length;
+
+        if (appointments.length === 0) {
+            grid.innerHTML = '<p class="text-gray-500 text-sm italic">Aucun rendez-vous dans cette période</p>';
+            return;
+        }
+
+        grid.innerHTML = appointments.map(apt => {
+            const startDate = new Date(apt.start);
+            const endDate = new Date(apt.end);
+            const duration = Math.round((endDate - startDate) / (1000 * 60));
+
+            return `
+                <div class="glass-card confirmed p-6">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center">
+                                <i data-lucide="user-check" class="w-5 h-5 text-green-600"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-gray-900">${apt.client_name}</h3>
+                                <p class="text-sm text-gray-600">${apt.service_name}</p>
+                            </div>
+                        </div>
+                        <span class="status-badge status-confirmed">
+                            <i data-lucide="check-circle" class="w-3 h-3"></i>
+                            Confirmé
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="calendar" class="w-4 h-4 text-gray-500"></i>
+                            <span class="text-sm text-gray-600">${formatDate(startDate)}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="clock" class="w-4 h-4 text-gray-500"></i>
+                            <span class="text-sm text-gray-600">${formatTime(startDate)}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="banknote" class="w-4 h-4 text-gray-500"></i>
+                            <span class="text-sm font-semibold text-gray-900">${apt.price} DT</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="timer" class="w-4 h-4 text-gray-500"></i>
+                            <span class="text-sm text-gray-600">${Math.floor(duration / 60)}h${duration % 60 > 0 ? ' ' + (duration % 60) + 'min' : ''}</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-4 border-t border-gray-200">
+                        <button data-appointment-id="${apt.id}" data-action="view-details"
+                            class="action-button action-view-details w-full">
+                            <i data-lucide="eye" class="w-4 h-4"></i>
+                            Voir détails
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        // Re-initialize icons
+        if (window.lucide) {
+            window.lucide.createIcons();
+        }
+    }
+
+    // Format date
+    function formatDate(date) {
+        return date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    }
+
+    // Format time
+    function formatTime(date) {
+        return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    // Event delegation for appointment actions
+    document.addEventListener('click', function (e) {
+        const button = e.target.closest('[data-action]');
+        if (!button) return;
+
+        const action = button.dataset.action;
+        const appointmentId = parseInt(button.dataset.appointmentId);
+
+        if (action === 'accept') {
+            proAccept(appointmentId, button);
+        } else if (action === 'reject') {
+            proReject(appointmentId, button);
+        } else if (action === 'view-details') {
+            openClientDetails(appointmentId);
+        }
+    });
+
+    async function proAccept(id, button) {
         if (!confirm('Êtes-vous sûr de vouloir accepter ce rendez-vous ?')) return;
 
-        const button = event.target;
-        const originalText = button.textContent;
-        button.textContent = 'Traitement...';
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Traitement...';
         button.disabled = true;
+        if (window.lucide) window.lucide.createIcons();
 
         try {
             const resp = await fetch('{% url "appointments:accept_appointment" %}', {
@@ -847,23 +1029,25 @@
                 setTimeout(() => location.reload(), 1500);
             } else {
                 showNotification(data.detail || 'Erreur lors de l\'acceptation', 'error');
-                button.textContent = originalText;
+                button.innerHTML = originalText;
                 button.disabled = false;
+                if (window.lucide) window.lucide.createIcons();
             }
         } catch (error) {
             showNotification('Erreur de connexion', 'error');
-            button.textContent = originalText;
+            button.innerHTML = originalText;
             button.disabled = false;
+            if (window.lucide) window.lucide.createIcons();
         }
     }
 
-    async function proReject(id) {
+    async function proReject(id, button) {
         if (!confirm('Êtes-vous sûr de vouloir refuser ce rendez-vous ?')) return;
 
-        const button = event.target;
-        const originalText = button.textContent;
-        button.textContent = 'Traitement...';
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Traitement...';
         button.disabled = true;
+        if (window.lucide) window.lucide.createIcons();
 
         try {
             const resp = await fetch('{% url "appointments:reject_appointment" %}', {
@@ -883,18 +1067,228 @@
                 setTimeout(() => location.reload(), 1500);
             } else {
                 showNotification(data.detail || 'Erreur lors du refus', 'error');
-                button.textContent = originalText;
+                button.innerHTML = originalText;
                 button.disabled = false;
+                if (window.lucide) window.lucide.createIcons();
             }
         } catch (error) {
             showNotification('Erreur de connexion', 'error');
-            button.textContent = originalText;
+            button.innerHTML = originalText;
             button.disabled = false;
+            if (window.lucide) window.lucide.createIcons();
         }
     }
 
+    // Client details modal
+    function openClientDetails(appointmentId) {
+        try {
+            const data = JSON.parse(document.getElementById('appointments-data').textContent);
+            const apt = data.find(a => a.id === appointmentId);
+
+            if (!apt) {
+                showNotification('Rendez-vous introuvable', 'error');
+                return;
+            }
+
+            const startDate = new Date(apt.start);
+            const endDate = new Date(apt.end);
+            const duration = Math.round((endDate - startDate) / (1000 * 60));
+
+            document.getElementById('modalBody').innerHTML = `
+                <div class="space-y-4">
+                    <div class="p-4 bg-gradient-to-br from-pink-50 to-blue-50 rounded-xl">
+                        <h4 class="font-semibold text-gray-900 mb-2">Informations client</h4>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex items-center gap-2">
+                                <i data-lucide="user" class="w-4 h-4 text-gray-500"></i>
+                                <span class="text-gray-700">${apt.client_name}</span>
+                            </div>
+                            ${apt.client_email ? `
+                            <div class="flex items-center gap-2">
+                                <i data-lucide="mail" class="w-4 h-4 text-gray-500"></i>
+                                <a href="mailto:${apt.client_email}" class="text-blue-600 hover:text-blue-700">${apt.client_email}</a>
+                            </div>
+                            ` : ''}
+                            ${apt.client_phone ? `
+                            <div class="flex items-center gap-2">
+                                <i data-lucide="phone" class="w-4 h-4 text-gray-500"></i>
+                                <a href="tel:${apt.client_phone}" class="text-blue-600 hover:text-blue-700">${apt.client_phone}</a>
+                            </div>
+                            ` : ''}
+                        </div>
+                    </div>
+
+                    <div class="p-4 bg-gray-50 rounded-xl">
+                        <h4 class="font-semibold text-gray-900 mb-2">Détails du rendez-vous</h4>
+                        <div class="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                                <span class="text-gray-600">Service:</span>
+                                <p class="font-medium text-gray-900">${apt.service_name}</p>
+                            </div>
+                            <div>
+                                <span class="text-gray-600">Prix:</span>
+                                <p class="font-medium text-gray-900">${apt.price} DT</p>
+                            </div>
+                            <div>
+                                <span class="text-gray-600">Date:</span>
+                                <p class="font-medium text-gray-900">${formatDate(startDate)}</p>
+                            </div>
+                            <div>
+                                <span class="text-gray-600">Heure:</span>
+                                <p class="font-medium text-gray-900">${formatTime(startDate)} - ${formatTime(endDate)}</p>
+                            </div>
+                            <div>
+                                <span class="text-gray-600">Durée:</span>
+                                <p class="font-medium text-gray-900">${Math.floor(duration / 60)}h${duration % 60 > 0 ? ' ' + (duration % 60) + 'min' : ''}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    ${apt.notes ? `
+                    <div class="p-4 bg-blue-50 rounded-xl">
+                        <h4 class="font-semibold text-gray-900 mb-2">Note du client</h4>
+                        <p class="text-sm text-gray-700">${apt.notes}</p>
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+
+            document.getElementById('clientModal').classList.add('active');
+            if (window.lucide) window.lucide.createIcons();
+        } catch (error) {
+            console.error('Error opening client details:', error);
+            showNotification('Erreur lors du chargement des détails', 'error');
+        }
+    }
+
+    // Close modal
+    document.getElementById('closeModal').addEventListener('click', () => {
+        document.getElementById('clientModal').classList.remove('active');
+    });
+
+    document.getElementById('clientModal').addEventListener('click', (e) => {
+        if (e.target.id === 'clientModal') {
+            document.getElementById('clientModal').classList.remove('active');
+        }
+    });
+
+    // Populate service filter
+    function populateServiceFilter() {
+        try {
+            const dataElement = document.getElementById('appointments-data');
+            if (!dataElement) return;
+
+            const rawData = dataElement.textContent.trim();
+            if (!rawData || rawData === '[]' || rawData === '') return;
+
+            const data = JSON.parse(rawData);
+            const services = [...new Set(data.map(apt => apt.service_name).filter(s => s))].sort();
+            const select = document.getElementById('filter-service');
+
+            if (select) {
+                select.innerHTML = '<option value="">Tous les services</option>' +
+                    services.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
+            }
+        } catch (error) {
+            console.error('Error populating service filter:', error);
+        }
+    }
+
+    // Helper function to escape HTML
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // Setup click handlers for period headers using event delegation
+    // This avoids duplicate listeners and works even if elements are added dynamically
+    document.addEventListener('click', (e) => {
+        const header = e.target.closest('.clickable-period');
+        if (header) {
+            const period = header.dataset.period;
+            if (period) {
+                e.preventDefault();
+                togglePeriod(period);
+            }
+        }
+    });
+
+    // Filters
+    document.getElementById('filter-sort')?.addEventListener('change', () => {
+        loadConfirmedAppointments();
+        // Re-render all expanded sections
+        document.querySelectorAll('.clickable-period.expanded').forEach(header => {
+            const period = header.dataset.period;
+            if (period) {
+                const content = document.getElementById(`grid-${period}`);
+                if (content && content.style.display !== 'none') {
+                    renderAppointments(period, appointmentsByPeriod[period]);
+                }
+            }
+        });
+    });
+
+    document.getElementById('filter-service')?.addEventListener('change', () => {
+        loadConfirmedAppointments();
+        // Re-render all expanded sections
+        document.querySelectorAll('.clickable-period.expanded').forEach(header => {
+            const period = header.dataset.period;
+            if (period) {
+                const content = document.getElementById(`grid-${period}`);
+                if (content && content.style.display !== 'none') {
+                    renderAppointments(period, appointmentsByPeriod[period]);
+                }
+            }
+        });
+    });
+
+    // Search timeout - use window object to avoid redeclaration
+    if (!window.searchTimeout) {
+        window.searchTimeout = null;
+    }
+    document.getElementById('filter-search')?.addEventListener('input', () => {
+        if (window.searchTimeout) {
+            clearTimeout(window.searchTimeout);
+        }
+        window.searchTimeout = setTimeout(() => {
+            loadConfirmedAppointments();
+            // Re-render all expanded sections
+            document.querySelectorAll('.clickable-period.expanded').forEach(header => {
+                const period = header.dataset.period;
+                if (period) {
+                    const content = document.getElementById(`grid-${period}`);
+                    if (content && content.style.display !== 'none') {
+                        renderAppointments(period, appointmentsByPeriod[period]);
+                    }
+                }
+            });
+        }, 300); // Debounce search
+    });
+
+    // Initialize on page load
+    function initializePage() {
+        populateServiceFilter();
+
+        // Load confirmed appointments if tab is active
+        const confirmedTab = document.getElementById('tab-confirmed');
+        if (confirmedTab && confirmedTab.classList.contains('active')) {
+            // Small delay to ensure all elements are ready
+            setTimeout(() => {
+                loadConfirmedAppointments();
+            }, 200);
+        }
+    }
+
+    // Wait for DOM to be ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializePage);
+    } else {
+        // DOM is already ready, initialize immediately
+        setTimeout(initializePage, 100);
+    }
+
     function showNotification(message, type = 'success') {
-        // Remove existing notifications
         document.querySelectorAll('.notification').forEach(n => n.remove());
 
         const notification = document.createElement('div');
@@ -910,14 +1304,12 @@
         `;
 
         document.body.appendChild(notification);
-        window.lucide && window.lucide.createIcons();
+        if (window.lucide) window.lucide.createIcons();
 
-        // Show notification
         setTimeout(() => {
             notification.classList.remove('translate-x-full');
         }, 100);
 
-        // Auto-hide after 5 seconds
         setTimeout(() => {
             notification.classList.add('translate-x-full');
             setTimeout(() => {

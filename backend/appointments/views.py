@@ -62,9 +62,10 @@ def agenda(request):
             "start": a.start.isoformat(),
             "end": a.end.isoformat(),
             "status": a.status,
-            "client_name": client_name.strip(),
+            "client_name": client_name.strip() or "Client",
             "client_email": client_email,
             "client_phone": client_phone,
+            "notes": a.notes or "",
         })
     return Response({"results": data})
 
@@ -80,18 +81,36 @@ def agenda_day(request):
     with client info and status.
     """
     pro_id = request.query_params.get("pro_id")
+    if not pro_id:
+        return Response({"detail": "pro_id requis"}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Support date_from and date_to for week view, or single date for day view
+    date_from_str = request.query_params.get("date_from")
+    date_to_str = request.query_params.get("date_to")
     date_str = request.query_params.get("date")
-    if not pro_id or not date_str:
-        return Response({"detail": "pro_id et date requis"}, status=status.HTTP_400_BAD_REQUEST)
-
-    day = parse_date(date_str)
-    if not day:
-        return Response({"detail": "date invalide"}, status=status.HTTP_400_BAD_REQUEST)
-
-    # Build day range [start, end)
-    day_start_naive = datetime(day.year, day.month, day.day)
-    day_start = tz.make_aware(day_start_naive, tz.get_current_timezone()) if tz.is_naive(day_start_naive) else day_start_naive
-    day_end = day_start + timedelta(days=1)
+    
+    if date_from_str and date_to_str:
+        # Week view
+        date_from = parse_date(date_from_str)
+        date_to = parse_date(date_to_str)
+        if not date_from or not date_to:
+            return Response({"detail": "date_from et date_to invalides"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        day_start_naive = datetime(date_from.year, date_from.month, date_from.day)
+        day_start = tz.make_aware(day_start_naive, tz.get_current_timezone()) if tz.is_naive(day_start_naive) else day_start_naive
+        day_end_naive = datetime(date_to.year, date_to.month, date_to.day) + timedelta(days=1)
+        day_end = tz.make_aware(day_end_naive, tz.get_current_timezone()) if tz.is_naive(day_end_naive) else day_end_naive
+    elif date_str:
+        # Day view
+        day = parse_date(date_str)
+        if not day:
+            return Response({"detail": "date invalide"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        day_start_naive = datetime(day.year, day.month, day.day)
+        day_start = tz.make_aware(day_start_naive, tz.get_current_timezone()) if tz.is_naive(day_start_naive) else day_start_naive
+        day_end = day_start + timedelta(days=1)
+    else:
+        return Response({"detail": "date ou (date_from et date_to) requis"}, status=status.HTTP_400_BAD_REQUEST)
 
     qs = (
         Appointment.objects.filter(
@@ -126,9 +145,10 @@ def agenda_day(request):
                 "start": a.start.isoformat(),
                 "end": a.end.isoformat(),
                 "status": a.status,
-                "client_name": client_name.strip(),
+                "client_name": client_name.strip() or "Client",
                 "client_email": client_email,
                 "client_phone": client_phone,
+                "notes": a.notes or "",
             }
         )
 

@@ -1770,19 +1770,25 @@ def client_calendar(request):
 @login_required
 def pro_appointments(request: HttpRequest) -> HttpResponse:
     """Liste des demandes et rendez-vous confirmés pour la professionnelle avec notifications."""
+    # Vérifier si l'utilisateur a un profil professionnel
+    if not hasattr(request.user, 'professional_profile'):
+        messages.error(request, "Vous devez être une professionnelle.")
+        return redirect('front_web:home')
+    
     try:
-        try:
-            pro = request.user.professional_profile
-        except AttributeError:
-            messages.error(request, "Vous devez être une professionnelle.")
-            return redirect('front_web:home')
+        pro = request.user.professional_profile
+    except Exception as e:
+        messages.error(request, f"Erreur lors de la récupération du profil professionnel: {str(e)}")
+        return redirect('front_web:pro_dashboard')
 
+    try:
         appts = (
             Appointment.objects.select_related('client__user')
             .filter(professional=pro)
             .order_by('-start')[:300]
         )
         pending, confirmed = [], []
+        
         for a in appts:
             # Récupération complète des informations client
             client_info = {
@@ -1809,7 +1815,10 @@ def pro_appointments(request: HttpRequest) -> HttpResponse:
                         client_info['phone'] = a.client.phone_number
                         
             except Exception as e:
-                pass  # Garder les valeurs par défaut
+                # Log l'erreur mais continue avec les valeurs par défaut
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.warning(f"Erreur lors de la récupération des infos client pour appointment {a.id}: {str(e)}")
             
             row = {
                 'id': a.id,
@@ -1830,24 +1839,59 @@ def pro_appointments(request: HttpRequest) -> HttpResponse:
             elif a.status == 'confirmed':
                 confirmed.append(row)
 
-        # Get recent notifications
+        # Get recent notifications (optionnel - ne pas bloquer si ça échoue)
         from appointments.models import Notification
-        recent_notifications = Notification.objects.filter(
-            professional=pro
-        ).order_by('-created_at')[:15]
+        recent_notifications = []
+        unread_count = 0
         
-        # Count unread notifications
-        unread_count = Notification.objects.filter(professional=pro, is_read=False).count()
+        try:
+            recent_notifications = Notification.objects.filter(
+                professional=pro
+            ).order_by('-created_at')[:15]
+            
+            unread_count = Notification.objects.filter(professional=pro, is_read=False).count()
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.warning(f"Erreur lors de la récupération des notifications: {str(e)}")
+
+        # Serialize confirmed appointments for JavaScript (using json_script filter)
+        from datetime import datetime
+        
+        confirmed_json_data = []
+        for a in confirmed:
+            # Format datetime objects to ISO format strings
+            start_str = a['start'].isoformat() if isinstance(a['start'], datetime) else str(a['start'])
+            end_str = a['end'].isoformat() if isinstance(a['end'], datetime) else str(a['end'])
+            
+            confirmed_json_data.append({
+                'id': a['id'],
+                'client_name': a['client_name'] or '',
+                'client_email': a['client_email'] or '',
+                'client_phone': a['client_phone'] or '',
+                'client_first_name': a['client_first_name'] or '',
+                'client_last_name': a['client_last_name'] or '',
+                'service_name': a['service_name'] or '',
+                'price': float(a['price']),
+                'start': start_str,
+                'end': end_str,
+                'notes': a['notes'] or ''
+            })
 
         context = {
             'pending': pending,
             'confirmed': confirmed,
+            'confirmed_json': confirmed_json_data,  # Pass Python structure, not JSON string
             'pro': pro,
             'recent_notifications': recent_notifications,
             'unread_count': unread_count,
         }
         return render(request, 'front_web/pro_appointments.html', context)
     except Exception as e:
-        messages.error(request, f"Erreur: {str(e)}")
+        import logging
+        import traceback
+        logger = logging.getLogger(__name__)
+        logger.error(f"Erreur dans pro_appointments: {str(e)}\n{traceback.format_exc()}")
+        messages.error(request, f"Erreur lors du chargement des rendez-vous: {str(e)}")
         return redirect('front_web:pro_dashboard')
 
