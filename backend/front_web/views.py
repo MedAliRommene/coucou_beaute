@@ -1,29 +1,35 @@
-from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_http_methods, require_POST
-from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout
-from django.utils.http import url_has_allowed_host_and_scheme
-from urllib.parse import urlparse
-from django.http import HttpRequest, HttpResponse, JsonResponse
-from django.utils import timezone
-from users.models import Professional
-from django.contrib.auth import get_user_model
-from users.models import Client as ClientProfile, ProfessionalApplication, ProfessionalApplicationAction
-from appointments.models import Appointment
-from users.models import ProfessionalProfileExtra
-from reviews.models import Review
+from __future__ import annotations
+
+import base64
 import json
 import re
-from django.core.cache import cache
-from users.serializers import ProfessionalApplicationSerializer
-from django.db.models import Q, Avg, Count
-from django.core.paginator import Paginator
-from django.core.files.base import ContentFile
-from django.core.files import File
+from typing import Any, Dict, List, Optional
+
 from django.conf import settings
-import base64
+from django.contrib import messages
+from django.contrib.auth import authenticate, get_user_model, login, logout
+from django.contrib.auth.decorators import login_required
+from django.core.cache import cache
+from django.core.files.base import ContentFile
+from django.core.paginator import Paginator
+from django.db.models import Avg, Count, Q
+from django.http import HttpRequest, HttpResponse, JsonResponse
+from django.shortcuts import redirect, render
+from django.utils import timezone
+from django.utils.http import url_has_allowed_host_and_scheme
+from django.views.decorators.http import require_POST, require_http_methods
+
+from appointments.models import Appointment
+from reviews.models import Review
 from reviews.views import update_professional_rating
+from users.models import (
+    Client as ClientProfile,
+    Professional,
+    ProfessionalApplication,
+    ProfessionalApplicationAction,
+    ProfessionalProfileExtra,
+)
+from users.serializers import ProfessionalApplicationSerializer
 
 
 def _extract_city_name(address_string: str) -> str:
@@ -71,9 +77,15 @@ def _extract_city_name(address_string: str) -> str:
 
 
 def landing(request: HttpRequest) -> HttpResponse:
-    """Page d'accueil avec les professionnelles 5 étoiles"""
-    # Récupérer les professionnelles avec 5 étoiles
-    professionals_5_stars = []
+    """Afficher la page d'accueil avec les professionnelles mises en avant.
+
+    Args:
+        request: Requête HTTP entrante.
+
+    Returns:
+        HttpResponse rendu avec les professionnelles triées et leurs métadonnées.
+    """
+    professionals_5_stars: List[Dict[str, Any]] = []
     
     try:
         # Récupérer toutes les professionnelles avec leurs profils extra
@@ -201,6 +213,11 @@ def landing(request: HttpRequest) -> HttpResponse:
 
 @require_http_methods(["GET", "POST"])
 def login_view(request: HttpRequest) -> HttpResponse:
+    """Authentifie l'utilisateur (client ou professionnel) depuis le site web.
+
+    Nettoie les messages précédents, supporte l'email ou le username, et
+    redirige en fonction du rôle choisi ou détecté.
+    """
     # Ensure a clean form with no stale messages
     if request.method == 'GET':
         try:
@@ -303,6 +320,7 @@ def login_view(request: HttpRequest) -> HttpResponse:
 
 @require_http_methods(["GET", "POST"])
 def signup_view(request: HttpRequest) -> HttpResponse:
+    """Inscription client ou dépôt de candidature professionnelle (web)."""
     if request.method == 'POST':
         email = (request.POST.get('email') or '').strip().lower()
         password = request.POST.get('password') or ''
@@ -485,6 +503,7 @@ def signup_view(request: HttpRequest) -> HttpResponse:
 
 @login_required
 def client_dashboard(request: HttpRequest) -> HttpResponse:
+    """Tableau de bord client minimal avec profil attaché."""
     # Get client profile data
     client_profile = None
     try:
@@ -499,6 +518,7 @@ def client_dashboard(request: HttpRequest) -> HttpResponse:
 
 
 def logout_view(request: HttpRequest) -> HttpResponse:
+    """Déconnecte l'utilisateur et nettoie les messages en cours."""
     try:
         logout(request)
     finally:
@@ -511,7 +531,15 @@ def logout_view(request: HttpRequest) -> HttpResponse:
 
 
 def professional_detail(request: HttpRequest, pro_id: int) -> HttpResponse:
-    """Display professional profile details"""
+    """Affiche le profil détaillé d'une professionnelle.
+
+    Args:
+        request: Requête HTTP entrante.
+        pro_id: Identifiant de la professionnelle recherchée.
+
+    Returns:
+        HttpResponse avec services, galerie, horaires et avis associés.
+    """
     try:
         pro = Professional.objects.select_related('user').prefetch_related('extra').get(id=pro_id)
         
@@ -645,8 +673,8 @@ def professional_detail(request: HttpRequest, pro_id: int) -> HttpResponse:
 
 
 @login_required
-def book_appointment(request, pro_id):
-    """Handle appointment booking form submission"""
+def book_appointment(request: HttpRequest, pro_id: int) -> HttpResponse:
+    """Traite la soumission du formulaire de réservation côté web."""
     if request.method == 'POST':
         try:
             pro = Professional.objects.get(id=pro_id)
@@ -761,8 +789,8 @@ def book_appointment(request, pro_id):
 
 
 @login_required
-def get_available_slots(request, pro_id):
-    """API endpoint to get available time slots for a specific date"""
+def get_available_slots(request: HttpRequest, pro_id: int) -> JsonResponse:
+    """API renvoyant les créneaux disponibles pour une date donnée."""
     try:
         from django.http import JsonResponse
         from datetime import datetime, timedelta
@@ -869,8 +897,8 @@ def get_available_slots(request, pro_id):
 
 
 @login_required
-def book_appointment_page(request, pro_id):
-    """Display booking page with agenda view"""
+def book_appointment_page(request: HttpRequest, pro_id: int) -> HttpResponse:
+    """Affiche la page de prise de rendez-vous avec les disponibilités."""
     try:
         pro = Professional.objects.select_related('user').prefetch_related('extra').get(id=pro_id)
         
@@ -939,7 +967,7 @@ def book_appointment_page(request, pro_id):
 
 @login_required
 def create_review(request: HttpRequest, pro_id: int) -> HttpResponse:
-    """Afficher le formulaire de création d'avis"""
+    """Afficher le formulaire de création ou modification d'avis."""
     try:
         pro = Professional.objects.select_related('user').prefetch_related('extra').get(id=pro_id)
         
@@ -1216,6 +1244,7 @@ def submit_review(request: HttpRequest, pro_id: int) -> HttpResponse:
 
 @login_required
 def pro_dashboard(request: HttpRequest) -> HttpResponse:
+    """Tableau de bord professionnel avec KPIs simples (web)."""
     # Guard: onboarding must be completed (extra exists)
     try:
         pro = request.user.professional_profile
@@ -1390,6 +1419,7 @@ def pro_profile(request: HttpRequest) -> HttpResponse:
 @login_required
 @require_POST
 def save_professional_extras_web(request: HttpRequest) -> HttpResponse:
+    """Sauvegarde des informations extra pro depuis l'UI web (JSON-only)."""
     # Strict JSON only
     # Rate limit: max 5 saves/min per user
     try:
@@ -1501,6 +1531,7 @@ def save_professional_extras_web(request: HttpRequest) -> HttpResponse:
 
 @login_required
 def booking_page(request: HttpRequest) -> HttpResponse:
+    """Page booking front-office pour les professionnelles connectées."""
     try:
         pro = getattr(request.user, 'professional_profile', None)
         if not pro:
@@ -1511,7 +1542,7 @@ def booking_page(request: HttpRequest) -> HttpResponse:
 
 
 @login_required
-def client_appointments(request):
+def client_appointments(request: HttpRequest) -> HttpResponse:
     """Page des rendez-vous du client"""
     # Récupérer les rendez-vous du client (ne pas rediriger si profil manquant)
     client_profile = getattr(request.user, 'client_profile', None)
@@ -1634,7 +1665,7 @@ def client_appointments(request):
 
 
 @login_required
-def client_calendar(request):
+def client_calendar(request: HttpRequest) -> HttpResponse:
     """Page calendrier du client - N'affiche que les rendez-vous CONFIRMÉS"""
     try:
         # Récupérer/créer le profil client au besoin (ne pas rediriger)
@@ -1797,7 +1828,9 @@ def pro_appointments(request: HttpRequest) -> HttpResponse:
                 'last_name': '',
                 'email': '',
                 'phone': '',
-                'full_name': 'Client'
+                'full_name': 'Client',
+                'address': '',
+                'city': '',
             }
             
             try:
@@ -1806,14 +1839,22 @@ def pro_appointments(request: HttpRequest) -> HttpResponse:
                     client_info.update({
                         'first_name': user.first_name or '',
                         'last_name': user.last_name or '',
-                        'email': user.email or '',
+                        'email': user.email or getattr(user, 'username', '') or '',
                         'full_name': user.get_full_name() or f"{user.first_name} {user.last_name}".strip() or user.username,
                     })
                     
-                    # Récupérer le téléphone depuis le profil client
+                    # Récupérer le téléphone depuis le profil client ou l'utilisateur
                     if hasattr(a.client, 'phone_number') and a.client.phone_number:
                         client_info['phone'] = a.client.phone_number
-                        
+                    elif hasattr(user, 'phone') and user.phone:
+                        client_info['phone'] = user.phone
+
+                    # Adresse et ville si disponibles (utile pour l'appel pro)
+                    if hasattr(a.client, 'address') and a.client.address:
+                        client_info['address'] = a.client.address
+                    if hasattr(a.client, 'city') and a.client.city:
+                        client_info['city'] = a.client.city
+
             except Exception as e:
                 # Log l'erreur mais continue avec les valeurs par défaut
                 import logging
@@ -1832,6 +1873,8 @@ def pro_appointments(request: HttpRequest) -> HttpResponse:
                 'client_last_name': client_info['last_name'],
                 'client_email': client_info['email'],
                 'client_phone': client_info['phone'],
+                'client_address': client_info['address'],
+                'client_city': client_info['city'],
                 'notes': a.notes or '',
             }
             if a.status == 'pending':

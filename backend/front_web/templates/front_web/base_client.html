@@ -715,7 +715,8 @@
     {% block extra_css %}{% endblock %}
 </head>
 
-<body class="bg-gray-50 font-sans text-gray-800 overflow-hidden relative">
+<body class="bg-gray-50 font-sans text-gray-800 overflow-hidden relative"
+    data-template="{% block template_id %}front_web/base_client.html{% endblock %}">
     <!-- Background animation blobs -->
     <div class="absolute inset-0 z-0 overflow-hidden pointer-events-none">
         <div class="absolute rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob-1 bg-pink-200"

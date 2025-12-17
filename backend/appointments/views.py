@@ -1,37 +1,67 @@
 from datetime import datetime, timedelta
-
-from django.utils.dateparse import parse_datetime
-from django.db.models import Count
-from rest_framework.decorators import api_view, permission_classes, authentication_classes
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework.response import Response
-from django.core.mail import send_mail
-from django.conf import settings
 import threading
+from typing import Any, Dict, List, Optional, TYPE_CHECKING
+
+from django.conf import settings
+from django.core.mail import send_mail
+from django.utils import timezone as tz
+from django.utils.dateparse import parse_date, parse_datetime
+from django.db.models import Count as DjangoCount
 from rest_framework import status
-from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.authentication import SessionAuthentication
+from rest_framework.decorators import (
+    api_view,
+    authentication_classes,
+    permission_classes,
+)
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.request import Request
+from rest_framework.response import Response
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from .models import Appointment, Notification
-from django.utils import timezone as tz
-from django.utils.dateparse import parse_date
-from django.db.models import Count as DjangoCount
+
+if TYPE_CHECKING:  # pragma: no cover - only for static analyzers
+    from users.models import Professional
 
 
-def _get_professional_from_user(user):
+def _get_professional_from_user(user: Any) -> Optional["Professional"]:
+    """Return the related professional profile if it exists on the given user.
+
+    Args:
+        user: Authenticated Django user object (can be AnonymousUser).
+
+    Returns:
+        Professional instance when the user owns a professional profile,
+        otherwise ``None``.
+    """
     return getattr(user, "professional_profile", None)
 
 
 @api_view(["GET"])  # /api/appointments/agenda/?from=...&to=...
 @permission_classes([IsAuthenticated])
 @authentication_classes([JWTAuthentication, SessionAuthentication])
-def agenda(request):
+def agenda(request: Request) -> Response:
+    """Return the appointment agenda for the authenticated professional.
+
+    Args:
+        request: DRF request carrying optional ``from`` and ``to`` ISO datetime
+            query parameters to constrain the time range.
+
+    Returns:
+        Response containing a ``results`` list of appointment dictionaries.
+
+    Raises:
+        None: HTTP errors are returned as DRF Responses.
+    """
     pro = _get_professional_from_user(request.user)
     if not pro:
         return Response({"detail": "Profil professionnel requis"}, status=status.HTTP_403_FORBIDDEN)
+
     start_str = request.query_params.get("from")
     end_str = request.query_params.get("to")
     qs = Appointment.objects.filter(professional=pro)
+
     if start_str:
         start_dt = parse_datetime(start_str)
         if start_dt:
@@ -40,8 +70,10 @@ def agenda(request):
         end_dt = parse_datetime(end_str)
         if end_dt:
             qs = qs.filter(end__lte=end_dt)
+
     qs = qs.order_by("start")[:500]
-    data = []
+    data: List[Dict[str, Any]] = []
+
     for a in qs:
         client_name = ""
         client_email = ""
@@ -54,7 +86,9 @@ def agenda(request):
                     client_email = user.email or ""
                 client_phone = getattr(a.client, "phone_number", "") or ""
         except Exception:
+            # Client relation is optional; tolerate missing/partial data.
             pass
+
         data.append({
             "id": a.id,
             "service_name": a.service_name,
@@ -67,18 +101,26 @@ def agenda(request):
             "client_phone": client_phone,
             "notes": a.notes or "",
         })
+
     return Response({"results": data})
 
 
 @api_view(["GET"])  # /api/appointments/agenda/day/?pro_id=&date=YYYY-MM-DD
 @permission_classes([IsAuthenticated])
 @authentication_classes([JWTAuthentication, SessionAuthentication])
-def agenda_day(request):
-    """Return all appointments for a given professional on a specific day.
+def agenda_day(request: Request) -> Response:
+    """Return appointments for a professional for a day or range.
 
-    Intended for the admin dashboard daily calendar. Requires authentication
-    (session auth for admin or JWT if used). Returns a flat list of events
-    with client info and status.
+    Args:
+        request: DRF request with ``pro_id`` and either ``date`` or the pair
+            ``date_from`` / ``date_to`` in YYYY-MM-DD format.
+
+    Returns:
+        Response containing a ``results`` list of appointment dictionaries
+        enriched with client information.
+
+    Raises:
+        None: validation errors are returned as DRF Responses.
     """
     pro_id = request.query_params.get("pro_id")
     if not pro_id:
@@ -90,7 +132,7 @@ def agenda_day(request):
     date_str = request.query_params.get("date")
     
     if date_from_str and date_to_str:
-        # Week view
+        # Week view: compute inclusive start and exclusive end bounds
         date_from = parse_date(date_from_str)
         date_to = parse_date(date_to_str)
         if not date_from or not date_to:
@@ -101,7 +143,7 @@ def agenda_day(request):
         day_end_naive = datetime(date_to.year, date_to.month, date_to.day) + timedelta(days=1)
         day_end = tz.make_aware(day_end_naive, tz.get_current_timezone()) if tz.is_naive(day_end_naive) else day_end_naive
     elif date_str:
-        # Day view
+        # Day view: single-day window
         day = parse_date(date_str)
         if not day:
             return Response({"detail": "date invalide"}, status=status.HTTP_400_BAD_REQUEST)
@@ -119,7 +161,7 @@ def agenda_day(request):
         .order_by("start")
     )
 
-    data = []
+    data: List[Dict[str, Any]] = []
     for a in qs:
         client_name = ""
         client_email = ""
@@ -158,11 +200,19 @@ def agenda_day(request):
 @api_view(["GET"])  # /api/appointments/analytics/overview/?pro_id=&from=&to=
 @permission_classes([IsAuthenticated])
 @authentication_classes([JWTAuthentication, SessionAuthentication])
-def analytics_overview(request):
-    """Return lightweight analytics for a professional: weekly reservations and service distribution.
+def analytics_overview(request: Request) -> Response:
+    """Return lightweight analytics for a professional or for all professionals.
 
-    - Optional query params `from` and `to` (ISO date YYYY-MM-DD). Defaults to last 7 days.
-    - Returns counts by weekday (Mon..Sun) and service_name distribution (last 90 days if no range).
+    Args:
+        request: DRF request with optional ``pro_id`` and date range query
+            parameters ``from`` / ``to`` in YYYY-MM-DD format.
+
+    Returns:
+        Response containing reservation counts by weekday, hourly distribution,
+        service distribution (last 90 days) and summary KPIs.
+
+    Raises:
+        None: invalid inputs are surfaced via HTTP responses.
     """
     pro_id = request.query_params.get("pro_id")
 
@@ -196,21 +246,23 @@ def analytics_overview(request):
 
     qs_base = Appointment.objects.filter(start__lt=end_dt, end__gte=start_dt)
     qs = qs_base.filter(professional_id=pro_id_int) if pro_id_int else qs_base
-    # Weekly reservations Mon..Sun
-    week = [0, 0, 0, 0, 0, 0, 0]  # Mon..Sun
-    status_counts = {"pending": 0, "confirmed": 0, "cancelled": 0, "completed": 0}
-    revenue_by_day = {}  # YYYY-MM-DD -> float
-    hourly = [0] * 24  # 0..23
-    trend = []  # list of {date, count}
 
-    # Prepare date iteration for trend
+    # Aggregation containers keyed by dimensions we expose to the dashboard
+    week: List[int] = [0, 0, 0, 0, 0, 0, 0]  # Mon..Sun
+    status_counts: Dict[str, int] = {"pending": 0, "confirmed": 0, "cancelled": 0, "completed": 0}
+    revenue_by_day: Dict[str, float] = {}  # YYYY-MM-DD -> float
+    hourly: List[int] = [0] * 24  # 0..23
+    trend: List[Dict[str, Any]] = []  # list of {date, count}
+
+    # Pre-seed the trend series so increments are O(1) via index lookups
     iter_day = d_from
     while iter_day <= d_to:
         trend.append({"date": iter_day.isoformat(), "count": 0})
         iter_day += timedelta(days=1)
 
-    trend_index = {item["date"]: i for i, item in enumerate(trend)}
+    trend_index: Dict[str, int] = {item["date"]: i for i, item in enumerate(trend)}
 
+    # Iterate once over the filtered appointments to accumulate all metrics
     for a in qs:
         try:
             idx = a.start.astimezone(tz.get_current_timezone()).weekday()
@@ -239,7 +291,7 @@ def analytics_overview(request):
     dist_qs = Appointment.objects.filter(start__gte=dist_start)
     if pro_id_int:
         dist_qs = dist_qs.filter(professional_id=pro_id_int)
-    service_counts = {}
+    service_counts: Dict[str, int] = {}
     for a in dist_qs.only("service_name"):
         key = (a.service_name or "Service").strip() or "Service"
         service_counts[key] = service_counts.get(key, 0) + 1
@@ -249,7 +301,7 @@ def analytics_overview(request):
     )[:8]
 
     # Normalize revenue series for the given range
-    revenue_series = []
+    revenue_series: List[Dict[str, Any]] = []
     iter_day = d_from
     while iter_day <= d_to:
         key = iter_day.isoformat()
@@ -332,16 +384,30 @@ def analytics_overview(request):
 @api_view(["GET"])  # /api/appointments/kpis/
 @permission_classes([IsAuthenticated])
 @authentication_classes([JWTAuthentication, SessionAuthentication])
-def kpis(request):
+def kpis(request: Request) -> Response:
+    """Return simple KPI counters for the authenticated professional.
+
+    Args:
+        request: DRF request with an authenticated professional user.
+
+    Returns:
+        Response containing total visits, total reservations and a breakdown
+        by status for that professional.
+
+    Raises:
+        None: permission errors are returned as HTTP responses.
+    """
     pro = _get_professional_from_user(request.user)
     if not pro:
         return Response({"detail": "Profil professionnel requis"}, status=status.HTTP_403_FORBIDDEN)
+
     total_visits = Appointment.objects.filter(professional=pro, status__in=["confirmed", "completed"]).count()
     total_reservations = Appointment.objects.filter(professional=pro).count()
     pending = Appointment.objects.filter(professional=pro, status="pending").count()
     confirmed = Appointment.objects.filter(professional=pro, status="confirmed").count()
     cancelled = Appointment.objects.filter(professional=pro, status="cancelled").count()
     completed = Appointment.objects.filter(professional=pro, status="completed").count()
+
     return Response({
         "visits": total_visits,
         "reservations": total_reservations,
@@ -357,12 +423,24 @@ def kpis(request):
 @api_view(["GET"])  # /api/appointments/notifications/
 @permission_classes([IsAuthenticated])
 @authentication_classes([JWTAuthentication, SessionAuthentication])
-def notifications(request):
+def notifications(request: Request) -> Response:
+    """Return the last notifications for the authenticated professional.
+
+    Args:
+        request: DRF request for the authenticated professional.
+
+    Returns:
+        Response containing a ``results`` array of notification payloads.
+
+    Raises:
+        None: access validation is returned as an HTTP response.
+    """
     pro = _get_professional_from_user(request.user)
     if not pro:
         return Response({"detail": "Profil professionnel requis"}, status=status.HTTP_403_FORBIDDEN)
+
     qs = Notification.objects.filter(professional=pro)[:50]
-    data = [
+    data: List[Dict[str, Any]] = [
         {
             "id": n.id,
             "title": n.title,
@@ -378,10 +456,19 @@ def notifications(request):
 @api_view(["GET"])  # /api/appointments/notifications/unread_count/
 @permission_classes([IsAuthenticated])
 @authentication_classes([JWTAuthentication, SessionAuthentication])
-def notifications_unread_count(request):
+def notifications_unread_count(request: Request) -> Response:
+    """Return unread notification count for the authenticated professional.
+
+    Args:
+        request: DRF request for the authenticated professional.
+
+    Returns:
+        Response containing an ``unread`` integer field.
+    """
     pro = _get_professional_from_user(request.user)
     if not pro:
         return Response({"detail": "Profil professionnel requis"}, status=status.HTTP_403_FORBIDDEN)
+
     count = Notification.objects.filter(professional=pro, is_read=False).count()
     return Response({"unread": count})
 
@@ -389,11 +476,20 @@ def notifications_unread_count(request):
 @api_view(["POST"])  # {ids:[...]}
 @permission_classes([IsAuthenticated])
 @authentication_classes([JWTAuthentication, SessionAuthentication])
-def notifications_mark_read(request):
+def notifications_mark_read(request: Request) -> Response:
+    """Mark a list of notification IDs as read for the authenticated professional.
+
+    Args:
+        request: DRF request with body ``ids`` (list of notification IDs).
+
+    Returns:
+        Response confirming the update.
+    """
     pro = _get_professional_from_user(request.user)
     if not pro:
         return Response({"detail": "Profil professionnel requis"}, status=status.HTTP_403_FORBIDDEN)
-    ids = request.data.get("ids") or []
+
+    ids: List[int] = request.data.get("ids") or []
     Notification.objects.filter(professional=pro, id__in=ids).update(is_read=True)
     return Response({"ok": True})
 
@@ -401,16 +497,27 @@ def notifications_mark_read(request):
 @api_view(["POST"])  # create appointment
 @permission_classes([IsAuthenticated])
 @authentication_classes([JWTAuthentication, SessionAuthentication])
-def create_appointment(request):
+def create_appointment(request: Request) -> Response:
+    """Create a new appointment on behalf of the authenticated professional.
+
+    Args:
+        request: DRF request with ``start`` and ``end`` ISO datetimes plus
+            optional service fields in the body.
+
+    Returns:
+        Response with the created appointment ID or an error description.
+    """
     pro = _get_professional_from_user(request.user)
     if not pro:
         return Response({"detail": "Profil professionnel requis"}, status=status.HTTP_403_FORBIDDEN)
+
     body = request.data or {}
     try:
         start = parse_datetime(body.get("start"))
         end = parse_datetime(body.get("end"))
         if not start or not end:
             return Response({"detail": "start/end invalides"}, status=status.HTTP_400_BAD_REQUEST)
+
         appt = Appointment.objects.create(
             professional=pro,
             service_name=body.get("service_name") or "Service",
@@ -428,7 +535,16 @@ def create_appointment(request):
 @api_view(["PATCH"])  # update appointment
 @permission_classes([IsAuthenticated])
 @authentication_classes([JWTAuthentication, SessionAuthentication])
-def update_appointment(request, pk: int):
+def update_appointment(request: Request, pk: int) -> Response:
+    """Update an existing appointment for the authenticated professional.
+
+    Args:
+        request: DRF request containing the appointment updates.
+        pk: Appointment primary key to update.
+
+    Returns:
+        Response signaling success or a meaningful error payload.
+    """
     pro = _get_professional_from_user(request.user)
     if not pro:
         return Response({"detail": "Profil professionnel requis"}, status=status.HTTP_403_FORBIDDEN)
@@ -436,8 +552,10 @@ def update_appointment(request, pk: int):
         appt = Appointment.objects.get(id=pk, professional=pro)
     except Appointment.DoesNotExist:
         return Response({"detail": "Rendez-vous introuvable"}, status=status.HTTP_404_NOT_FOUND)
+
     body = request.data or {}
     old_status = appt.status
+
     if "service_name" in body:
         appt.service_name = body.get("service_name") or appt.service_name
     if "price" in body:
@@ -454,8 +572,10 @@ def update_appointment(request, pk: int):
         appt.status = body.get("status") or appt.status
     if "notes" in body:
         appt.notes = body.get("notes") or appt.notes
+
     appt.save()
-    # Notify client via email on status change
+
+    # Notify client via email on status change in a non-blocking thread
     try:
         if appt.client and appt.client.user and appt.client.user.email:
             new_status = appt.status
@@ -473,13 +593,22 @@ def update_appointment(request, pk: int):
                 threading.Thread(target=send_mail, args=(subject, message, from_addr, recipient), kwargs={"fail_silently": True}).start()
     except Exception:
         pass
+
     return Response({"ok": True})
 
 
 @api_view(["POST"])  # seed demo data
 @permission_classes([IsAuthenticated])
 @authentication_classes([JWTAuthentication])
-def seed_demo(request):
+def seed_demo(request: Request) -> Response:
+    """Generate a small set of demo appointments for the authenticated professional.
+
+    Args:
+        request: DRF request containing an authenticated professional user.
+
+    Returns:
+        Response listing created appointment IDs.
+    """
     from datetime import timedelta
     pro = _get_professional_from_user(request.user)
     if not pro:
@@ -504,9 +633,6 @@ def seed_demo(request):
 # Vues pour l'app appointments
 # Système de prise de rendez-vous
 
-from django.shortcuts import render
-from django.http import JsonResponse
-
 # TODO: Implémenter les vues
 # def booking():
 # def scheduling():
@@ -515,15 +641,19 @@ from django.http import JsonResponse
 # ------------------ Public/Client Booking ------------------
 @api_view(["GET"])  # /api/appointments/public/slots/?pro_id=&date=YYYY-MM-DD
 @permission_classes([AllowAny])
-def public_slots(request):
+def public_slots(request: Request) -> Response:
     """Return computed slots for a professional for a given date.
 
-    - Uses ProfessionalProfileExtra.working_days (list of 'mon'..'sun')
-      and working_hours {start: '09:00', end: '18:00'} if available.
-    - Generates 60min slots and marks each slot as:
-      'confirmed' if overlaps a confirmed appointment,
-      'pending' if overlaps a pending appointment,
-      'available' otherwise.
+    Args:
+        request: DRF request with ``pro_id`` and optional ``date`` query
+            parameter (defaults to today).
+
+    Returns:
+        Response containing a ``results`` list with start/end ISO datetimes
+        and an availability status.
+
+    Raises:
+        None: invalid inputs are surfaced via HTTP error responses.
     """
     from django.utils.dateparse import parse_date
     from users.models import Professional
@@ -584,7 +714,7 @@ def public_slots(request):
         ).only("start", "end", "status")
     )
 
-    def overlaps(s1, e1, s2, e2) -> bool:
+    def overlaps(s1: datetime, e1: datetime, s2: datetime, e2: datetime) -> bool:
         # Ensure all datetimes are timezone-aware in the same zone
         if tz.is_naive(s1):
             s1 = tz.make_aware(s1, tz.get_current_timezone())
@@ -596,7 +726,7 @@ def public_slots(request):
             e2 = tz.make_aware(e2, tz.get_current_timezone())
         return s1 < e2 and s2 < e1
 
-    results = []
+    results: List[Dict[str, Any]] = []
     step = 60
     cur = start_m
     while cur < end_m:
@@ -623,9 +753,18 @@ def public_slots(request):
 @api_view(["POST"])  # /api/appointments/client/book/
 @permission_classes([IsAuthenticated])
 @authentication_classes([JWTAuthentication, SessionAuthentication])
-def client_book(request):
-    """Client creates a pending reservation for a professional.
-    Body: {pro_id, service_name, price, start, end}
+def client_book(request: Request) -> Response:
+    """Allow an authenticated client to book a pending reservation.
+
+    Args:
+        request: DRF request whose body contains ``pro_id``, ``service_name``,
+            ``price``, ``start`` and ``end`` ISO datetimes.
+
+    Returns:
+        Response with the created appointment identifier and status.
+
+    Raises:
+        None: validation failures are returned as HTTP responses.
     """
     from users.models import Professional
     user = request.user
@@ -665,18 +804,26 @@ def client_book(request):
 @api_view(["GET"])  # /api/appointments/list/?pro_id=
 @permission_classes([IsAuthenticated])
 @authentication_classes([JWTAuthentication, SessionAuthentication])
-def list_for_pro(request):
+def list_for_pro(request: Request) -> Response:
     """Return pending and confirmed appointments for a professional.
 
-    If user is a professional, pro_id is inferred; otherwise requires ?pro_id=.
+    Args:
+        request: DRF request with optional ``pro_id`` query param. When omitted
+            the professional is inferred from the authenticated user.
+
+    Returns:
+        Response containing two arrays: ``pending`` and ``confirmed``.
+
+    Raises:
+        None: authentication/validation errors are returned in the Response.
     """
     pro = _get_professional_from_user(request.user)
     pro_id = request.query_params.get("pro_id") or (pro.id if pro else None)
     if not pro_id:
         return Response({"detail": "pro_id requis"}, status=status.HTTP_400_BAD_REQUEST)
 
-    pending = []
-    confirmed = []
+    pending: List[Dict[str, Any]] = []
+    confirmed: List[Dict[str, Any]] = []
     for a in Appointment.objects.filter(professional_id=int(pro_id)).order_by("-start")[:200]:
         row = {
             "id": a.id,
@@ -697,7 +844,15 @@ def list_for_pro(request):
 @api_view(["POST"])  # body: {appointment_id}
 @permission_classes([IsAuthenticated])
 @authentication_classes([JWTAuthentication, SessionAuthentication])
-def accept_appointment(request):
+def accept_appointment(request: Request) -> Response:
+    """Confirm a pending appointment for the authenticated professional.
+
+    Args:
+        request: DRF request whose body contains ``appointment_id``.
+
+    Returns:
+        Response with confirmation message and appointment summary.
+    """
     pro = _get_professional_from_user(request.user)
     if not pro:
         return Response({"detail": "Profil professionnel requis"}, status=status.HTTP_403_FORBIDDEN)
@@ -731,7 +886,15 @@ def accept_appointment(request):
 @api_view(["POST"])  # body: {appointment_id}
 @permission_classes([IsAuthenticated])
 @authentication_classes([JWTAuthentication, SessionAuthentication])
-def reject_appointment(request):
+def reject_appointment(request: Request) -> Response:
+    """Cancel an appointment at the initiative of the authenticated professional.
+
+    Args:
+        request: DRF request whose body contains ``appointment_id``.
+
+    Returns:
+        Response with cancellation message and appointment summary.
+    """
     pro = _get_professional_from_user(request.user)
     if not pro:
         return Response({"detail": "Profil professionnel requis"}, status=status.HTTP_403_FORBIDDEN)
