@@ -55,12 +55,21 @@ class ProfessionalProfileExtra(models.Model):
     Conserve des données non critiques pour l'approbation mais utiles côté mobile.
     """
 
+    GENDER_CHOICES = (
+        ("male", "Homme"),
+        ("female", "Femme"),
+    )
+    
     professional = models.OneToOneField(Professional, on_delete=models.CASCADE, related_name="extra")
+    gender = models.CharField(max_length=10, choices=GENDER_CHOICES, default="female")
     bio = models.TextField(blank=True)
     city = models.CharField(max_length=128, blank=True)
     governorate = models.CharField(max_length=64, blank=True)
     address = models.TextField(blank=True)
     phone_number = models.CharField(max_length=32, blank=True)
+    phone_secondary = models.CharField(max_length=32, blank=True, help_text="Téléphone secondaire")
+    email = models.EmailField(blank=True, help_text="Email principal du professionnel")
+    email_secondary = models.EmailField(blank=True, help_text="Email secondaire")
     latitude = models.FloatField(null=True, blank=True)
     longitude = models.FloatField(null=True, blank=True)
     primary_service = models.CharField(max_length=50, blank=True)
@@ -94,12 +103,100 @@ class ProfessionalApplication(models.Model):
         ("salon", "J'ai un salon"),
     )
 
+    GENDER_CHOICES = (
+        ("male", "Homme"),
+        ("female", "Femme"),
+    )
+
     ACTIVITY_CATEGORIES = (
+        # Coiffure
         ("hairdressing", "Coiffure"),
+        ("haircut_women", "Coupe femme"),
+        ("haircut_men", "Coupe homme"),
+        ("haircut_children", "Coupe enfant"),
+        ("hair_coloring", "Coloration"),
+        ("highlights", "Mèches & Balayage"),
+        ("hair_styling", "Brushing & Coiffage"),
+        ("hair_treatment", "Soins capillaires"),
+        ("keratin", "Lissage & Kératine"),
+        ("hair_extensions", "Extensions cheveux"),
+        ("braiding", "Tresses & Nattes"),
+        ("bridal_hair", "Coiffure mariée"),
+        # Maquillage
         ("makeup", "Maquillage"),
+        ("bridal_makeup", "Maquillage mariée"),
+        ("evening_makeup", "Maquillage soirée"),
+        ("natural_makeup", "Maquillage naturel"),
+        ("makeup_lesson", "Cours de maquillage"),
+        # Ongles
         ("manicure", "Manucure"),
+        ("pedicure", "Pédicure"),
+        ("nail_art", "Nail art"),
+        ("gel_nails", "Pose gel"),
+        ("acrylic_nails", "Pose résine"),
+        ("semi_permanent", "Semi-permanent"),
+        ("nail_care", "Soins des ongles"),
+        # Esthétique visage
         ("esthetics", "Esthétique"),
+        ("facial", "Soin du visage"),
+        ("deep_cleansing", "Nettoyage de peau"),
+        ("anti_aging", "Soin anti-âge"),
+        ("hydration", "Soin hydratant"),
+        ("acne_treatment", "Traitement acné"),
+        ("microdermabrasion", "Microdermabrasion"),
+        ("chemical_peel", "Peeling"),
+        ("led_therapy", "Luminothérapie LED"),
+        # Épilation
+        ("waxing", "Épilation cire"),
+        ("waxing_face", "Épilation visage"),
+        ("waxing_body", "Épilation corps"),
+        ("waxing_bikini", "Épilation maillot"),
+        ("threading", "Épilation au fil"),
+        ("laser_hair", "Épilation laser"),
+        ("sugaring", "Épilation au sucre"),
+        # Sourcils & Cils
+        ("eyebrows", "Épilation sourcils"),
+        ("eyebrow_tint", "Teinture sourcils"),
+        ("eyebrow_lamination", "Brow lamination"),
+        ("microblading", "Microblading"),
+        ("eyelash_extensions", "Extension de cils"),
+        ("eyelash_lift", "Rehaussement de cils"),
+        ("eyelash_tint", "Teinture de cils"),
+        # Massage & Bien-être
         ("massage", "Massage"),
+        ("relaxing_massage", "Massage relaxant"),
+        ("deep_tissue", "Massage deep tissue"),
+        ("hot_stone", "Massage pierres chaudes"),
+        ("aromatherapy", "Aromathérapie"),
+        ("reflexology", "Réflexologie"),
+        ("lymphatic_drainage", "Drainage lymphatique"),
+        ("prenatal_massage", "Massage prénatal"),
+        # Corps
+        ("body_treatment", "Soin du corps"),
+        ("body_scrub", "Gommage corps"),
+        ("body_wrap", "Enveloppement"),
+        ("slimming", "Soin minceur"),
+        ("cellulite", "Traitement cellulite"),
+        ("tanning", "Bronzage"),
+        ("spray_tan", "Autobronzant"),
+        # Spa & Hammam
+        ("spa", "Spa"),
+        ("hammam", "Hammam"),
+        ("sauna", "Sauna"),
+        ("jacuzzi", "Jacuzzi"),
+        # Maquillage permanent
+        ("permanent_makeup", "Maquillage permanent"),
+        ("lip_tattoo", "Tatouage lèvres"),
+        ("eyeliner_tattoo", "Tatouage eye-liner"),
+        # Hommes
+        ("barber", "Barbier"),
+        ("beard_trim", "Taille de barbe"),
+        ("beard_care", "Soins barbe"),
+        ("men_facial", "Soin visage homme"),
+        # Autres
+        ("henna", "Henné"),
+        ("teeth_whitening", "Blanchiment dentaire"),
+        ("piercing", "Piercing"),
         ("other", "Autre"),
     )
 
@@ -114,11 +211,14 @@ class ProfessionalApplication(models.Model):
     last_name = models.CharField(max_length=150)
     email = models.EmailField()
     phone_number = models.CharField(max_length=32)
+    gender = models.CharField(max_length=10, choices=GENDER_CHOICES, default="female")
 
     # Informations professionnelles
     activity_category = models.CharField(max_length=32, choices=ACTIVITY_CATEGORIES)
     service_type = models.CharField(max_length=16, choices=SERVICE_TYPES)
     spoken_languages = models.JSONField(default=list, help_text="Liste de codes langues")
+    # Services proposés (liste JSON: [{name, duration_min, price}])
+    services = models.JSONField(default=list, blank=True, help_text="Liste des services proposés")
 
     # Adresse du centre pour paiement/facturation
     governorate = models.CharField(max_length=64, blank=True)

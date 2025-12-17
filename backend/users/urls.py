@@ -24,6 +24,7 @@ urlpatterns = [
 
     # Admin/API backoffice
     path('applications/professionals/pending/', views.pending_professional_applications, name='pending_professional_applications'),
+    path('applications/professionals/<int:app_id>/', views.get_professional_application, name='get_professional_application'),
     path('applications/professionals/<int:app_id>/approve/', views.approve_professional_application, name='approve_professional_application'),
     path('applications/professionals/<int:app_id>/reject/', views.reject_professional_application, name='reject_professional_application'),
     path('professionals/fix-coordinates/', views.fix_professionals_coordinates, name='fix_professionals_coordinates'),

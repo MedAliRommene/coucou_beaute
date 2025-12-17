@@ -1802,7 +1802,7 @@
                 </h1>
 
                 <p class="text-xl text-gray-600 mb-10 leading-relaxed max-w-lg">
-                    Découvrez l'art de la beauté avec nos professionnelles expertes.
+                    Découvrez l'art de la beauté avec nos experts beauté.
                     Des soins personnalisés qui révèlent votre éclat naturel.
                 </p>
 
@@ -1879,17 +1879,17 @@
             </div>
             <h2 class="text-4xl md:text-5xl font-bold mb-6" style="color: var(--noir-doux);">
                 {% if professionals %}
-                Nos professionnelles recommandées
+                Nos professionnels recommandés
                 {% else %}
                 Rencontrez nos expertes
                 {% endif %}
             </h2>
             <p class="text-xl text-gray-600 max-w-3xl mx-auto">
                 {% if professionals %}
-                Découvrez nos professionnelles les mieux notées, avec plus de 3.5 étoiles par nos clientes.
+                Découvrez nos professionnels les mieux notés, avec plus de 3.5 étoiles par nos clients.
                 Des expertes passionnées qui transforment votre beauté avec art et excellence.
                 {% else %}
-                Des professionnelles passionnées et qualifiées, dédiées à révéler votre beauté naturelle avec art et
+                Des professionnels passionnés et qualifiés, dédiés à révéler votre beauté naturelle avec art et
                 expertise.
                 {% endif %}
             </p>
@@ -1935,8 +1935,8 @@
 
         <!-- Container du carousel -->
         <div class="relative">
-            <!-- Section Ultra-Moderne des Professionnelles Recommandées -->
-            <div id="professionalsCarousel" role="region" aria-label="Liste des professionnelles"
+            <!-- Section Ultra-Moderne des Professionnels Recommandés -->
+            <div id="professionalsCarousel" role="region" aria-label="Liste des professionnels"
                 class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8 transition-all duration-500">
                 {% for pro in professionals %}
                 <div class="expert-card" data-delay="{{ forloop.counter0 }}" data-expert-id="{{ pro.id }}"
@@ -2052,9 +2052,9 @@
                 class="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-pink-100 to-purple-100 rounded-full mb-6">
                 <i data-lucide="star" class="w-12 h-12 text-pink-500"></i>
             </div>
-            <h3 class="text-2xl font-bold text-gray-800 mb-4">Nos professionnelles se préparent</h3>
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">Nos professionnels se préparent</h3>
             <p class="text-gray-600 max-w-md mx-auto mb-8">
-                Nos professionnelles travaillent dur pour mériter leurs étoiles.
+                Nos professionnels travaillent dur pour mériter leurs étoiles.
                 Revenez bientôt pour découvrir nos expertes recommandées !
             </p>
             <a href="/signup/" class="btn-primary inline-flex items-center">
@@ -2082,7 +2082,7 @@
             </h2>
             <p class="text-xl text-gray-600 max-w-3xl mx-auto">
                 Découvrez notre gamme complète de services beauté, réalisés avec passion et expertise par nos
-                professionnelles qualifiées.
+                professionnels qualifiés.
             </p>
         </div>
 
@@ -2533,7 +2533,7 @@
                             class="footer-link text-gray-700 hover:text-black transition-colors duration-300">Services</a>
                     </li>
                     <li><a href="#professionals"
-                            class="footer-link text-gray-700 hover:text-black transition-colors duration-300">Professionnelles</a>
+                            class="footer-link text-gray-700 hover:text-black transition-colors duration-300">Professionnels</a>
                     </li>
                     <li><a href="#testimonials"
                             class="footer-link text-gray-700 hover:text-black transition-colors duration-300">Témoignages</a>
@@ -2757,7 +2757,7 @@
         });
     })();
 
-    // Effets hover pour les cartes de professionnelles
+    // Effets hover pour les cartes de professionnels
     (function () {
         if (REDUCE_MOTION) return;
         document.querySelectorAll('.pro-card').forEach(card => {

@@ -1,5 +1,6 @@
 {% extends 'front_web/base_client.html' %}
 {% load static %}
+{% load gender_tags %}
 {% block template_id %}front_web/create_review.html{% endblock %}
 
 {% block title %}Donner un avis - {{ pro.business_name|default:pro.user.get_full_name }}{% endblock %}
@@ -319,7 +320,7 @@
             {% endif %}
 
             <h2 class="professional-name">{{ pro.business_name|default:pro.user.get_full_name }}</h2>
-            <p class="professional-service">{{ pro.extra.primary_service|default:"Professionnel" }}</p>
+            <p class="professional-service">{{ pro.extra.primary_service|default:pro.extra.gender|gender_title }}</p>
 
             {% if pro.extra.rating %}
             <div class="rating-display">
@@ -365,7 +366,7 @@
                 <div class="form-group">
                     <label for="comment" class="form-label">Votre commentaire (optionnel)</label>
                     <textarea name="comment" id="comment" class="form-textarea"
-                        placeholder="Partagez votre expérience avec ce professionnel...">{% if existing_review %}{{ existing_review.comment }}{% endif %}</textarea>
+                        placeholder="Partagez votre expérience...">{% if existing_review %}{{ existing_review.comment }}{% endif %}</textarea>
                 </div>
 
                 <button type="submit" class="btn-submit" id="submitBtn" disabled>

@@ -1,4 +1,5 @@
 {% load static %}
+{% load gender_tags %}
 <!DOCTYPE html>
 <html lang="fr">
 
@@ -148,9 +149,12 @@
         }
 
         @keyframes bellPulse {
-            0%, 100% {
+
+            0%,
+            100% {
                 box-shadow: 0 0 0 0 rgba(255, 182, 217, 0.4);
             }
+
             50% {
                 box-shadow: 0 0 0 8px rgba(255, 182, 217, 0);
             }
@@ -160,15 +164,19 @@
             0% {
                 transform: scale(1);
             }
+
             25% {
                 transform: scale(1.15) rotate(5deg);
             }
+
             50% {
                 transform: scale(1.15) rotate(-5deg);
             }
+
             75% {
                 transform: scale(1.15) rotate(3deg);
             }
+
             100% {
                 transform: scale(1) rotate(0deg);
             }
@@ -198,9 +206,11 @@
             0% {
                 transform: scale(0);
             }
+
             50% {
                 transform: scale(1.2);
             }
+
             100% {
                 transform: scale(1);
             }
@@ -655,8 +665,7 @@
 
 
 
-                <a href="{% url 'front_web:pro_appointments' %}" 
-                   onclick="event.stopPropagation(); return true;"
+                <a href="{% url 'front_web:pro_appointments' %}" onclick="event.stopPropagation(); return true;"
                     class="flex items-center p-3 rounded-xl text-gray-700 hover:bg-pink-50 hover:text-pink-600 transition-colors duration-200 group relative {% if request.resolver_match.url_name == 'pro_appointments' %}bg-gradient-to-r from-pink-50 to-blue-50 text-pink-600 font-semibold shadow-sm{% endif %}">
                     <div
                         class="icon-bubble {% if request.resolver_match.url_name == 'pro_appointments' %}bg-gradient-to-br from-pink-400 to-blue-400 text-white{% else %}bg-gray-100 text-gray-500 group-hover:bg-pink-100 group-hover:text-pink-500{% endif %}">
@@ -689,7 +698,7 @@
                         <div class="text-sm text-gray-600">
                             <span class="font-medium">{{ user.get_full_name|default:user.email }}</span>
                             <span class="mx-2">•</span>
-                            <span>Professionnel</span>
+                            <span>Espace Pro</span>
                         </div>
                     </div>
 
@@ -700,7 +709,7 @@
                                 <i data-lucide="bell" class="w-5 h-5 text-gray-700"></i>
                                 <span class="notification-badge" id="notificationBadge" style="display: none;">0</span>
                             </div>
-                            
+
                             <!-- Notification Dropdown -->
                             <div class="notification-dropdown" id="notificationDropdown">
                                 <div class="notification-dropdown-header">
@@ -742,13 +751,13 @@
         lucide.createIcons();
 
         // Notification System (Global for Professional)
-        (function() {
+        (function () {
             const notificationBell = document.getElementById('notificationBell');
             const notificationDropdown = document.getElementById('notificationDropdown');
             const notificationBadge = document.getElementById('notificationBadge');
             const notificationContent = document.getElementById('notificationDropdownContent');
             const markAllReadBtn = document.getElementById('markAllReadBtn');
-            
+
             let lastUnreadCount = 0;
             let notificationCheckInterval = null;
 
@@ -759,7 +768,7 @@
                         credentials: 'include'
                     });
                     const data = await resp.json();
-                    
+
                     if (data.results) {
                         renderNotifications(data.results);
                     }
@@ -784,17 +793,17 @@
                     if (notificationDropdown.classList.contains('active')) {
                         const unreadItems = document.querySelectorAll('.notification-dropdown-item.unread');
                         const domCount = unreadItems.length;
-                        
+
                         if (domCount >= 0) {
                             updateBadge(domCount);
-                            
+
                             // Check for new notifications (Messenger-style notification)
                             if (domCount > lastUnreadCount && lastUnreadCount >= 0) {
                                 triggerNewNotificationEffect();
                             }
-                            
+
                             lastUnreadCount = domCount;
-                            
+
                             // Still fetch from server to sync, but don't wait for it
                             fetch('/api/appointments/notifications/unread_count/', {
                                 credentials: 'include'
@@ -805,26 +814,26 @@
                                     updateBadge(serverCount);
                                     lastUnreadCount = serverCount;
                                 }
-                            }).catch(() => {});
-                            
+                            }).catch(() => { });
+
                             return;
                         }
                     }
-                    
+
                     // Otherwise, fetch from server
                     const resp = await fetch('/api/appointments/notifications/unread_count/', {
                         credentials: 'include'
                     });
                     const data = await resp.json();
-                    
+
                     const unreadCount = data.unread || 0;
                     updateBadge(unreadCount);
-                    
+
                     // Check for new notifications (Messenger-style notification)
                     if (unreadCount > lastUnreadCount && lastUnreadCount > 0) {
                         triggerNewNotificationEffect();
                     }
-                    
+
                     lastUnreadCount = unreadCount;
                 } catch (error) {
                     console.error('Error loading unread count:', error);
@@ -834,7 +843,7 @@
             // Calculate unread count from notifications data
             function calculateUnreadCount(notifications) {
                 if (!notifications || notifications.length === 0) return 0;
-                
+
                 return notifications.filter(n => !n.is_read).length;
             }
 
@@ -864,7 +873,7 @@
                 try {
                     const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBzKL0fPTgjMGHm7A7+OZUxMLR6Dj8sBrJAU1idLz1oQ3CBxqve7ooVYUDUee4fO+ayEHMovR89OCMwYebsDv45lTEwtHoOPywGskBTWJ0vPWhDcIHGq97uihVhQNR57h875rIQcyi9Hz04IzBh5uwO/jmVMT');
                     audio.volume = 0.3;
-                    audio.play().catch(() => {}); // Silent fail if audio is blocked
+                    audio.play().catch(() => { }); // Silent fail if audio is blocked
                 } catch (e) {
                     // Audio not supported or blocked
                 }
@@ -896,14 +905,14 @@
                     lastUnreadCount = 0;
                 } else {
                     notificationContent.innerHTML = notifications.slice(0, 10).map(n => {
-                        const iconType = n.title.includes('demande') ? 'calendar-plus' : 
-                                       n.title.includes('confirmé') ? 'check-circle-2' : 
-                                       n.title.includes('annulé') ? 'x-circle' : 'bell';
-                        const iconBg = n.title.includes('demande') ? 'from-blue-400 to-blue-500' : 
-                                     n.title.includes('confirmé') ? 'from-green-400 to-green-500' : 
-                                     n.title.includes('annulé') ? 'from-red-400 to-red-500' : 'from-gray-400 to-gray-500';
+                        const iconType = n.title.includes('demande') ? 'calendar-plus' :
+                            n.title.includes('confirmé') ? 'check-circle-2' :
+                                n.title.includes('annulé') ? 'x-circle' : 'bell';
+                        const iconBg = n.title.includes('demande') ? 'from-blue-400 to-blue-500' :
+                            n.title.includes('confirmé') ? 'from-green-400 to-green-500' :
+                                n.title.includes('annulé') ? 'from-red-400 to-red-500' : 'from-gray-400 to-gray-500';
                         const isUnread = !n.is_read;
-                        
+
                         return `
                             <div class="notification-dropdown-item ${isUnread ? 'unread' : 'read'}" 
                                  data-notification-id="${n.id}">
@@ -926,12 +935,12 @@
                             </div>
                         `;
                     }).join('');
-                    
+
                     // Attach click handlers
                     document.querySelectorAll('.notification-dropdown-item').forEach(item => {
                         item.addEventListener('click', handleNotificationClick);
                     });
-                    
+
                     // Update badge with accurate count after rendering
                     const unreadCount = calculateUnreadCount(notifications);
                     updateBadge(unreadCount);
@@ -945,7 +954,7 @@
                 const date = new Date(dateString);
                 const now = new Date();
                 const diff = Math.floor((now - date) / 1000);
-                
+
                 if (diff < 60) return 'à l\'instant';
                 if (diff < 3600) return `il y a ${Math.floor(diff / 60)} min`;
                 if (diff < 86400) return `il y a ${Math.floor(diff / 3600)} h`;
@@ -963,7 +972,7 @@
                 item.classList.add('read');
                 const dot = item.querySelector('.w-2.h-2');
                 if (dot) dot.remove();
-                
+
                 // Update badge count immediately
                 const remainingUnread = document.querySelectorAll('.notification-dropdown-item.unread').length;
                 updateBadge(remainingUnread);
@@ -1006,7 +1015,7 @@
             async function markAllAsRead() {
                 const unreadItems = document.querySelectorAll('.notification-dropdown-item.unread');
                 const unreadIds = Array.from(unreadItems).map(item => parseInt(item.dataset.notificationId)).filter(id => !isNaN(id));
-                
+
                 if (unreadIds.length === 0) return;
 
                 // Optimistically update UI first
@@ -1016,11 +1025,11 @@
                     const dot = item.querySelector('.w-2.h-2');
                     if (dot) dot.remove();
                 });
-                
+
                 // Update badge immediately to 0
                 updateBadge(0);
                 lastUnreadCount = 0;
-                
+
                 // Hide mark all button
                 if (markAllReadBtn) {
                     markAllReadBtn.style.display = 'none';
@@ -1081,7 +1090,7 @@
 
             // Toggle dropdown
             if (notificationBell && notificationDropdown) {
-                notificationBell.addEventListener('click', function(e) {
+                notificationBell.addEventListener('click', function (e) {
                     e.stopPropagation();
                     notificationDropdown.classList.toggle('active');
                     if (notificationDropdown.classList.contains('active')) {
@@ -1089,7 +1098,7 @@
                     }
                 });
 
-                document.addEventListener('click', function(e) {
+                document.addEventListener('click', function (e) {
                     if (!notificationBell.contains(e.target) && !notificationDropdown.contains(e.target)) {
                         notificationDropdown.classList.remove('active');
                     }
@@ -1165,7 +1174,7 @@
         if (isMobile()) {
             const sidebarLinks = sidebar.querySelectorAll('nav a');
             sidebarLinks.forEach(link => {
-                link.addEventListener('click', function(e) {
+                link.addEventListener('click', function (e) {
                     // Don't prevent default - let the link navigate normally
                     setTimeout(() => {
                         closeSidebar();

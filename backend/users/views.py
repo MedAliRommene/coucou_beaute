@@ -79,6 +79,20 @@ def pending_professional_applications(request):
     return Response(data)
 
 
+@api_view(["GET"]) 
+@permission_classes([IsAdminUser])
+@authentication_classes([SessionAuthentication])
+def get_professional_application(request, app_id: int):
+    """Obtenir les détails d'une demande d'inscription professionnelle."""
+    try:
+        app = ProfessionalApplication.objects.get(id=app_id)
+    except ProfessionalApplication.DoesNotExist:
+        return Response({"detail": "Demande introuvable"}, status=status.HTTP_404_NOT_FOUND)
+    
+    data = ProfessionalApplicationSerializer(app).data
+    return Response(data)
+
+
 @api_view(["POST"]) 
 @permission_classes([IsAdminUser])
 @authentication_classes([SessionAuthentication])
@@ -172,6 +186,8 @@ def approve_professional_application(request, app_id: int):
         extra.longitude = app.longitude
     if app.phone_number:
         extra.phone_number = app.phone_number
+    if hasattr(app, 'gender') and app.gender:
+        extra.gender = app.gender
     if app.activity_category:
         extra.primary_service = app.activity_category
     if app.spoken_languages:
@@ -209,6 +225,47 @@ def approve_professional_application(request, app_id: int):
         except Exception as e:
             print(f"⚠️  Erreur géocodage pour {app.email}: {e}")
     
+    # Transférer les services de l'application
+    if hasattr(app, 'services') and app.services:
+        if isinstance(app.services, list) and len(app.services) > 0:
+            extra.services = app.services
+            # Définir le prix à partir du premier service
+            if app.services[0].get('price'):
+                extra.price = float(app.services[0]['price'])
+    
+    # Mapping des catégories vers les labels en français
+    category_labels = {
+        'hairdressing': 'Coiffure', 'haircut_women': 'Coupe femme', 'haircut_men': 'Coupe homme',
+        'haircut_children': 'Coupe enfant', 'hair_coloring': 'Coloration', 'highlights': 'Mèches & Balayage',
+        'hair_styling': 'Brushing & Coiffage', 'hair_treatment': 'Soins capillaires', 'keratin': 'Lissage & Kératine',
+        'hair_extensions': 'Extensions cheveux', 'braiding': 'Tresses & Nattes', 'bridal_hair': 'Coiffure mariée',
+        'makeup': 'Maquillage', 'bridal_makeup': 'Maquillage mariée', 'evening_makeup': 'Maquillage soirée',
+        'natural_makeup': 'Maquillage naturel', 'makeup_lesson': 'Cours de maquillage',
+        'manicure': 'Manucure', 'pedicure': 'Pédicure', 'nail_art': 'Nail art', 'gel_nails': 'Pose gel',
+        'acrylic_nails': 'Pose résine', 'semi_permanent': 'Semi-permanent', 'nail_care': 'Soins des ongles',
+        'esthetics': 'Esthétique', 'facial': 'Soin du visage', 'deep_cleansing': 'Nettoyage de peau',
+        'anti_aging': 'Soin anti-âge', 'hydration': 'Soin hydratant', 'acne_treatment': 'Traitement acné',
+        'microdermabrasion': 'Microdermabrasion', 'chemical_peel': 'Peeling', 'led_therapy': 'Luminothérapie LED',
+        'waxing': 'Épilation cire', 'waxing_face': 'Épilation visage', 'waxing_body': 'Épilation corps',
+        'waxing_bikini': 'Épilation maillot', 'threading': 'Épilation au fil', 'laser_hair': 'Épilation laser',
+        'sugaring': 'Épilation au sucre', 'eyebrows': 'Épilation sourcils', 'eyebrow_tint': 'Teinture sourcils',
+        'eyebrow_lamination': 'Brow lamination', 'microblading': 'Microblading', 'eyelash_extensions': 'Extension de cils',
+        'eyelash_lift': 'Rehaussement de cils', 'eyelash_tint': 'Teinture de cils',
+        'massage': 'Massage', 'relaxing_massage': 'Massage relaxant', 'deep_tissue': 'Massage deep tissue',
+        'hot_stone': 'Massage pierres chaudes', 'aromatherapy': 'Aromathérapie', 'reflexology': 'Réflexologie',
+        'lymphatic_drainage': 'Drainage lymphatique', 'prenatal_massage': 'Massage prénatal',
+        'body_treatment': 'Soin du corps', 'body_scrub': 'Gommage corps', 'body_wrap': 'Enveloppement',
+        'slimming': 'Soin minceur', 'cellulite': 'Traitement cellulite', 'tanning': 'Bronzage', 'spray_tan': 'Autobronzant',
+        'spa': 'Spa', 'hammam': 'Hammam', 'sauna': 'Sauna', 'jacuzzi': 'Jacuzzi',
+        'permanent_makeup': 'Maquillage permanent', 'lip_tattoo': 'Tatouage lèvres', 'eyeliner_tattoo': 'Tatouage eye-liner',
+        'barber': 'Barbier', 'beard_trim': 'Taille de barbe', 'beard_care': 'Soins barbe', 'men_facial': 'Soin visage homme',
+        'henna': 'Henné', 'teeth_whitening': 'Blanchiment dentaire', 'piercing': 'Piercing', 'other': 'Autre'
+    }
+    
+    # Si primary_service est un code, le convertir en label français
+    if extra.primary_service and extra.primary_service in category_labels:
+        extra.primary_service = category_labels[extra.primary_service]
+    
     # Définir des valeurs par défaut si elles n'existent pas
     if not extra.rating:
         extra.rating = 4.0
@@ -217,7 +274,13 @@ def approve_professional_application(request, app_id: int):
     if not extra.price:
         extra.price = 50.0
     if not extra.services:
-        extra.services = []
+        # Créer un service par défaut basé sur la catégorie principale
+        default_service_name = extra.primary_service or category_labels.get(app.activity_category, 'Service')
+        extra.services = [{
+            'name': default_service_name,
+            'duration_min': 60,
+            'price': extra.price
+        }]
     if not extra.working_days:
         extra.working_days = []
     if not extra.working_hours:

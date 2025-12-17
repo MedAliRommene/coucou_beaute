@@ -521,10 +521,20 @@
                     </div>
                 </div>
                 <div id="proFields" class="space-y-3 hidden">
-                    <div>
-                        <label class="block text-sm text-textMuted mb-1">Téléphone</label>
-                        <input name="phone" type="tel" inputmode="numeric" pattern="^\+?[0-9]{8,15}$"
-                            title="Entre 8 et 15 chiffres" class="w-full border rounded-xl px-3 py-2 bg-white/60" />
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-sm text-textMuted mb-1">Téléphone</label>
+                            <input name="phone" type="tel" inputmode="numeric" pattern="^\+?[0-9]{8,15}$"
+                                title="Entre 8 et 15 chiffres" class="w-full border rounded-xl px-3 py-2 bg-white/60" />
+                        </div>
+                        <div>
+                            <label class="block text-sm text-textMuted mb-1">Genre</label>
+                            <select name="gender" id="genderSelect"
+                                class="w-full border rounded-xl px-3 py-2 bg-white/60">
+                                <option value="female">Femme</option>
+                                <option value="male">Homme</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div>
@@ -568,18 +578,114 @@
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-sm text-textMuted mb-1">Catégorie</label>
-                            <select name="activity_category" class="w-full border rounded-xl px-3 py-2 bg-white/60">
-                                <option value="hairdressing">Coiffure</option>
-                                <option value="makeup">Maquillage</option>
-                                <option value="manicure">Manucure</option>
-                                <option value="esthetics">Esthétique</option>
-                                <option value="massage">Massage</option>
-                                <option value="other">Autre</option>
+                            <label class="block text-sm text-textMuted mb-1">Catégorie principale</label>
+                            <select name="activity_category" id="activityCategory"
+                                class="w-full border rounded-xl px-3 py-2 bg-white/60">
+                                <optgroup label="Coiffure">
+                                    <option value="hairdressing">Coiffure</option>
+                                    <option value="haircut_women">Coupe femme</option>
+                                    <option value="haircut_men">Coupe homme</option>
+                                    <option value="haircut_children">Coupe enfant</option>
+                                    <option value="hair_coloring">Coloration</option>
+                                    <option value="highlights">Mèches & Balayage</option>
+                                    <option value="hair_styling">Brushing & Coiffage</option>
+                                    <option value="hair_treatment">Soins capillaires</option>
+                                    <option value="keratin">Lissage & Kératine</option>
+                                    <option value="hair_extensions">Extensions cheveux</option>
+                                    <option value="braiding">Tresses & Nattes</option>
+                                    <option value="bridal_hair">Coiffure mariée</option>
+                                </optgroup>
+                                <optgroup label="Maquillage">
+                                    <option value="makeup">Maquillage</option>
+                                    <option value="bridal_makeup">Maquillage mariée</option>
+                                    <option value="evening_makeup">Maquillage soirée</option>
+                                    <option value="natural_makeup">Maquillage naturel</option>
+                                    <option value="makeup_lesson">Cours de maquillage</option>
+                                </optgroup>
+                                <optgroup label="Ongles">
+                                    <option value="manicure">Manucure</option>
+                                    <option value="pedicure">Pédicure</option>
+                                    <option value="nail_art">Nail art</option>
+                                    <option value="gel_nails">Pose gel</option>
+                                    <option value="acrylic_nails">Pose résine</option>
+                                    <option value="semi_permanent">Semi-permanent</option>
+                                    <option value="nail_care">Soins des ongles</option>
+                                </optgroup>
+                                <optgroup label="Esthétique">
+                                    <option value="esthetics">Esthétique</option>
+                                    <option value="facial">Soin du visage</option>
+                                    <option value="deep_cleansing">Nettoyage de peau</option>
+                                    <option value="anti_aging">Soin anti-âge</option>
+                                    <option value="hydration">Soin hydratant</option>
+                                    <option value="acne_treatment">Traitement acné</option>
+                                    <option value="microdermabrasion">Microdermabrasion</option>
+                                    <option value="chemical_peel">Peeling</option>
+                                    <option value="led_therapy">Luminothérapie LED</option>
+                                </optgroup>
+                                <optgroup label="Épilation">
+                                    <option value="waxing">Épilation cire</option>
+                                    <option value="waxing_face">Épilation visage</option>
+                                    <option value="waxing_body">Épilation corps</option>
+                                    <option value="waxing_bikini">Épilation maillot</option>
+                                    <option value="threading">Épilation au fil</option>
+                                    <option value="laser_hair">Épilation laser</option>
+                                    <option value="sugaring">Épilation au sucre</option>
+                                </optgroup>
+                                <optgroup label="Sourcils & Cils">
+                                    <option value="eyebrows">Épilation sourcils</option>
+                                    <option value="eyebrow_tint">Teinture sourcils</option>
+                                    <option value="eyebrow_lamination">Brow lamination</option>
+                                    <option value="microblading">Microblading</option>
+                                    <option value="eyelash_extensions">Extension de cils</option>
+                                    <option value="eyelash_lift">Rehaussement de cils</option>
+                                    <option value="eyelash_tint">Teinture de cils</option>
+                                </optgroup>
+                                <optgroup label="Massage & Bien-être">
+                                    <option value="massage">Massage</option>
+                                    <option value="relaxing_massage">Massage relaxant</option>
+                                    <option value="deep_tissue">Massage deep tissue</option>
+                                    <option value="hot_stone">Massage pierres chaudes</option>
+                                    <option value="aromatherapy">Aromathérapie</option>
+                                    <option value="reflexology">Réflexologie</option>
+                                    <option value="lymphatic_drainage">Drainage lymphatique</option>
+                                    <option value="prenatal_massage">Massage prénatal</option>
+                                </optgroup>
+                                <optgroup label="Corps">
+                                    <option value="body_treatment">Soin du corps</option>
+                                    <option value="body_scrub">Gommage corps</option>
+                                    <option value="body_wrap">Enveloppement</option>
+                                    <option value="slimming">Soin minceur</option>
+                                    <option value="cellulite">Traitement cellulite</option>
+                                    <option value="tanning">Bronzage</option>
+                                    <option value="spray_tan">Autobronzant</option>
+                                </optgroup>
+                                <optgroup label="Spa & Hammam">
+                                    <option value="spa">Spa</option>
+                                    <option value="hammam">Hammam</option>
+                                    <option value="sauna">Sauna</option>
+                                    <option value="jacuzzi">Jacuzzi</option>
+                                </optgroup>
+                                <optgroup label="Maquillage permanent">
+                                    <option value="permanent_makeup">Maquillage permanent</option>
+                                    <option value="lip_tattoo">Tatouage lèvres</option>
+                                    <option value="eyeliner_tattoo">Tatouage eye-liner</option>
+                                </optgroup>
+                                <optgroup label="Hommes">
+                                    <option value="barber">Barbier</option>
+                                    <option value="beard_trim">Taille de barbe</option>
+                                    <option value="beard_care">Soins barbe</option>
+                                    <option value="men_facial">Soin visage homme</option>
+                                </optgroup>
+                                <optgroup label="Autres">
+                                    <option value="henna">Henné</option>
+                                    <option value="teeth_whitening">Blanchiment dentaire</option>
+                                    <option value="piercing">Piercing</option>
+                                    <option value="other">Autre</option>
+                                </optgroup>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm text-textMuted mb-1">Type de service</label>
+                            <label class="block text-sm text-textMuted mb-1">Type de prestation</label>
                             <select name="service_type" id="serviceType"
                                 class="w-full border rounded-xl px-3 py-2 bg-white/60">
                                 <option value="mobile">Je me déplace</option>
@@ -587,6 +693,145 @@
                                 <option value="salon">J'ai un salon</option>
                             </select>
                         </div>
+                    </div>
+                    <!-- Services proposés -->
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <label class="block text-sm text-textMuted font-medium">Services proposés</label>
+                            <button type="button" id="addServiceBtn"
+                                class="text-sm text-blueLight hover:underline flex items-center gap-1">
+                                <i data-lucide="plus-circle" class="w-4 h-4"></i> Ajouter un service
+                            </button>
+                        </div>
+                        <!-- En-têtes des colonnes -->
+                        <div class="grid grid-cols-12 gap-2 text-xs text-textMuted font-medium px-2">
+                            <div class="col-span-5">Nom du service</div>
+                            <div class="col-span-3">Durée (min)</div>
+                            <div class="col-span-3">Prix (DT)</div>
+                            <div class="col-span-1"></div>
+                        </div>
+                        <div id="servicesList" class="space-y-2">
+                            <!-- Premier service par défaut -->
+                            <div class="service-item grid grid-cols-12 gap-2 items-center bg-white/40 p-2 rounded-lg">
+                                <select name="service_name[]"
+                                    class="col-span-5 border rounded-lg px-3 py-2 bg-white/60 text-sm service-select"
+                                    required>
+                                    <option value="">-- Sélectionner un service --</option>
+                                    <optgroup label="Coiffure">
+                                        <option value="Coiffure">Coiffure</option>
+                                        <option value="Coupe femme">Coupe femme</option>
+                                        <option value="Coupe homme">Coupe homme</option>
+                                        <option value="Coupe enfant">Coupe enfant</option>
+                                        <option value="Coloration">Coloration</option>
+                                        <option value="Mèches & Balayage">Mèches & Balayage</option>
+                                        <option value="Brushing & Coiffage">Brushing & Coiffage</option>
+                                        <option value="Soins capillaires">Soins capillaires</option>
+                                        <option value="Lissage & Kératine">Lissage & Kératine</option>
+                                        <option value="Extensions cheveux">Extensions cheveux</option>
+                                        <option value="Tresses & Nattes">Tresses & Nattes</option>
+                                        <option value="Coiffure mariée">Coiffure mariée</option>
+                                    </optgroup>
+                                    <optgroup label="Maquillage">
+                                        <option value="Maquillage">Maquillage</option>
+                                        <option value="Maquillage mariée">Maquillage mariée</option>
+                                        <option value="Maquillage soirée">Maquillage soirée</option>
+                                        <option value="Maquillage naturel">Maquillage naturel</option>
+                                        <option value="Cours de maquillage">Cours de maquillage</option>
+                                    </optgroup>
+                                    <optgroup label="Ongles">
+                                        <option value="Manucure">Manucure</option>
+                                        <option value="Pédicure">Pédicure</option>
+                                        <option value="Nail art">Nail art</option>
+                                        <option value="Pose gel">Pose gel</option>
+                                        <option value="Pose résine">Pose résine</option>
+                                        <option value="Semi-permanent">Semi-permanent</option>
+                                        <option value="Soins des ongles">Soins des ongles</option>
+                                    </optgroup>
+                                    <optgroup label="Esthétique">
+                                        <option value="Esthétique">Esthétique</option>
+                                        <option value="Soin du visage">Soin du visage</option>
+                                        <option value="Nettoyage de peau">Nettoyage de peau</option>
+                                        <option value="Soin anti-âge">Soin anti-âge</option>
+                                        <option value="Soin hydratant">Soin hydratant</option>
+                                        <option value="Traitement acné">Traitement acné</option>
+                                        <option value="Microdermabrasion">Microdermabrasion</option>
+                                        <option value="Peeling">Peeling</option>
+                                        <option value="Luminothérapie LED">Luminothérapie LED</option>
+                                    </optgroup>
+                                    <optgroup label="Épilation">
+                                        <option value="Épilation cire">Épilation cire</option>
+                                        <option value="Épilation visage">Épilation visage</option>
+                                        <option value="Épilation corps">Épilation corps</option>
+                                        <option value="Épilation maillot">Épilation maillot</option>
+                                        <option value="Épilation au fil">Épilation au fil</option>
+                                        <option value="Épilation laser">Épilation laser</option>
+                                        <option value="Épilation au sucre">Épilation au sucre</option>
+                                    </optgroup>
+                                    <optgroup label="Sourcils & Cils">
+                                        <option value="Épilation sourcils">Épilation sourcils</option>
+                                        <option value="Teinture sourcils">Teinture sourcils</option>
+                                        <option value="Brow lamination">Brow lamination</option>
+                                        <option value="Microblading">Microblading</option>
+                                        <option value="Extension de cils">Extension de cils</option>
+                                        <option value="Rehaussement de cils">Rehaussement de cils</option>
+                                        <option value="Teinture de cils">Teinture de cils</option>
+                                    </optgroup>
+                                    <optgroup label="Massage & Bien-être">
+                                        <option value="Massage">Massage</option>
+                                        <option value="Massage relaxant">Massage relaxant</option>
+                                        <option value="Massage deep tissue">Massage deep tissue</option>
+                                        <option value="Massage pierres chaudes">Massage pierres chaudes</option>
+                                        <option value="Aromathérapie">Aromathérapie</option>
+                                        <option value="Réflexologie">Réflexologie</option>
+                                        <option value="Drainage lymphatique">Drainage lymphatique</option>
+                                        <option value="Massage prénatal">Massage prénatal</option>
+                                    </optgroup>
+                                    <optgroup label="Corps">
+                                        <option value="Soin du corps">Soin du corps</option>
+                                        <option value="Gommage corps">Gommage corps</option>
+                                        <option value="Enveloppement">Enveloppement</option>
+                                        <option value="Soin minceur">Soin minceur</option>
+                                        <option value="Traitement cellulite">Traitement cellulite</option>
+                                        <option value="Bronzage">Bronzage</option>
+                                        <option value="Autobronzant">Autobronzant</option>
+                                    </optgroup>
+                                    <optgroup label="Spa & Hammam">
+                                        <option value="Spa">Spa</option>
+                                        <option value="Hammam">Hammam</option>
+                                        <option value="Sauna">Sauna</option>
+                                        <option value="Jacuzzi">Jacuzzi</option>
+                                    </optgroup>
+                                    <optgroup label="Maquillage permanent">
+                                        <option value="Maquillage permanent">Maquillage permanent</option>
+                                        <option value="Tatouage lèvres">Tatouage lèvres</option>
+                                        <option value="Tatouage eye-liner">Tatouage eye-liner</option>
+                                    </optgroup>
+                                    <optgroup label="Hommes">
+                                        <option value="Barbier">Barbier</option>
+                                        <option value="Taille de barbe">Taille de barbe</option>
+                                        <option value="Soins barbe">Soins barbe</option>
+                                        <option value="Soin visage homme">Soin visage homme</option>
+                                    </optgroup>
+                                    <optgroup label="Autres">
+                                        <option value="Henné">Henné</option>
+                                        <option value="Blanchiment dentaire">Blanchiment dentaire</option>
+                                        <option value="Piercing">Piercing</option>
+                                        <option value="Autre">Autre</option>
+                                    </optgroup>
+                                </select>
+                                <input type="number" name="service_duration[]" placeholder="60"
+                                    class="col-span-3 border rounded-lg px-3 py-2 bg-white/60 text-sm text-center"
+                                    min="15" value="60" />
+                                <input type="number" name="service_price[]" placeholder="50"
+                                    class="col-span-3 border rounded-lg px-3 py-2 bg-white/60 text-sm text-center"
+                                    min="0" value="50" />
+                                <button type="button"
+                                    class="col-span-1 remove-service text-gray-400 hover:text-red-500 hidden">
+                                    <i data-lucide="x" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <input type="hidden" name="services" id="servicesJson" />
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div>
@@ -851,6 +1096,325 @@
                 alert('Veuillez téléverser la photo de profil et la pièce d\'identité avant de continuer.');
             }
         });
+    })();
+</script>
+<script>
+    // Services management - permettre d'ajouter plusieurs services
+    (function () {
+        const addBtn = document.getElementById('addServiceBtn');
+        const servicesList = document.getElementById('servicesList');
+        const servicesJson = document.getElementById('servicesJson');
+        const form = document.getElementById('signupForm');
+        const activityCategory = document.getElementById('activityCategory');
+
+        // Mapping des catégories vers les labels en français
+        const categoryLabels = {
+            // Coiffure
+            'hairdressing': 'Coiffure',
+            'haircut_women': 'Coupe femme',
+            'haircut_men': 'Coupe homme',
+            'haircut_children': 'Coupe enfant',
+            'hair_coloring': 'Coloration',
+            'highlights': 'Mèches & Balayage',
+            'hair_styling': 'Brushing & Coiffage',
+            'hair_treatment': 'Soins capillaires',
+            'keratin': 'Lissage & Kératine',
+            'hair_extensions': 'Extensions cheveux',
+            'braiding': 'Tresses & Nattes',
+            'bridal_hair': 'Coiffure mariée',
+            // Maquillage
+            'makeup': 'Maquillage',
+            'bridal_makeup': 'Maquillage mariée',
+            'evening_makeup': 'Maquillage soirée',
+            'natural_makeup': 'Maquillage naturel',
+            'makeup_lesson': 'Cours de maquillage',
+            // Ongles
+            'manicure': 'Manucure',
+            'pedicure': 'Pédicure',
+            'nail_art': 'Nail art',
+            'gel_nails': 'Pose gel',
+            'acrylic_nails': 'Pose résine',
+            'semi_permanent': 'Semi-permanent',
+            'nail_care': 'Soins des ongles',
+            // Esthétique
+            'esthetics': 'Esthétique',
+            'facial': 'Soin du visage',
+            'deep_cleansing': 'Nettoyage de peau',
+            'anti_aging': 'Soin anti-âge',
+            'hydration': 'Soin hydratant',
+            'acne_treatment': 'Traitement acné',
+            'microdermabrasion': 'Microdermabrasion',
+            'chemical_peel': 'Peeling',
+            'led_therapy': 'Luminothérapie LED',
+            // Épilation
+            'waxing': 'Épilation cire',
+            'waxing_face': 'Épilation visage',
+            'waxing_body': 'Épilation corps',
+            'waxing_bikini': 'Épilation maillot',
+            'threading': 'Épilation au fil',
+            'laser_hair': 'Épilation laser',
+            'sugaring': 'Épilation au sucre',
+            // Sourcils & Cils
+            'eyebrows': 'Épilation sourcils',
+            'eyebrow_tint': 'Teinture sourcils',
+            'eyebrow_lamination': 'Brow lamination',
+            'microblading': 'Microblading',
+            'eyelash_extensions': 'Extension de cils',
+            'eyelash_lift': 'Rehaussement de cils',
+            'eyelash_tint': 'Teinture de cils',
+            // Massage
+            'massage': 'Massage',
+            'relaxing_massage': 'Massage relaxant',
+            'deep_tissue': 'Massage deep tissue',
+            'hot_stone': 'Massage pierres chaudes',
+            'aromatherapy': 'Aromathérapie',
+            'reflexology': 'Réflexologie',
+            'lymphatic_drainage': 'Drainage lymphatique',
+            'prenatal_massage': 'Massage prénatal',
+            // Corps
+            'body_treatment': 'Soin du corps',
+            'body_scrub': 'Gommage corps',
+            'body_wrap': 'Enveloppement',
+            'slimming': 'Soin minceur',
+            'cellulite': 'Traitement cellulite',
+            'tanning': 'Bronzage',
+            'spray_tan': 'Autobronzant',
+            // Spa
+            'spa': 'Spa',
+            'hammam': 'Hammam',
+            'sauna': 'Sauna',
+            'jacuzzi': 'Jacuzzi',
+            // Maquillage permanent
+            'permanent_makeup': 'Maquillage permanent',
+            'lip_tattoo': 'Tatouage lèvres',
+            'eyeliner_tattoo': 'Tatouage eye-liner',
+            // Hommes
+            'barber': 'Barbier',
+            'beard_trim': 'Taille de barbe',
+            'beard_care': 'Soins barbe',
+            'men_facial': 'Soin visage homme',
+            // Autres
+            'henna': 'Henné',
+            'teeth_whitening': 'Blanchiment dentaire',
+            'piercing': 'Piercing',
+            'other': 'Autre'
+        };
+
+        // Mettre à jour le premier service avec la catégorie sélectionnée
+        function updateFirstServiceName() {
+            if (!activityCategory || !servicesList) return;
+            const firstSelect = servicesList.querySelector('select[name="service_name[]"]');
+            if (firstSelect && !firstSelect.value) {
+                const label = categoryLabels[activityCategory.value] || '';
+                // Chercher l'option correspondante dans le select
+                const options = firstSelect.querySelectorAll('option');
+                for (const opt of options) {
+                    if (opt.value === label) {
+                        opt.selected = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        activityCategory?.addEventListener('change', updateFirstServiceName);
+        updateFirstServiceName();
+
+        // Template HTML pour le select des services
+        const serviceSelectTemplate = `
+            <select name="service_name[]" class="col-span-5 border rounded-lg px-3 py-2 bg-white/60 text-sm service-select" required>
+                <option value="">-- Sélectionner un service --</option>
+                <optgroup label="Coiffure">
+                    <option value="Coiffure">Coiffure</option>
+                    <option value="Coupe femme">Coupe femme</option>
+                    <option value="Coupe homme">Coupe homme</option>
+                    <option value="Coupe enfant">Coupe enfant</option>
+                    <option value="Coloration">Coloration</option>
+                    <option value="Mèches & Balayage">Mèches & Balayage</option>
+                    <option value="Brushing & Coiffage">Brushing & Coiffage</option>
+                    <option value="Soins capillaires">Soins capillaires</option>
+                    <option value="Lissage & Kératine">Lissage & Kératine</option>
+                    <option value="Extensions cheveux">Extensions cheveux</option>
+                    <option value="Tresses & Nattes">Tresses & Nattes</option>
+                    <option value="Coiffure mariée">Coiffure mariée</option>
+                </optgroup>
+                <optgroup label="Maquillage">
+                    <option value="Maquillage">Maquillage</option>
+                    <option value="Maquillage mariée">Maquillage mariée</option>
+                    <option value="Maquillage soirée">Maquillage soirée</option>
+                    <option value="Maquillage naturel">Maquillage naturel</option>
+                    <option value="Cours de maquillage">Cours de maquillage</option>
+                </optgroup>
+                <optgroup label="Ongles">
+                    <option value="Manucure">Manucure</option>
+                    <option value="Pédicure">Pédicure</option>
+                    <option value="Nail art">Nail art</option>
+                    <option value="Pose gel">Pose gel</option>
+                    <option value="Pose résine">Pose résine</option>
+                    <option value="Semi-permanent">Semi-permanent</option>
+                    <option value="Soins des ongles">Soins des ongles</option>
+                </optgroup>
+                <optgroup label="Esthétique">
+                    <option value="Esthétique">Esthétique</option>
+                    <option value="Soin du visage">Soin du visage</option>
+                    <option value="Nettoyage de peau">Nettoyage de peau</option>
+                    <option value="Soin anti-âge">Soin anti-âge</option>
+                    <option value="Soin hydratant">Soin hydratant</option>
+                    <option value="Traitement acné">Traitement acné</option>
+                    <option value="Microdermabrasion">Microdermabrasion</option>
+                    <option value="Peeling">Peeling</option>
+                    <option value="Luminothérapie LED">Luminothérapie LED</option>
+                </optgroup>
+                <optgroup label="Épilation">
+                    <option value="Épilation cire">Épilation cire</option>
+                    <option value="Épilation visage">Épilation visage</option>
+                    <option value="Épilation corps">Épilation corps</option>
+                    <option value="Épilation maillot">Épilation maillot</option>
+                    <option value="Épilation au fil">Épilation au fil</option>
+                    <option value="Épilation laser">Épilation laser</option>
+                    <option value="Épilation au sucre">Épilation au sucre</option>
+                </optgroup>
+                <optgroup label="Sourcils & Cils">
+                    <option value="Épilation sourcils">Épilation sourcils</option>
+                    <option value="Teinture sourcils">Teinture sourcils</option>
+                    <option value="Brow lamination">Brow lamination</option>
+                    <option value="Microblading">Microblading</option>
+                    <option value="Extension de cils">Extension de cils</option>
+                    <option value="Rehaussement de cils">Rehaussement de cils</option>
+                    <option value="Teinture de cils">Teinture de cils</option>
+                </optgroup>
+                <optgroup label="Massage & Bien-être">
+                    <option value="Massage">Massage</option>
+                    <option value="Massage relaxant">Massage relaxant</option>
+                    <option value="Massage deep tissue">Massage deep tissue</option>
+                    <option value="Massage pierres chaudes">Massage pierres chaudes</option>
+                    <option value="Aromathérapie">Aromathérapie</option>
+                    <option value="Réflexologie">Réflexologie</option>
+                    <option value="Drainage lymphatique">Drainage lymphatique</option>
+                    <option value="Massage prénatal">Massage prénatal</option>
+                </optgroup>
+                <optgroup label="Corps">
+                    <option value="Soin du corps">Soin du corps</option>
+                    <option value="Gommage corps">Gommage corps</option>
+                    <option value="Enveloppement">Enveloppement</option>
+                    <option value="Soin minceur">Soin minceur</option>
+                    <option value="Traitement cellulite">Traitement cellulite</option>
+                    <option value="Bronzage">Bronzage</option>
+                    <option value="Autobronzant">Autobronzant</option>
+                </optgroup>
+                <optgroup label="Spa & Hammam">
+                    <option value="Spa">Spa</option>
+                    <option value="Hammam">Hammam</option>
+                    <option value="Sauna">Sauna</option>
+                    <option value="Jacuzzi">Jacuzzi</option>
+                </optgroup>
+                <optgroup label="Maquillage permanent">
+                    <option value="Maquillage permanent">Maquillage permanent</option>
+                    <option value="Tatouage lèvres">Tatouage lèvres</option>
+                    <option value="Tatouage eye-liner">Tatouage eye-liner</option>
+                </optgroup>
+                <optgroup label="Hommes">
+                    <option value="Barbier">Barbier</option>
+                    <option value="Taille de barbe">Taille de barbe</option>
+                    <option value="Soins barbe">Soins barbe</option>
+                    <option value="Soin visage homme">Soin visage homme</option>
+                </optgroup>
+                <optgroup label="Autres">
+                    <option value="Henné">Henné</option>
+                    <option value="Blanchiment dentaire">Blanchiment dentaire</option>
+                    <option value="Piercing">Piercing</option>
+                    <option value="Autre">Autre</option>
+                </optgroup>
+            </select>
+        `;
+
+        // Ajouter un nouveau service
+        function addService() {
+            if (!servicesList) return;
+            const items = servicesList.querySelectorAll('.service-item');
+            const newItem = document.createElement('div');
+            newItem.className = 'service-item grid grid-cols-12 gap-2 items-center bg-white/40 p-2 rounded-lg';
+            newItem.innerHTML = `
+                ${serviceSelectTemplate}
+                <input type="number" name="service_duration[]" placeholder="60" 
+                    class="col-span-3 border rounded-lg px-3 py-2 bg-white/60 text-sm text-center" min="15" value="60" />
+                <input type="number" name="service_price[]" placeholder="50" 
+                    class="col-span-3 border rounded-lg px-3 py-2 bg-white/60 text-sm text-center" min="0" value="50" />
+                <button type="button" class="col-span-1 remove-service text-gray-400 hover:text-red-500">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            `;
+            servicesList.appendChild(newItem);
+
+            // Afficher le bouton de suppression pour le premier élément si on a plus d'un service
+            updateRemoveButtons();
+
+            // Réinitialiser les icônes Lucide
+            if (window.lucide) window.lucide.createIcons();
+        }
+
+        // Supprimer un service
+        function removeService(e) {
+            const btn = e.target.closest('.remove-service');
+            if (!btn) return;
+            const item = btn.closest('.service-item');
+            if (item && servicesList.querySelectorAll('.service-item').length > 1) {
+                item.remove();
+                updateRemoveButtons();
+            }
+        }
+
+        // Mettre à jour la visibilité des boutons de suppression
+        function updateRemoveButtons() {
+            const items = servicesList.querySelectorAll('.service-item');
+            items.forEach((item, index) => {
+                const removeBtn = item.querySelector('.remove-service');
+                if (removeBtn) {
+                    removeBtn.classList.toggle('hidden', items.length === 1);
+                }
+            });
+        }
+
+        // Sérialiser les services en JSON avant la soumission
+        function serializeServices() {
+            const items = servicesList.querySelectorAll('.service-item');
+            const services = [];
+            items.forEach(item => {
+                // Chercher d'abord un select, sinon un input
+                const selectEl = item.querySelector('select[name="service_name[]"]');
+                const inputEl = item.querySelector('input[name="service_name[]"]');
+                const name = (selectEl?.value || inputEl?.value || '').trim();
+                const duration = parseInt(item.querySelector('input[name="service_duration[]"]')?.value) || 60;
+                const price = parseFloat(item.querySelector('input[name="service_price[]"]')?.value) || 0;
+                if (name) {
+                    services.push({ name, duration_min: duration, price });
+                }
+            });
+            if (servicesJson) {
+                servicesJson.value = JSON.stringify(services);
+            }
+            return services;
+        }
+
+        // Event listeners
+        addBtn?.addEventListener('click', addService);
+        servicesList?.addEventListener('click', removeService);
+
+        // Sérialiser avant la soumission
+        form?.addEventListener('submit', (e) => {
+            const role = document.querySelector('input[name="role"]:checked')?.value || 'client';
+            if (role === 'professional') {
+                const services = serializeServices();
+                if (services.length === 0) {
+                    e.preventDefault();
+                    alert('Veuillez ajouter au moins un service');
+                    return;
+                }
+            }
+        });
+
+        // Initialisation
+        updateRemoveButtons();
     })();
 </script>
 <script>

@@ -197,16 +197,34 @@
                         <span class="inline-flex items-center gap-1"><i data-lucide="phone" class="w-4 h-4"></i>
                             {{ app.phone_number }}</span>
                     </div>
+                    <div class="mt-2 flex items-center gap-2 text-sm text-gray-600">
+                        <span class="inline-flex items-center gap-1">
+                            <i data-lucide="user" class="w-4 h-4"></i>
+                            {% if app.gender == 'male' %}Homme{% else %}Femme{% endif %}
+                        </span>
+                    </div>
                     <div class="mt-3 flex flex-wrap gap-2">
-                        <span class="px-2 py-1 text-xs rounded-full bg-pink-50 text-pink-700 border">
-                            {{app.activity_category|title }}</span>
-                        <span class="px-2 py-1 text-xs rounded-full bg-blue-50 text-blue-700 border">
-                            {{ app.service_type|title }}</span>
+                        <span class="px-2 py-1 text-xs rounded-full bg-pink-50 text-pink-700 border" id="categoryBadge">
+                            {{ app.activity_category }}</span>
+                        <span class="px-2 py-1 text-xs rounded-full bg-blue-50 text-blue-700 border"
+                            id="serviceTypeBadge">
+                            {{ app.service_type }}</span>
                         {% if app.service_type == 'salon' and app.salon_name %}
                         <span class="px-2 py-1 text-xs rounded-full bg-violet-50 text-violet-700 border">
                             {{ app.salon_name }}</span>
                         {% endif %}
                     </div>
+                </div>
+            </div>
+
+            <!-- Services proposés -->
+            <div class="mt-6">
+                <div class="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                    <i data-lucide="scissors" class="w-4 h-4"></i> Services proposés
+                </div>
+                <div id="servicesList" class="grid md:grid-cols-2 gap-2">
+                    <!-- Les services seront chargés dynamiquement -->
+                    <div class="text-gray-500 text-sm">Chargement...</div>
                 </div>
             </div>
 
@@ -272,6 +290,85 @@
 </div>
 
 <script>
+    // Traduction des catégories en français
+    const categoryLabels = {
+        'hairdressing': 'Coiffure', 'haircut_women': 'Coupe femme', 'haircut_men': 'Coupe homme',
+        'haircut_children': 'Coupe enfant', 'hair_coloring': 'Coloration', 'highlights': 'Mèches & Balayage',
+        'hair_styling': 'Brushing & Coiffage', 'hair_treatment': 'Soins capillaires', 'keratin': 'Lissage & Kératine',
+        'hair_extensions': 'Extensions cheveux', 'braiding': 'Tresses & Nattes', 'bridal_hair': 'Coiffure mariée',
+        'makeup': 'Maquillage', 'bridal_makeup': 'Maquillage mariée', 'evening_makeup': 'Maquillage soirée',
+        'natural_makeup': 'Maquillage naturel', 'makeup_lesson': 'Cours de maquillage',
+        'manicure': 'Manucure', 'pedicure': 'Pédicure', 'nail_art': 'Nail art', 'gel_nails': 'Pose gel',
+        'acrylic_nails': 'Pose résine', 'semi_permanent': 'Semi-permanent', 'nail_care': 'Soins des ongles',
+        'esthetics': 'Esthétique', 'facial': 'Soin du visage', 'deep_cleansing': 'Nettoyage de peau',
+        'anti_aging': 'Soin anti-âge', 'hydration': 'Soin hydratant', 'acne_treatment': 'Traitement acné',
+        'microdermabrasion': 'Microdermabrasion', 'chemical_peel': 'Peeling', 'led_therapy': 'Luminothérapie LED',
+        'waxing': 'Épilation cire', 'waxing_face': 'Épilation visage', 'waxing_body': 'Épilation corps',
+        'waxing_bikini': 'Épilation maillot', 'threading': 'Épilation au fil', 'laser_hair': 'Épilation laser',
+        'sugaring': 'Épilation au sucre', 'eyebrows': 'Épilation sourcils', 'eyebrow_tint': 'Teinture sourcils',
+        'eyebrow_lamination': 'Brow lamination', 'microblading': 'Microblading', 'eyelash_extensions': 'Extension de cils',
+        'eyelash_lift': 'Rehaussement de cils', 'eyelash_tint': 'Teinture de cils',
+        'massage': 'Massage', 'relaxing_massage': 'Massage relaxant', 'deep_tissue': 'Massage deep tissue',
+        'hot_stone': 'Massage pierres chaudes', 'aromatherapy': 'Aromathérapie', 'reflexology': 'Réflexologie',
+        'lymphatic_drainage': 'Drainage lymphatique', 'prenatal_massage': 'Massage prénatal',
+        'body_treatment': 'Soin du corps', 'body_scrub': 'Gommage corps', 'body_wrap': 'Enveloppement',
+        'slimming': 'Soin minceur', 'cellulite': 'Traitement cellulite', 'tanning': 'Bronzage', 'spray_tan': 'Autobronzant',
+        'spa': 'Spa', 'hammam': 'Hammam', 'sauna': 'Sauna', 'jacuzzi': 'Jacuzzi',
+        'permanent_makeup': 'Maquillage permanent', 'lip_tattoo': 'Tatouage lèvres', 'eyeliner_tattoo': 'Tatouage eye-liner',
+        'barber': 'Barbier', 'beard_trim': 'Taille de barbe', 'beard_care': 'Soins barbe', 'men_facial': 'Soin visage homme',
+        'henna': 'Henné', 'teeth_whitening': 'Blanchiment dentaire', 'piercing': 'Piercing', 'other': 'Autre'
+    };
+
+    const serviceTypeLabels = {
+        'mobile': 'Se déplace',
+        'home': 'Reçoit chez soi',
+        'salon': 'Salon'
+    };
+
+    // Traduire les badges
+    document.addEventListener('DOMContentLoaded', function () {
+        const categoryBadge = document.getElementById('categoryBadge');
+        const serviceTypeBadge = document.getElementById('serviceTypeBadge');
+
+        if (categoryBadge) {
+            const code = categoryBadge.textContent.trim().toLowerCase();
+            categoryBadge.textContent = categoryLabels[code] || categoryBadge.textContent;
+        }
+
+        if (serviceTypeBadge) {
+            const code = serviceTypeBadge.textContent.trim().toLowerCase();
+            serviceTypeBadge.textContent = serviceTypeLabels[code] || serviceTypeBadge.textContent;
+        }
+
+        // Charger les services
+        loadServices();
+    });
+
+    async function loadServices() {
+        const servicesList = document.getElementById('servicesList');
+        try {
+            const res = await fetch('/api/applications/professionals/{{ app.id }}/');
+            if (res.ok) {
+                const data = await res.json();
+                if (data.services && Array.isArray(data.services) && data.services.length > 0) {
+                    servicesList.innerHTML = data.services.map(s => `
+                        <div class="p-3 rounded-xl border bg-white/60 flex items-center justify-between">
+                            <div>
+                                <div class="font-medium text-gray-800">${s.name || 'Service'}</div>
+                                <div class="text-xs text-gray-500">${s.duration_min || 60} min</div>
+                            </div>
+                            <div class="text-sm font-semibold text-pink-600">${s.price || 0} DT</div>
+                        </div>
+                    `).join('');
+                } else {
+                    servicesList.innerHTML = '<div class="text-gray-500 text-sm col-span-2">Aucun service spécifié</div>';
+                }
+            }
+        } catch (e) {
+            servicesList.innerHTML = '<div class="text-gray-500 text-sm col-span-2">Impossible de charger les services</div>';
+        }
+    }
+
     async function decide(action) {
         const btn = action === 'approve' ? document.getElementById('approveBtn') : document.getElementById('rejectBtn');
         btn.disabled = true; btn.classList.add('opacity-60');

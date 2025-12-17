@@ -98,19 +98,52 @@
     .category-tab.active {
         background: linear-gradient(135deg, #F28BB2 0%, #6CA9E0 100%);
         color: white;
-        box-shadow: 0 8px 24px rgba(242, 139, 178, 0.3);
+        box-shadow: 0 4px 12px rgba(242, 139, 178, 0.3);
     }
 
     .category-tab:not(.active) {
-        background: rgba(255, 255, 255, 0.6);
+        background: rgba(255, 255, 255, 0.8);
         color: #6B7280;
-        border: 1px solid rgba(255, 255, 255, 0.3);
+        border: 1px solid rgba(226, 232, 240, 0.8);
     }
 
     .category-tab:not(.active):hover {
-        background: rgba(255, 255, 255, 0.8);
+        background: rgba(255, 255, 255, 0.95);
         color: #374151;
+        border-color: rgba(242, 139, 178, 0.3);
         transform: translateY(-1px);
+    }
+
+    /* Category groups accordion */
+    .category-group {
+        border-bottom: 1px solid rgba(226, 232, 240, 0.5);
+    }
+
+    .category-group:last-child {
+        border-bottom: none;
+    }
+
+    .category-group-header {
+        user-select: none;
+    }
+
+    .category-group-header:hover {
+        background: rgba(242, 139, 178, 0.05);
+    }
+
+    .category-items {
+        padding-bottom: 0.75rem;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+
+    .category-items::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .category-items::-webkit-scrollbar-thumb {
+        background: rgba(242, 139, 178, 0.3);
+        border-radius: 2px;
     }
 
     .filter-panel {
@@ -287,6 +320,63 @@
         border-color: rgba(242, 139, 178, 0.3);
     }
 
+    /* Airbnb-style card animations */
+    #professionalsResultsSection {
+        animation: fadeInUp 0.5s ease-out;
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Smooth card hover effect */
+    #professionalsList>div {
+        transition: transform 0.2s ease;
+    }
+
+    #professionalsList>div:hover {
+        transform: translateY(-4px);
+    }
+
+    /* Quick Booking Modal Styles */
+    #quickBookModal {
+        animation: fadeIn 0.3s ease-out;
+    }
+
+    #quickBookModal>div {
+        animation: slideUp 0.3s ease-out;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px) scale(0.95);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    /* Quick search hints */
+    .quick-search-hint {
+        transition: all 0.2s ease;
+    }
+
+    .quick-search-hint:hover {
+        background: rgba(242, 139, 178, 0.1);
+        transform: scale(1.05);
+    }
+
     /* Wider container for ultra design UX */
     .container-xxl {
         max-width: 1440px;
@@ -419,7 +509,7 @@
 
         /* Map section mobile */
         #professionalsMap {
-            height: 300px !important;
+            height: 400px !important;
         }
 
         .map-container {
@@ -594,11 +684,31 @@
         }
 
         #professionalsMap {
-            height: 250px !important;
+            height: 350px !important;
         }
 
         button {
             font-size: 0.9375rem !important;
+        }
+    }
+
+    /* Floating filters panel responsive */
+    #filtersPanel {
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+
+    @media (max-width: 768px) {
+        #filtersPanel {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            margin: 0 !important;
+            border-radius: 0 !important;
+            max-height: 100vh;
+            z-index: 100;
         }
     }
 
@@ -683,215 +793,86 @@
     <div id="three-bg"></div>
 
     <!-- Main Content -->
-    <div class="container-xxl px-4 sm:px-6 lg:px-8 py-8">
-        <!-- Search Bar -->
-        <div class="glass rounded-2xl p-6 mb-6 sticky-bar shadow-md">
-            <div class="flex items-center gap-4">
-                <div class="flex-1 relative">
-                    <i data-lucide="search"
-                        class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"></i>
-                    <input type="text" id="searchInput" placeholder="Rechercher un professionnel, service..."
-                        class="search-input w-full pl-10 pr-4 py-3 rounded-xl border-0 focus:ring-2 focus:ring-rosePastel/20 focus:outline-none">
-                </div>
-                <button id="filterBtn"
-                    class="px-4 py-3 bg-white/60 hover:bg-white/80 rounded-xl border border-gray-200 transition-all shadow-sm">
-                    <i data-lucide="filter" class="w-5 h-5 text-gray-600"></i>
-                </button>
-            </div>
-        </div>
-
-        <!-- Category Tabs -->
-        <div class="glass rounded-2xl p-4 mb-6">
-            <div class="flex flex-wrap gap-2" id="categoryTabs">
-                <button class="category-tab active px-4 py-2 rounded-xl font-medium" data-category="all">
-                    Tous
-                </button>
-                <!-- Categories will be loaded dynamically -->
-            </div>
-        </div>
-
-        <!-- Map Section with Integrated Filters -->
-        <div class="glass rounded-2xl p-8 mb-8">
-            <div class="flex items-center justify-between mb-6">
-                <div>
-                    <h2 class="text-2xl font-bold gradient-text mb-2">Professionnels près de vous</h2>
-                    <p class="text-gray-600">Explorez la carte pour découvrir les centres de beauté</p>
-                </div>
-                <div class="flex items-center gap-4">
-                    <div class="stats-card px-4 py-2 rounded-xl">
-                        <div class="flex items-center gap-2">
-                            <i data-lucide="users" class="w-4 h-4 text-rosePastel"></i>
-                            <span class="text-sm font-medium text-gray-700" id="professionalsCount">0</span>
-                            <span class="text-xs text-gray-500">professionnels</span>
+    <div class="container-xxl px-4 sm:px-6 lg:px-8 py-6">
+        <!-- Enhanced Search Bar - Prominent and Smart -->
+        <div class="mb-6 relative">
+            <div class="glass rounded-2xl p-5 shadow-xl border-2 border-white/50">
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                    <div class="flex-1 relative">
+                        <i data-lucide="search"
+                            class="absolute left-5 top-1/2 transform -translate-y-1/2 w-6 h-6 text-gray-400"></i>
+                        <input type="text" id="searchInput"
+                            placeholder="Ex: Coiffure demain, Manucure ce soir, Massage..."
+                            class="search-input w-full pl-14 pr-4 py-4 rounded-xl border-0 focus:ring-2 focus:ring-rosePastel/50 focus:outline-none text-base font-medium bg-white/80 backdrop-blur-sm">
+                        <div
+                            class="absolute right-4 top-1/2 transform -translate-y-1/2 text-xs text-gray-400 hidden sm:block">
+                            <kbd class="px-2 py-1 bg-gray-100 rounded">Entrée</kbd>
                         </div>
                     </div>
-                    <div class="flex items-center gap-2 text-sm text-gray-500">
-                        <div class="w-3 h-3 bg-rosePastel rounded-full"></div>
-                        <span>Votre position</span>
-                        <div class="w-3 h-3 bg-blueLight rounded-full ml-4"></div>
-                        <span>Professionnels</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Quick Filters - Now above the map -->
-            <div class="glass-strong rounded-2xl p-6 mb-6">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                        <i data-lucide="filter" class="w-5 h-5 text-rosePastel"></i>
-                        Filtres rapides
-                    </h3>
-                    <button id="clearAllFilters"
-                        class="text-sm text-rosePastel hover:text-rosePastel/80 font-medium flex items-center gap-1">
-                        <i data-lucide="refresh-cw" class="w-4 h-4"></i>
-                        Effacer tout
+                    <button id="filterBtn"
+                        class="px-6 py-4 grad-btn text-white rounded-xl font-semibold transition-all hover:scale-105 flex items-center justify-center gap-2 shadow-lg whitespace-nowrap">
+                        <i data-lucide="sliders-horizontal" class="w-5 h-5"></i>
+                        <span>Catégories</span>
                     </button>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div class="space-y-2">
-                        <label class="text-sm font-medium text-gray-700 flex items-center gap-2">
-                            <i data-lucide="dollar-sign" class="w-4 h-4"></i>
-                            Prix maximum
-                        </label>
-                        <select id="priceFilter"
-                            class="bg-white/60 px-4 py-3 rounded-xl border-0 focus:ring-2 focus:ring-rosePastel/20 w-full">
-                            <option value="0">Tous les prix</option>
-                            <option value="50">50 DT max</option>
-                            <option value="100">100 DT max</option>
-                            <option value="150">150 DT max</option>
-                            <option value="200">200 DT max</option>
-                            <option value="300">300 DT max</option>
-                        </select>
-                    </div>
-                    <div class="space-y-2">
-                        <label class="text-sm font-medium text-gray-700 flex items-center gap-2">
-                            <i data-lucide="globe" class="w-4 h-4"></i>
-                            Langues
-                        </label>
-                        <select id="languageFilter"
-                            class="bg-white/60 px-4 py-3 rounded-xl border-0 focus:ring-2 focus:ring-rosePastel/20 w-full">
-                            <option value="">Toutes les langues</option>
-                            <option value="french">Français</option>
-                            <option value="english">Anglais</option>
-                            <option value="arabic">Arabe</option>
-                        </select>
-                    </div>
-                    <div class="space-y-2">
-                        <label class="text-sm font-medium text-gray-700 flex items-center gap-2">
-                            <i data-lucide="star" class="w-4 h-4"></i>
-                            Note minimum
-                        </label>
-                        <div class="flex items-center gap-3">
-                            <div class="flex rating-stars" id="ratingFilter">
-                                <i data-lucide="star"
-                                    class="w-5 h-5 cursor-pointer hover:scale-110 transition-transform"
-                                    data-rating="1"></i>
-                                <i data-lucide="star"
-                                    class="w-5 h-5 cursor-pointer hover:scale-110 transition-transform"
-                                    data-rating="2"></i>
-                                <i data-lucide="star"
-                                    class="w-5 h-5 cursor-pointer hover:scale-110 transition-transform"
-                                    data-rating="3"></i>
-                                <i data-lucide="star"
-                                    class="w-5 h-5 cursor-pointer hover:scale-110 transition-transform"
-                                    data-rating="4"></i>
-                                <i data-lucide="star"
-                                    class="w-5 h-5 cursor-pointer hover:scale-110 transition-transform"
-                                    data-rating="5"></i>
-                            </div>
-                            <span id="ratingValue" class="text-sm text-gray-600 font-medium">Toutes</span>
-                        </div>
-                    </div>
-                    <div class="space-y-2">
-                        <label class="text-sm font-medium text-gray-700 flex items-center gap-2">
-                            <i data-lucide="map-pin" class="w-4 h-4"></i>
-                            Distance max
-                        </label>
-                        <select id="distanceFilter"
-                            class="bg-white/60 px-4 py-3 rounded-xl border-0 focus:ring-2 focus:ring-rosePastel/20 w-full">
-                            <option value="50">50 km</option>
-                            <option value="25">25 km</option>
-                            <option value="10">10 km</option>
-                            <option value="5">5 km</option>
-                        </select>
-                    </div>
+                <!-- Quick search hints -->
+                <div class="mt-3 flex flex-wrap items-center gap-2 text-xs text-gray-500">
+                    <span class="font-medium">Recherche rapide :</span>
+                    <button class="px-3 py-1 bg-white/60 rounded-full hover:bg-white/80 transition-colors"
+                        onclick="quickSearch('demain')">Demain</button>
+                    <button class="px-3 py-1 bg-white/60 rounded-full hover:bg-white/80 transition-colors"
+                        onclick="quickSearch('aujourd\'hui')">Aujourd'hui</button>
+                    <button class="px-3 py-1 bg-white/60 rounded-full hover:bg-white/80 transition-colors"
+                        onclick="quickSearch('ce soir')">Ce soir</button>
                 </div>
             </div>
 
-            <!-- Map Container -->
-            <div class="map-container">
-                <div id="professionalsMap" style="height: 520px;"></div>
-            </div>
-        </div>
-
-        <!-- Section Divider -->
-        <div class="section-divider"></div>
-
-        <!-- Professionals List Header -->
-        <div class="flex items-center justify-between mb-6">
-            <div>
-                <h2 class="text-2xl font-bold gradient-text mb-2">Professionnelles à proximité</h2>
-                <p class="text-gray-600">Découvrez nos experts en beauté</p>
-            </div>
-            <div class="flex items-center gap-3">
-                <div class="stats-card px-4 py-2 rounded-xl">
-                    <div class="flex items-center gap-2">
-                        <i data-lucide="map-pin" class="w-4 h-4 text-blueLight"></i>
-                        <span class="text-sm font-medium text-gray-700" id="mapProfessionalsCount">0</span>
-                        <span class="text-xs text-gray-500">sur la carte</span>
+            <!-- Floating Filters Panel (Hidden by default) -->
+            <div id="filtersPanel"
+                class="absolute top-full left-0 right-0 mt-2 glass-strong rounded-2xl p-6 shadow-2xl z-50 hidden transform transition-all duration-300">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                        <i data-lucide="grid" class="w-5 h-5 text-rosePastel"></i>
+                        Catégories
+                    </h3>
+                    <button id="closeFilters" class="text-gray-400 hover:text-gray-600 transition-colors">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+                <div class="mb-4 max-h-[60vh] overflow-y-auto">
+                    <div class="flex flex-col gap-1" id="categoryTabs">
+                        <button class="category-tab active px-4 py-2.5 rounded-xl text-sm font-medium w-fit"
+                            data-category="all">
+                            🏠 Tous les services
+                        </button>
+                        <!-- Categories will be loaded dynamically -->
                     </div>
+                </div>
+                <div class="flex items-center justify-end pt-4 border-t border-gray-200">
+                    <button id="clearAllFilters"
+                        class="text-sm text-rosePastel hover:text-rosePastel/80 font-medium flex items-center gap-2 transition-colors">
+                        <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                        Réinitialiser
+                    </button>
                 </div>
             </div>
         </div>
 
-        <!-- Filters Panel (Hidden by default) -->
-        <div id="filtersPanel" class="filter-panel rounded-2xl p-6 mb-6 hidden">
-            <h3 class="text-lg font-bold text-gray-900 mb-4">Filtres</h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- Professionals List - Airbnb Style (Shown when category/search selected, BEFORE map) -->
+        <div id="professionalsResultsSection" class="mb-6 hidden transition-all duration-300">
+            <div class="flex items-center justify-between mb-6">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Prix minimum</label>
-                    <input type="range" id="priceMin" min="0" max="300" value="0" class="w-full">
-                    <span id="priceMinValue" class="text-sm text-gray-600">0 DT</span>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Prix maximum</label>
-                    <input type="range" id="priceMax" min="0" max="300" value="300" class="w-full">
-                    <span id="priceMaxValue" class="text-sm text-gray-600">300 DT</span>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Note minimum</label>
-                    <input type="range" id="minRating" min="0" max="5" step="0.1" value="0" class="w-full">
-                    <span id="minRatingValue" class="text-sm text-gray-600">0.0 ⭐</span>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-1">Professionnels disponibles</h2>
+                    <p class="text-sm text-gray-600" id="resultsCount">0 résultat(s) trouvé(s)</p>
                 </div>
             </div>
-            <div class="mt-4 flex gap-2">
-                <button id="applyFilters" class="grad-btn text-white px-6 py-2 rounded-xl font-semibold">
-                    Appliquer
-                </button>
-                <button id="clearFilters" class="bg-gray-200 text-gray-700 px-6 py-2 rounded-xl font-semibold">
-                    Effacer
-                </button>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="professionalsList">
+                <!-- Professionals will be loaded dynamically -->
             </div>
         </div>
 
-        <!-- Professionals List -->
-        <div class="space-y-4" id="professionalsList">
-            <!-- Professionals will be loaded dynamically -->
-        </div>
-
-        <!-- Loading Spinner -->
-        <div id="loadingSpinner" class="text-center py-12 hidden">
-            <div class="glass-strong rounded-2xl p-8 max-w-md mx-auto">
-                <div
-                    class="loading-spinner w-12 h-12 border-4 border-rosePastel border-t-transparent rounded-full mx-auto mb-4">
-                </div>
-                <h3 class="text-lg font-semibold text-gray-900 mb-2">Chargement des professionnels</h3>
-                <p class="text-gray-600">Recherche en cours...</p>
-            </div>
-        </div>
-
-        <!-- No Results -->
-        <div id="noResults" class="text-center py-16 hidden">
+        <!-- No Results - Shown BEFORE map when no professionals found -->
+        <div id="noResults" class="text-center py-16 hidden mb-6">
             <div class="glass-strong rounded-2xl p-12 max-w-lg mx-auto">
                 <div
                     class="w-20 h-20 bg-gradient-to-br from-pink-100 to-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -912,6 +893,140 @@
                     <i data-lucide="refresh-cw" class="w-4 h-4 mr-2"></i>
                     Réessayer
                 </button>
+            </div>
+        </div>
+
+        <!-- Map Section - Full Width, Prominent -->
+        <div class="glass rounded-3xl p-6 mb-6 shadow-xl overflow-hidden">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h2 class="text-2xl font-bold gradient-text mb-1">Professionnels près de vous</h2>
+                    <p class="text-sm text-gray-500">Cliquez sur les marqueurs pour voir les détails</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="stats-card px-4 py-2.5 rounded-xl">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="map-pin" class="w-4 h-4 text-rosePastel"></i>
+                            <span class="text-sm font-semibold text-gray-800" id="professionalsCount">0</span>
+                            <span class="text-xs text-gray-500">trouvés</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Map Container - Larger and More Prominent -->
+            <div class="map-container rounded-2xl overflow-hidden shadow-lg">
+                <div id="professionalsMap" style="height: 600px;"></div>
+            </div>
+
+            <!-- Map Legend -->
+            <div class="flex items-center justify-center gap-6 mt-4 text-sm">
+                <div class="flex items-center gap-2">
+                    <div class="w-4 h-4 bg-rosePastel rounded-full shadow-sm"></div>
+                    <span class="text-gray-600">Votre position</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="w-4 h-4 bg-blueLight rounded-full shadow-sm"></div>
+                    <span class="text-gray-600">Professionnels</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div id="loadingSpinner" class="text-center py-12 hidden">
+            <div class="glass-strong rounded-2xl p-8 max-w-md mx-auto">
+                <div
+                    class="loading-spinner w-12 h-12 border-4 border-rosePastel border-t-transparent rounded-full mx-auto mb-4">
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Chargement des professionnels</h3>
+                <p class="text-gray-600">Recherche en cours...</p>
+            </div>
+        </div>
+
+        <!-- Quick Booking Modal -->
+        <div id="quickBookModal"
+            class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+            <div
+                class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto transform transition-all">
+                <div
+                    class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900">Réserver rapidement</h2>
+                        <p class="text-sm text-gray-600 mt-1" id="quickBookProName"></p>
+                    </div>
+                    <button onclick="closeQuickBook()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                        <i data-lucide="x" class="w-6 h-6"></i>
+                    </button>
+                </div>
+
+                <div class="p-6">
+                    <!-- Service Info -->
+                    <div class="mb-6 p-4 bg-gradient-to-r from-pink-50 to-blue-50 rounded-xl">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-600">Service</p>
+                                <p class="text-lg font-semibold text-gray-900" id="quickBookService"></p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-sm text-gray-600">Prix</p>
+                                <p class="text-xl font-bold gradient-text" id="quickBookPrice"></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Date Selection -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-semibold text-gray-900 mb-3">
+                            <i data-lucide="calendar" class="w-4 h-4 inline-block mr-2"></i>
+                            Choisir une date
+                        </label>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2" id="quickBookDates">
+                            <!-- Dates will be loaded dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Time Slots -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-semibold text-gray-900 mb-3">
+                            <i data-lucide="clock" class="w-4 h-4 inline-block mr-2"></i>
+                            Choisir un horaire
+                        </label>
+                        <div class="grid grid-cols-3 sm:grid-cols-4 gap-2" id="quickBookSlots">
+                            <div class="text-center text-gray-400 py-8">
+                                Sélectionnez d'abord une date
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Selected Slot Summary -->
+                    <div id="quickBookSummary"
+                        class="hidden mb-6 p-4 bg-gray-50 rounded-xl border-2 border-rosePastel/30">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-xs text-gray-600 mb-1">Réservation sélectionnée</p>
+                                <p class="font-semibold text-gray-900" id="quickBookSelectedSlot"></p>
+                            </div>
+                            <button onclick="clearQuickBookSelection()"
+                                class="text-sm text-rosePastel hover:text-rosePastel/80">
+                                <i data-lucide="x" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex gap-3">
+                        <button onclick="closeQuickBook()"
+                            class="flex-1 px-6 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold transition-all hover:bg-gray-200">
+                            Annuler
+                        </button>
+                        <button onclick="submitQuickBooking()" id="quickBookSubmitBtn"
+                            class="flex-1 px-6 py-3 grad-btn text-white rounded-xl font-semibold transition-all hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled>
+                            <i data-lucide="check" class="w-4 h-4 inline-block mr-2"></i>
+                            Confirmer la réservation
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -938,7 +1053,7 @@
         priceMin: 0,
         priceMax: 300,
         minRating: 0,
-        maxDistance: 50
+        maxDistance: 5  // Default to 5km radius
     };
     let userLocation = null;
 
@@ -950,16 +1065,39 @@
         setupEventListeners();
     });
 
+    // Helper function to set map view with 5km radius
+    function setMapView5km(center) {
+        if (!center || !map) return;
+
+        // Calculate bounds for 5km radius (approximately)
+        // 1 degree latitude ≈ 111 km, so 5km ≈ 0.045 degrees
+        // For longitude, it varies by latitude, but we'll use a similar approximation
+        const radiusKm = 5;
+        const latDelta = radiusKm / 111; // ~0.045 degrees
+        const lngDelta = radiusKm / (111 * Math.cos(center[0] * Math.PI / 180)); // Adjust for latitude
+
+        const bounds = [
+            [center[0] - latDelta, center[1] - lngDelta], // Southwest
+            [center[0] + latDelta, center[1] + lngDelta]  // Northeast
+        ];
+
+        map.fitBounds(bounds, { padding: [20, 20] });
+    }
+
     // Initialize map
     function initMap() {
         // Default to Nabeul center
         const defaultCenter = [36.4515, 10.7353];
 
-        map = L.map('professionalsMap').setView(defaultCenter, 11);
+        // Initialize map with default center (will be updated when location is available)
+        map = L.map('professionalsMap').setView(defaultCenter, 13);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap'
         }).addTo(map);
+
+        // Set initial view to 5km radius around default center
+        setMapView5km(defaultCenter);
 
         // Fallback to server-provided client coordinates (if present)
         try {
@@ -967,7 +1105,8 @@
             const sLng = parseFloat('{{ client_profile.longitude|default:"" }}');
             if (!isNaN(sLat) && !isNaN(sLng)) {
                 userLocation = [sLat, sLng];
-                map.setView(userLocation, 13);
+                // Update map view to 5km around user location
+                setMapView5km(userLocation);
             }
         } catch (e) { }
 
@@ -976,15 +1115,25 @@
             navigator.geolocation.getCurrentPosition(
                 function (position) {
                     userLocation = [position.coords.latitude, position.coords.longitude];
-                    map.setView(userLocation, 13);
+                    // Always set view to 5km radius around user location
+                    setMapView5km(userLocation);
                     loadProfessionals();
                 },
-                function () {
-                    // Fallback to default location
+                function (error) {
+                    console.log('Geolocation error:', error);
+                    // Fallback to default location with 5km view
+                    setMapView5km(defaultCenter);
                     loadProfessionals();
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 5000,
+                    maximumAge: 0
                 }
             );
         } else {
+            // Set default view with 5km radius
+            setMapView5km(defaultCenter);
             loadProfessionals();
         }
     }
@@ -1000,14 +1149,69 @@
             const data = await response.json();
 
             const tabsContainer = document.getElementById('categoryTabs');
-            data.categories.forEach(category => {
-                const button = document.createElement('button');
-                button.className = 'category-tab px-4 py-2 rounded-xl font-medium';
-                button.textContent = category.label;
-                button.dataset.category = category.code;
-                button.addEventListener('click', () => selectCategory(category.code));
-                tabsContainer.appendChild(button);
-            });
+            if (tabsContainer) {
+                // Si on a des catégories groupées, les utiliser
+                if (data.categories_grouped) {
+                    // Vider le conteneur mais garder le bouton "Tous"
+                    const allButton = tabsContainer.querySelector('[data-category="all"]');
+                    tabsContainer.innerHTML = '';
+                    if (allButton) tabsContainer.appendChild(allButton);
+
+                    // Créer les groupes avec accordéon
+                    Object.entries(data.categories_grouped).forEach(([groupName, items]) => {
+                        const groupDiv = document.createElement('div');
+                        groupDiv.className = 'category-group w-full';
+
+                        // En-tête du groupe
+                        const groupHeader = document.createElement('div');
+                        groupHeader.className = 'category-group-header flex items-center gap-2 px-3 py-2 text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-50 rounded-lg mt-2';
+                        groupHeader.innerHTML = `
+                            <i data-lucide="chevron-right" class="w-4 h-4 transition-transform group-chevron"></i>
+                            <span>${groupName}</span>
+                            <span class="text-xs text-gray-400">(${items.length})</span>
+                        `;
+
+                        // Conteneur des items (caché par défaut)
+                        const itemsDiv = document.createElement('div');
+                        itemsDiv.className = 'category-items flex flex-wrap gap-2 pl-6 hidden';
+
+                        items.forEach(category => {
+                            const button = document.createElement('button');
+                            button.className = 'category-tab px-3 py-1.5 rounded-lg text-xs font-medium';
+                            button.textContent = category.label;
+                            button.dataset.category = category.code;
+                            button.addEventListener('click', () => selectCategory(category.code));
+                            itemsDiv.appendChild(button);
+                        });
+
+                        // Toggle accordion
+                        groupHeader.addEventListener('click', () => {
+                            itemsDiv.classList.toggle('hidden');
+                            const chevron = groupHeader.querySelector('.group-chevron');
+                            if (chevron) {
+                                chevron.style.transform = itemsDiv.classList.contains('hidden') ? '' : 'rotate(90deg)';
+                            }
+                        });
+
+                        groupDiv.appendChild(groupHeader);
+                        groupDiv.appendChild(itemsDiv);
+                        tabsContainer.appendChild(groupDiv);
+                    });
+
+                    // Réinitialiser les icônes Lucide
+                    if (window.lucide) window.lucide.createIcons();
+                } else {
+                    // Fallback: affichage plat
+                    data.categories.forEach(category => {
+                        const button = document.createElement('button');
+                        button.className = 'category-tab px-4 py-2.5 rounded-xl text-sm font-medium';
+                        button.textContent = category.label;
+                        button.dataset.category = category.code;
+                        button.addEventListener('click', () => selectCategory(category.code));
+                        tabsContainer.appendChild(button);
+                    });
+                }
+            }
         } catch (error) {
             console.error('Error loading categories:', error);
         }
@@ -1019,7 +1223,10 @@
         document.querySelectorAll('.category-tab').forEach(tab => {
             tab.classList.remove('active');
         });
-        document.querySelector(`[data-category="${category}"]`).classList.add('active');
+        const selectedTab = document.querySelector(`[data-category="${category}"]`);
+        if (selectedTab) {
+            selectedTab.classList.add('active');
+        }
 
         // Update filters and reload
         currentFilters.category = category;
@@ -1132,14 +1339,34 @@
     function applyClientFilters(pros) {
         let filtered = pros;
 
-        // Filtre par recherche
+        // Filtre par recherche intelligente
         if (currentFilters.search) {
             const searchTerm = currentFilters.search.toLowerCase();
-            filtered = filtered.filter(pro =>
-                pro.name.toLowerCase().includes(searchTerm) ||
-                pro.service.toLowerCase().includes(searchTerm) ||
-                pro.address.toLowerCase().includes(searchTerm)
-            );
+
+            // Extract date keywords (demain, aujourd'hui, ce soir, etc.)
+            const dateKeywords = {
+                'demain': 1,
+                'aujourd\'hui': 0,
+                'aujourdhui': 0,
+                'ce soir': 0,
+                'cesoir': 0,
+                'maintenant': 0
+            };
+
+            // Remove date keywords from search for service matching
+            let serviceSearch = searchTerm;
+            for (const keyword in dateKeywords) {
+                serviceSearch = serviceSearch.replace(keyword, '').trim();
+            }
+
+            // Filter by service/name/address
+            filtered = filtered.filter(pro => {
+                const matchesService = !serviceSearch ||
+                    pro.name.toLowerCase().includes(serviceSearch) ||
+                    pro.service.toLowerCase().includes(serviceSearch) ||
+                    pro.address.toLowerCase().includes(serviceSearch);
+                return matchesService;
+            });
         }
 
         // Filtre par catégorie
@@ -1174,142 +1401,148 @@
         const container = document.getElementById('professionalsList');
         const noResults = document.getElementById('noResults');
         const professionalsCount = document.getElementById('professionalsCount');
-        const mapProfessionalsCount = document.getElementById('mapProfessionalsCount');
+        const resultsCount = document.getElementById('resultsCount');
+        const resultsSection = document.getElementById('professionalsResultsSection');
 
         console.log('Displaying professionals:', professionals.length);
+
+        // Check if a category is selected (not "all")
+        const hasCategoryFilter = currentFilters.category && currentFilters.category !== 'all';
+        const hasSearchFilter = currentFilters.search && currentFilters.search.trim() !== '';
+
+        // Show/hide results section based on filters
+        if (hasCategoryFilter || hasSearchFilter) {
+            if (resultsSection) {
+                resultsSection.classList.remove('hidden');
+            }
+        } else {
+            if (resultsSection) {
+                resultsSection.classList.add('hidden');
+            }
+            container.innerHTML = '';
+            // Hide no results message when no search/filter is active
+            if (noResults) noResults.classList.add('hidden');
+            return;
+        }
 
         // Update professionals count
         if (professionalsCount) {
             professionalsCount.textContent = professionals.length;
         }
 
-        // Update map professionals count
-        if (mapProfessionalsCount) {
-            mapProfessionalsCount.textContent = professionals.length;
+        // Update results count
+        if (resultsCount) {
+            resultsCount.textContent = `${professionals.length} résultat${professionals.length > 1 ? 's' : ''} trouvé${professionals.length > 1 ? 's' : ''}`;
         }
 
+        // Show no results message BEFORE map when no professionals found
         if (professionals.length === 0) {
             container.innerHTML = '';
-            noResults.classList.remove('hidden');
+            if (noResults) {
+                noResults.classList.remove('hidden');
+            }
+            if (resultsSection) {
+                resultsSection.classList.add('hidden');
+            }
             return;
         }
 
-        noResults.classList.add('hidden');
+        // Hide no results message when professionals are found
+        if (noResults) noResults.classList.add('hidden');
+
+        // Airbnb-style card design
         container.innerHTML = professionals.map((pro, index) => {
             // Assurer que toutes les valeurs existent
             const name = pro.name || 'Professionnel';
             const service = pro.service || 'Service';
-            const services = pro.services || [];
             const rating = pro.rating || 0;
             const reviews = pro.reviews || 0;
             const price = pro.price || 0;
             const priceRange = pro.price_range || `${price} DT`;
             const distance = pro.distanceKm || 0;
             const address = pro.address || 'Adresse non disponible';
-            const phone = pro.phone || '';
-            const email = pro.email || '';
             const city = pro.city || '';
-            const bio = pro.bio || '';
-            const languages = pro.spoken_languages || [];
             const isVerified = pro.is_verified || false;
 
             return `
-                <div class="pro-card rounded-2xl p-6 card-hover cursor-pointer group" onclick="viewProfessional(${pro.id})">
-                    <div class="flex items-start gap-6">
-                        <!-- Photo de profil principale -->
-                        <div class="flex-shrink-0 relative">
+                <div class="group cursor-pointer" onclick="viewProfessional(${pro.id})">
+                    <div class="relative overflow-hidden rounded-2xl bg-white shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-gray-200">
+                        <!-- Image Section -->
+                        <div class="relative h-64 overflow-hidden bg-gradient-to-br from-pink-100 to-blue-100">
                             ${pro.profile_photo ?
-                    `<div class="relative group/photo">
-                        <img src="${pro.profile_photo}" alt="${name}" class="w-20 h-20 rounded-2xl object-cover shadow-xl border-2 border-white">
-                        <div class="absolute inset-0 rounded-2xl bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover/photo:opacity-100 transition-opacity duration-300"></div>
-                        ${isVerified ? `<div class="absolute -top-1 -right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                            <i data-lucide="check" class="w-3 h-3 text-white"></i>
-                        </div>` : ''}
-                    </div>` :
-                    `<div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-pink-100 to-blue-100 flex items-center justify-center shadow-xl border-2 border-white">
-                        <i data-lucide="user" class="w-10 h-10 text-gray-400"></i>
+                    `<img src="${pro.profile_photo}" alt="${name}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                    ${isVerified ? `<div class="absolute top-3 right-3 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-lg">
+                        <i data-lucide="check" class="w-4 h-4 text-green-500"></i>
+                    </div>` : ''}` :
+                    `<div class="w-full h-full flex items-center justify-center">
+                        <i data-lucide="user" class="w-20 h-20 text-gray-300"></i>
                     </div>`
                 }
-                            <div class="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-pink-400 to-blue-400 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                                ${index + 1}
-                            </div>
+                            <!-- Distance Badge -->
+                            ${distance > 0 ? `<div class="absolute top-3 left-3 px-3 py-1.5 bg-white/90 backdrop-blur-sm rounded-full text-xs font-semibold text-gray-900 shadow-md">
+                                <i data-lucide="map-pin" class="w-3 h-3 inline-block mr-1"></i>
+                                ${Number(distance).toFixed(1)} km
+                            </div>` : ''}
                         </div>
 
-                        <!-- Informations principales -->
-                        <div class="flex-1">
-                            <div class="flex items-start justify-between">
-                                <div class="flex-1">
-                                    <!-- Nom et statut -->
-                                    <div class="flex items-center gap-3 mb-2">
-                                        <h3 class="text-xl font-bold text-gray-900">${name}</h3>
-                                        ${isVerified ? `<span class="px-2 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full flex items-center gap-1">
-                                            <i data-lucide="check-circle" class="w-3 h-3"></i>
-                                            Vérifié
-                                        </span>` : ''}
-                                    </div>
-
-                                    <!-- Note et avis -->
-                                    <div class="flex items-center gap-3 mb-3">
-                                        <div class="flex rating-stars">
-                                            ${Array(5).fill(0).map((_, i) =>
-                    `<i data-lucide="star" class="w-4 h-4 ${i < Math.floor(rating) ? 'fill-current' : ''}"></i>`
-                ).join('')}
-                                        </div>
-                                        <span class="text-sm text-gray-600 font-medium">${rating} (${reviews} avis)</span>
-                                        <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">${city}</span>
-                                    </div>
-
-                                    <!-- Service principal -->
-                                    <p class="text-gray-600 mb-2 flex items-center gap-2">
-                                        <i data-lucide="scissors" class="w-4 h-4 text-rosePastel"></i>
-                                        <span class="font-medium">${service}</span>
-                                    </p>
-
-                                    <!-- Services supplémentaires -->
-                                    ${services.length > 0 ? `<div class="flex flex-wrap gap-1 mb-2">
-                                        ${services.slice(0, 3).map(s => `<span class=\"text-xs bg-pink-50 text-pink-700 px-2 py-1 rounded-full\">${serviceLabel(s)}</span>`).join('')}
-                                        ${services.length > 3 ? `<span class="text-xs text-gray-500">+${services.length - 3} autres</span>` : ''}
-                                    </div>` : ''}
-
-                                    <!-- Adresse -->
-                                    <p class="text-sm text-gray-500 mb-2 flex items-start gap-2">
-                                        <i data-lucide="map-pin" class="w-4 h-4 mt-0.5 flex-shrink-0"></i>
-                                        <span class="line-clamp-2">${address}</span>
-                                    </p>
-
-                                    <!-- Contact -->
-                                    <div class="flex items-center gap-4 text-sm text-gray-500">
-                                        ${phone ? `<div class="flex items-center gap-1">
-                                            <i data-lucide="phone" class="w-4 h-4"></i>
-                                            <span>${phone}</span>
-                                        </div>` : ''}
-                                        ${languages.length > 0 ? `<div class="flex items-center gap-1">
-                                            <i data-lucide="globe" class="w-4 h-4"></i>
-                                            <span>${languages.slice(0, 2).join(', ')}</span>
-                                        </div>` : ''}
-                                    </div>
-
-                                    <!-- Bio courte -->
-                                    ${bio ? `<p class="text-sm text-gray-600 mt-2 line-clamp-2">${bio}</p>` : ''}
+                        <!-- Content Section -->
+                        <div class="p-4">
+                            <!-- Title and Rating Row -->
+                            <div class="flex items-start justify-between mb-2">
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="text-lg font-semibold text-gray-900 truncate mb-1 group-hover:text-rosePastel transition-colors">
+                                        ${name}
+                                    </h3>
+                                    <p class="text-sm text-gray-600 truncate">${service}</p>
                                 </div>
+                            </div>
 
-                                <!-- Informations de droite -->
-                                <div class="text-right ml-6 flex-shrink-0">
-                                    <div class="mb-3">
-                                        <p class="text-sm text-gray-500">Distance</p>
-                                        <p class="text-lg font-bold text-blueLight">${Number(distance).toFixed(1)} km</p>
-                                    </div>
-                                    <div class="mb-4">
-                                        <p class="text-sm text-gray-500">Tarifs</p>
-                                        <p class="text-xl font-bold gradient-text">${priceRange}</p>
-                                    </div>
-                                    <div class="flex items-center gap-2 justify-end">
-                                        <button type="button" onclick="event.stopPropagation(); viewProfessional(${pro.id});" class="grad-btn text-white px-6 py-3 rounded-xl font-semibold text-sm group-hover:scale-105 transition-transform flex items-center gap-2">
-                                            <i data-lucide="eye" class="w-4 h-4"></i>
-                                            Voir profil
-                                        </button>
-                                    </div>
+                            <!-- Rating and Reviews -->
+                            <div class="flex items-center gap-2 mb-3">
+                                <div class="flex items-center gap-1">
+                                    <i data-lucide="star" class="w-4 h-4 fill-current text-yellow-400"></i>
+                                    <span class="text-sm font-medium text-gray-900">${rating.toFixed(1)}</span>
                                 </div>
+                                ${reviews > 0 ? `<span class="text-sm text-gray-500">(${reviews})</span>` : ''}
+                                ${city ? `<span class="text-sm text-gray-500">• ${city}</span>` : ''}
+                            </div>
+
+                            <!-- Location -->
+                            <div class="flex items-center gap-1.5 mb-3 text-sm text-gray-600">
+                                <i data-lucide="map-pin" class="w-3.5 h-3.5 flex-shrink-0"></i>
+                                <span class="truncate">${address}</span>
+                            </div>
+
+                            <!-- Next Available Slots (Quick Preview) -->
+                            <div class="mb-3 p-2 bg-gray-50 rounded-lg">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <i data-lucide="calendar" class="w-4 h-4 text-rosePastel"></i>
+                                    <span class="text-xs font-semibold text-gray-700">Prochaines disponibilités</span>
+                                </div>
+                                <div id="quickSlots_${pro.id}" class="flex flex-wrap gap-1.5">
+                                    <div class="text-xs text-gray-500 animate-pulse">Chargement...</div>
+                                </div>
+                            </div>
+
+                            <!-- Price and Actions -->
+                            <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+                                <div>
+                                    <span class="text-xs text-gray-500">À partir de</span>
+                                    <p class="text-lg font-bold gradient-text">${priceRange}</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Quick Book Button -->
+                            <div class="mt-3 flex gap-2">
+                                <button type="button" onclick="event.stopPropagation(); openQuickBook(${pro.id}, '${name}', '${service}', ${price});" 
+                                    class="flex-1 px-4 py-2.5 grad-btn text-white rounded-lg font-semibold text-sm transition-all hover:scale-105 flex items-center justify-center gap-2 shadow-md">
+                                    <i data-lucide="calendar-check" class="w-4 h-4"></i>
+                                    Réserver maintenant
+                                </button>
+                                <button type="button" onclick="event.stopPropagation(); viewProfessional(${pro.id});" 
+                                    class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium text-sm transition-all hover:bg-gray-200 flex items-center gap-1.5">
+                                    <i data-lucide="eye" class="w-4 h-4"></i>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -1319,7 +1552,364 @@
 
         // Re-initialize icons
         if (window.lucide) window.lucide.createIcons();
+
+        // Load quick slots for each professional
+        professionals.forEach(pro => {
+            loadQuickSlots(pro.id);
+        });
     }
+
+    // Get CSRF token from cookies
+    function getCsrf() {
+        const name = 'csrftoken=';
+        const parts = document.cookie.split(';');
+        for (let p of parts) {
+            p = p.trim();
+            if (p.startsWith(name)) return p.substring(name.length);
+        }
+        return '';
+    }
+
+    // Quick search function
+    function quickSearch(term) {
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.value = term;
+            currentFilters.search = term;
+            loadProfessionals();
+        }
+    }
+
+    // Quick booking state
+    let quickBookState = {
+        proId: null,
+        proName: '',
+        service: '',
+        price: 0,
+        selectedDate: null,
+        selectedSlot: null
+    };
+
+    // Load quick slots preview on cards
+    async function loadQuickSlots(proId) {
+        const container = document.getElementById(`quickSlots_${proId}`);
+        if (!container) return;
+
+        try {
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const dateStr = tomorrow.toISOString().split('T')[0];
+
+            const response = await fetch(`/api/appointments/public/slots/?pro_id=${proId}&date=${dateStr}`);
+            if (!response.ok) {
+                container.innerHTML = '<span class="text-xs text-gray-400">Non disponible</span>';
+                return;
+            }
+
+            const data = await response.json();
+            const slots = data.results || [];
+
+            // Filter out past slots - only show future slots
+            const now = new Date();
+            const futureSlots = slots.filter(slot => {
+                const slotStart = new Date(slot.start);
+                return slotStart > now; // Only keep slots that are in the future
+            });
+
+            if (futureSlots.length === 0) {
+                container.innerHTML = '<span class="text-xs text-gray-400">Aucun créneau disponible</span>';
+                return;
+            }
+
+            // Show first 3 available future slots
+            const previewSlots = futureSlots.slice(0, 3);
+            container.innerHTML = previewSlots.map(slot => {
+                const time = new Date(slot.start).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                return `<span class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-medium">${time}</span>`;
+            }).join('');
+        } catch (error) {
+            container.innerHTML = '<span class="text-xs text-gray-400">Chargement...</span>';
+        }
+    }
+
+    // Open quick booking modal
+    async function openQuickBook(proId, proName, service, price) {
+        quickBookState = {
+            proId: proId,
+            proName: proName,
+            service: service,
+            price: price,
+            selectedDate: null,
+            selectedSlot: null
+        };
+
+        document.getElementById('quickBookProName').textContent = proName;
+        document.getElementById('quickBookService').textContent = service;
+        document.getElementById('quickBookPrice').textContent = `${price} DT`;
+
+        const modal = document.getElementById('quickBookModal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+
+        // Load dates (next 7 days)
+        loadQuickBookDates(proId);
+
+        if (window.lucide) window.lucide.createIcons();
+    }
+
+    // Load available dates
+    async function loadQuickBookDates(proId) {
+        const container = document.getElementById('quickBookDates');
+        container.innerHTML = '<div class="col-span-4 text-center py-4 text-gray-400">Chargement...</div>';
+
+        const dates = [];
+        const today = new Date();
+        for (let i = 0; i < 7; i++) {
+            const date = new Date(today);
+            date.setDate(date.getDate() + i);
+            dates.push(date);
+        }
+
+        container.innerHTML = dates.map((date, index) => {
+            const dateStr = date.toISOString().split('T')[0];
+            const dayName = date.toLocaleDateString('fr-FR', { weekday: 'short' });
+            const dayNum = date.getDate();
+            const isToday = index === 0;
+
+            return `
+                <button onclick="selectQuickBookDate('${dateStr}', ${proId}, this)" 
+                    class="p-3 rounded-xl border-2 border-gray-200 hover:border-rosePastel transition-all text-center ${isToday ? 'bg-rosePastel/10 border-rosePastel' : ''}">
+                    <div class="text-xs text-gray-600">${dayName}</div>
+                    <div class="text-lg font-bold text-gray-900">${dayNum}</div>
+                </button>
+            `;
+        }).join('');
+
+        if (window.lucide) window.lucide.createIcons();
+    }
+
+    // Select date and load slots
+    async function selectQuickBookDate(dateStr, proId, buttonElement) {
+        quickBookState.selectedDate = dateStr;
+        quickBookState.selectedSlot = null;
+
+        // Update date buttons
+        document.querySelectorAll('#quickBookDates button').forEach(btn => {
+            btn.classList.remove('bg-rosePastel/10', 'border-rosePastel');
+            btn.classList.add('border-gray-200');
+        });
+        if (buttonElement) {
+            buttonElement.classList.add('bg-rosePastel/10', 'border-rosePastel');
+            buttonElement.classList.remove('border-gray-200');
+        }
+
+        // Load slots for selected date
+        const container = document.getElementById('quickBookSlots');
+        container.innerHTML = '<div class="col-span-4 text-center py-8 text-gray-400">Chargement...</div>';
+
+        try {
+            const response = await fetch(`/api/appointments/public/slots/?pro_id=${proId}&date=${dateStr}`);
+            if (!response.ok) {
+                container.innerHTML = '<div class="col-span-4 text-center py-8 text-gray-400">Aucun créneau disponible</div>';
+                return;
+            }
+
+            const data = await response.json();
+            const slots = data.results || [];
+
+            // Filter out past slots - only show future slots
+            const now = new Date();
+            const futureSlots = slots.filter(slot => {
+                const slotStart = new Date(slot.start);
+                return slotStart > now; // Only keep slots that are in the future
+            });
+
+            if (futureSlots.length === 0) {
+                container.innerHTML = '<div class="col-span-4 text-center py-8 text-gray-400">Aucun créneau disponible pour cette date</div>';
+                return;
+            }
+
+            container.innerHTML = futureSlots.map(slot => {
+                const start = new Date(slot.start);
+                const end = new Date(slot.end);
+                const timeStr = `${start.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })} - ${end.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`;
+
+                return `
+                    <button onclick="selectQuickBookSlot('${slot.start}', '${slot.end}', this)" 
+                        class="p-3 rounded-lg border-2 border-gray-200 hover:border-rosePastel hover:bg-rosePastel/5 transition-all text-center">
+                        <div class="text-sm font-medium text-gray-900">${start.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</div>
+                    </button>
+                `;
+            }).join('');
+        } catch (error) {
+            container.innerHTML = '<div class="col-span-4 text-center py-8 text-red-400">Erreur de chargement</div>';
+        }
+    }
+
+    // Select time slot
+    function selectQuickBookSlot(start, end, buttonElement) {
+        quickBookState.selectedSlot = { start, end };
+
+        // Update slot buttons
+        document.querySelectorAll('#quickBookSlots button').forEach(btn => {
+            btn.classList.remove('bg-rosePastel', 'text-white', 'border-rosePastel');
+            btn.classList.add('border-gray-200');
+        });
+        if (buttonElement) {
+            buttonElement.classList.add('bg-rosePastel', 'text-white', 'border-rosePastel');
+            buttonElement.classList.remove('border-gray-200', 'hover:border-rosePastel', 'hover:bg-rosePastel/5');
+        }
+
+        // Show summary
+        const startDate = new Date(start);
+        const endDate = new Date(end);
+        const dateStr = startDate.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+        const timeStr = `${startDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })} - ${endDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`;
+
+        document.getElementById('quickBookSelectedSlot').textContent = `${dateStr} à ${timeStr}`;
+        document.getElementById('quickBookSummary').classList.remove('hidden');
+        document.getElementById('quickBookSubmitBtn').disabled = false;
+    }
+
+    // Clear selection
+    function clearQuickBookSelection() {
+        quickBookState.selectedSlot = null;
+        document.getElementById('quickBookSummary').classList.add('hidden');
+        document.getElementById('quickBookSubmitBtn').disabled = true;
+        document.querySelectorAll('#quickBookSlots button').forEach(btn => {
+            btn.classList.remove('bg-rosePastel', 'text-white', 'border-rosePastel');
+            btn.classList.add('border-gray-200');
+        });
+    }
+
+    // Submit quick booking
+    async function submitQuickBooking() {
+        if (!quickBookState.selectedSlot) {
+            alert('Veuillez sélectionner un créneau');
+            return;
+        }
+
+        const submitBtn = document.getElementById('quickBookSubmitBtn');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i data-lucide="loader" class="w-4 h-4 inline-block mr-2 animate-spin"></i>Réservation en cours...';
+
+        try {
+            // Extract date and time from the selected slot (ISO format)
+            const slotStart = new Date(quickBookState.selectedSlot.start);
+
+            // Validate date parsing
+            if (isNaN(slotStart.getTime())) {
+                alert('❌ Erreur : Date invalide. Veuillez réessayer.');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i data-lucide="check" class="w-4 h-4 inline-block mr-2"></i>Confirmer la réservation';
+                if (window.lucide) window.lucide.createIcons();
+                return;
+            }
+
+            // Validate that the slot is not in the past
+            const now = new Date();
+            if (slotStart < now) {
+                alert('❌ Erreur : Ce créneau est dans le passé. Veuillez sélectionner un créneau futur.');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i data-lucide="check" class="w-4 h-4 inline-block mr-2"></i>Confirmer la réservation';
+                if (window.lucide) window.lucide.createIcons();
+                return;
+            }
+
+            // Format date as YYYY-MM-DD (local date, not UTC)
+            const year = slotStart.getFullYear();
+            const month = String(slotStart.getMonth() + 1).padStart(2, '0');
+            const day = String(slotStart.getDate()).padStart(2, '0');
+            const appointmentDate = `${year}-${month}-${day}`;
+
+            // Format time as HH:MM (24-hour format, local time)
+            const hours = String(slotStart.getHours()).padStart(2, '0');
+            const minutes = String(slotStart.getMinutes()).padStart(2, '0');
+            const appointmentTime = `${hours}:${minutes}`;
+
+            console.log('Booking data:', {
+                proId: quickBookState.proId,
+                date: appointmentDate,
+                time: appointmentTime,
+                service: quickBookState.service,
+                price: quickBookState.price
+            });
+
+            const csrfToken = getCsrf();
+            if (!csrfToken) {
+                alert('❌ Erreur : Token de sécurité manquant. Veuillez rafraîchir la page.');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i data-lucide="check" class="w-4 h-4 inline-block mr-2"></i>Confirmer la réservation';
+                if (window.lucide) window.lucide.createIcons();
+                return;
+            }
+
+            const response = await fetch(`/pro/${quickBookState.proId}/book/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrfToken
+                },
+                credentials: 'include',
+                body: new URLSearchParams({
+                    service_name: quickBookState.service,
+                    service_price: quickBookState.price.toString(),
+                    service_duration: '60',
+                    appointment_date: appointmentDate,
+                    appointment_time: appointmentTime,
+                    client_notes: 'Réservation rapide depuis le tableau de bord'
+                })
+            });
+
+            if (response.ok) {
+                const result = await response.json().catch(() => ({}));
+                alert('✅ Réservation effectuée avec succès ! Vous recevrez une confirmation par email.');
+                closeQuickBook();
+                // Optionally reload professionals
+                loadProfessionals();
+            } else {
+                const errorData = await response.json().catch(() => ({ detail: 'Erreur lors de la réservation' }));
+                const errorMessage = errorData.detail || errorData.error || 'Impossible de réserver';
+                console.error('Booking error response:', errorData);
+                alert('❌ Erreur : ' + errorMessage);
+            }
+        } catch (error) {
+            console.error('Booking error:', error);
+            alert('❌ Erreur : Impossible de réserver. Veuillez réessayer.');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i data-lucide="check" class="w-4 h-4 inline-block mr-2"></i>Confirmer la réservation';
+            if (window.lucide) window.lucide.createIcons();
+        }
+    }
+
+    // Close quick book modal
+    function closeQuickBook() {
+        const modal = document.getElementById('quickBookModal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        quickBookState = {
+            proId: null,
+            proName: '',
+            service: '',
+            price: 0,
+            selectedDate: null,
+            selectedSlot: null
+        };
+        document.getElementById('quickBookSummary').classList.add('hidden');
+        document.getElementById('quickBookSubmitBtn').disabled = true;
+    }
+
+    // Close modal on Escape key
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            const modal = document.getElementById('quickBookModal');
+            if (modal && !modal.classList.contains('hidden')) {
+                closeQuickBook();
+            }
+        }
+    });
 
     // Update map with professionals
     function updateMap() {
@@ -1401,17 +1991,19 @@
 
         console.log(`Added ${validMarkers} professional markers to map`);
 
-        // Update map professional count badge
-        const mapProfessionalsCount = document.getElementById('mapProfessionalsCount');
-        if (mapProfessionalsCount) mapProfessionalsCount.textContent = validMarkers;
-
-        // Fit map to show all markers
-        if (markers.length > 0) {
+        // Always maintain 5km radius view around user location when available
+        if (userLocation) {
+            // Always center on user location with 5km radius
+            setMapView5km(userLocation);
+        } else if (markers.length > 0) {
+            // If no user location but we have markers, fit to markers
             const group = new L.featureGroup(markers);
-            map.fitBounds(group.getBounds().pad(0.1));
+            const bounds = group.getBounds();
+            map.fitBounds(bounds.pad(0.1), { padding: [20, 20] });
         } else {
-            // Si pas de marqueurs, centrer sur Nabeul
-            map.setView([36.4515, 10.7353], 11);
+            // No markers and no user location, use default center with 5km view
+            const defaultCenter = [36.4515, 10.7353];
+            setMapView5km(defaultCenter);
         }
     }
 
@@ -1424,129 +2016,59 @@
 
     // Setup event listeners
     function setupEventListeners() {
-        // Search input
+        // Search input - Enhanced with Enter key support
         const searchInput = document.getElementById('searchInput');
         let searchTimeout;
+
+        // Real-time search with debounce
         searchInput.addEventListener('input', function () {
             clearTimeout(searchTimeout);
             searchTimeout = setTimeout(() => {
                 currentFilters.search = this.value;
                 loadProfessionals();
-            }, 500);
+            }, 300); // Reduced delay for faster response
         });
 
-        // Quick filters
-        const priceFilter = document.getElementById('priceFilter');
-        const languageFilter = document.getElementById('languageFilter');
-        const distanceFilter = document.getElementById('distanceFilter');
-        const ratingStars = document.querySelectorAll('#ratingFilter i');
-
-        if (priceFilter) {
-            priceFilter.addEventListener('change', function () {
-                const maxPrice = parseInt(this.value);
-                currentFilters.priceMax = maxPrice;
-                console.log('Price filter changed:', maxPrice);
+        // Enter key for immediate search
+        searchInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                clearTimeout(searchTimeout);
+                currentFilters.search = this.value;
                 loadProfessionals();
+            }
+        });
+
+        // Focus search on page load for quick access
+        if (searchInput && !searchInput.value) {
+            setTimeout(() => {
+                searchInput.focus();
+            }, 300);
+        }
+
+        // Filter button - Toggle floating panel
+        const filterBtn = document.getElementById('filterBtn');
+        const filtersPanel = document.getElementById('filtersPanel');
+        const closeFilters = document.getElementById('closeFilters');
+
+        if (filterBtn) {
+            filterBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                filtersPanel.classList.toggle('hidden');
             });
         }
 
-        if (languageFilter) {
-            languageFilter.addEventListener('change', function () {
-                currentFilters.language = this.value;
-                console.log('Language filter changed:', this.value);
-                loadProfessionals();
+        if (closeFilters) {
+            closeFilters.addEventListener('click', function () {
+                filtersPanel.classList.add('hidden');
             });
         }
 
-        if (distanceFilter) {
-            distanceFilter.addEventListener('change', function () {
-                currentFilters.maxDistance = parseInt(this.value);
-                console.log('Distance filter changed:', this.value);
-                loadProfessionals();
-            });
-        }
-
-        // Rating filter
-        ratingStars.forEach((star, index) => {
-            star.addEventListener('click', function () {
-                const rating = parseInt(this.dataset.rating);
-                currentFilters.minRating = rating;
-
-                // Update star display
-                ratingStars.forEach((s, i) => {
-                    if (i < rating) {
-                        s.classList.add('fill-current');
-                    } else {
-                        s.classList.remove('fill-current');
-                    }
-                });
-
-                // Update rating text
-                const ratingValue = document.getElementById('ratingValue');
-                if (rating === 0) {
-                    ratingValue.textContent = 'Toutes';
-                } else {
-                    ratingValue.textContent = `${rating}+ ⭐`;
-                }
-
-                loadProfessionals();
-            });
-        });
-
-        // Filter button
-        document.getElementById('filterBtn').addEventListener('click', function () {
-            const panel = document.getElementById('filtersPanel');
-            panel.classList.toggle('hidden');
-        });
-
-        // Filter sliders
-        const priceMin = document.getElementById('priceMin');
-        const priceMax = document.getElementById('priceMax');
-        const minRating = document.getElementById('minRating');
-
-        priceMin.addEventListener('input', function () {
-            document.getElementById('priceMinValue').textContent = this.value + ' DT';
-        });
-
-        priceMax.addEventListener('input', function () {
-            document.getElementById('priceMaxValue').textContent = this.value + ' DT';
-        });
-
-        minRating.addEventListener('input', function () {
-            document.getElementById('minRatingValue').textContent = this.value + ' ⭐';
-        });
-
-        // Apply filters
-        document.getElementById('applyFilters').addEventListener('click', function () {
-            currentFilters.priceMin = parseInt(priceMin.value);
-            currentFilters.priceMax = parseInt(priceMax.value);
-            currentFilters.minRating = parseFloat(minRating.value);
-            loadProfessionals();
-            document.getElementById('filtersPanel').classList.add('hidden');
-        });
-
-        // Clear filters
-        document.getElementById('clearFilters').addEventListener('click', function () {
-            priceMin.value = 0;
-            priceMax.value = 300;
-            minRating.value = 0;
-            document.getElementById('priceMinValue').textContent = '0 DT';
-            document.getElementById('priceMaxValue').textContent = '300 DT';
-            document.getElementById('minRatingValue').textContent = '0.0 ⭐';
-
-            currentFilters.priceMin = 0;
-            currentFilters.priceMax = 300;
-            currentFilters.minRating = 0;
-            currentFilters.search = '';
-            currentFilters.category = 'all';
-
-            document.getElementById('searchInput').value = '';
-            document.querySelectorAll('.category-tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            document.querySelector('[data-category="all"]').classList.add('active');
-
-            loadProfessionals();
+        // Close filters panel when clicking outside
+        document.addEventListener('click', function (e) {
+            if (filtersPanel && filterBtn && !filtersPanel.contains(e.target) && !filterBtn.contains(e.target)) {
+                filtersPanel.classList.add('hidden');
+            }
         });
     }
 
@@ -1577,32 +2099,18 @@
         });
     }
 
-    // Clear all filters
+    // Clear all filters - Only reset category and search
     function clearAllFilters() {
         // Reset search input
-        document.getElementById('searchInput').value = '';
-
-        // Reset price filter
-        document.getElementById('priceFilter').value = '0';
-
-        // Reset language filter
-        document.getElementById('languageFilter').value = '';
-
-        // Reset distance filter
-        document.getElementById('distanceFilter').value = '50';
-
-        // Reset rating filter
-        const ratingStars = document.querySelectorAll('#ratingFilter i');
-        ratingStars.forEach(star => {
-            star.classList.remove('fill-current');
-        });
-        document.getElementById('ratingValue').textContent = 'Toutes';
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) searchInput.value = '';
 
         // Reset category to all
         document.querySelectorAll('.category-tab').forEach(tab => {
             tab.classList.remove('active');
         });
-        document.querySelector('[data-category="all"]').classList.add('active');
+        const allTab = document.querySelector('[data-category="all"]');
+        if (allTab) allTab.classList.add('active');
 
         // Reset current filters
         currentFilters = {
@@ -1611,7 +2119,7 @@
             priceMin: 0,
             priceMax: 300,
             minRating: 0,
-            maxDistance: 50,
+            maxDistance: 5,  // Keep default distance for API
             language: ''
         };
 

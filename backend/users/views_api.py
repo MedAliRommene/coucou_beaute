@@ -15,6 +15,110 @@ import re
 import math
 from .serializers import ProfessionalApplicationSerializer, ClientRegistrationSerializer
 
+# Mapping des codes de catégorie vers les labels en français
+CATEGORY_LABELS_FR = {
+    'all': 'Tous',
+    # Coiffure
+    'hairdressing': 'Coiffure',
+    'haircut_women': 'Coupe femme',
+    'haircut_men': 'Coupe homme',
+    'haircut_children': 'Coupe enfant',
+    'hair_coloring': 'Coloration',
+    'highlights': 'Mèches & Balayage',
+    'hair_styling': 'Brushing & Coiffage',
+    'hair_treatment': 'Soins capillaires',
+    'keratin': 'Lissage & Kératine',
+    'hair_extensions': 'Extensions cheveux',
+    'braiding': 'Tresses & Nattes',
+    'bridal_hair': 'Coiffure mariée',
+    # Maquillage
+    'makeup': 'Maquillage',
+    'bridal_makeup': 'Maquillage mariée',
+    'evening_makeup': 'Maquillage soirée',
+    'natural_makeup': 'Maquillage naturel',
+    'makeup_lesson': 'Cours de maquillage',
+    # Ongles
+    'manicure': 'Manucure',
+    'pedicure': 'Pédicure',
+    'nail_art': 'Nail art',
+    'gel_nails': 'Pose gel',
+    'acrylic_nails': 'Pose résine',
+    'semi_permanent': 'Semi-permanent',
+    'nail_care': 'Soins des ongles',
+    # Esthétique visage
+    'esthetics': 'Esthétique',
+    'facial': 'Soin du visage',
+    'deep_cleansing': 'Nettoyage de peau',
+    'anti_aging': 'Soin anti-âge',
+    'hydration': 'Soin hydratant',
+    'acne_treatment': 'Traitement acné',
+    'microdermabrasion': 'Microdermabrasion',
+    'chemical_peel': 'Peeling',
+    'led_therapy': 'Luminothérapie LED',
+    # Épilation
+    'waxing': 'Épilation cire',
+    'waxing_face': 'Épilation visage',
+    'waxing_body': 'Épilation corps',
+    'waxing_bikini': 'Épilation maillot',
+    'threading': 'Épilation au fil',
+    'laser_hair': 'Épilation laser',
+    'sugaring': 'Épilation au sucre',
+    # Sourcils & Cils
+    'eyebrows': 'Épilation sourcils',
+    'eyebrow_tint': 'Teinture sourcils',
+    'eyebrow_lamination': 'Brow lamination',
+    'microblading': 'Microblading',
+    'eyelash_extensions': 'Extension de cils',
+    'eyelash_lift': 'Rehaussement de cils',
+    'eyelash_tint': 'Teinture de cils',
+    # Massage & Bien-être
+    'massage': 'Massage',
+    'relaxing_massage': 'Massage relaxant',
+    'deep_tissue': 'Massage deep tissue',
+    'hot_stone': 'Massage pierres chaudes',
+    'aromatherapy': 'Aromathérapie',
+    'reflexology': 'Réflexologie',
+    'lymphatic_drainage': 'Drainage lymphatique',
+    'prenatal_massage': 'Massage prénatal',
+    # Corps
+    'body_treatment': 'Soin du corps',
+    'body_scrub': 'Gommage corps',
+    'body_wrap': 'Enveloppement',
+    'slimming': 'Soin minceur',
+    'cellulite': 'Traitement cellulite',
+    'tanning': 'Bronzage',
+    'spray_tan': 'Autobronzant',
+    # Spa & Hammam
+    'spa': 'Spa',
+    'hammam': 'Hammam',
+    'sauna': 'Sauna',
+    'jacuzzi': 'Jacuzzi',
+    # Maquillage permanent
+    'permanent_makeup': 'Maquillage permanent',
+    'lip_tattoo': 'Tatouage lèvres',
+    'eyeliner_tattoo': 'Tatouage eye-liner',
+    # Hommes
+    'barber': 'Barbier',
+    'beard_trim': 'Taille de barbe',
+    'beard_care': 'Soins barbe',
+    'men_facial': 'Soin visage homme',
+    # Autres
+    'henna': 'Henné',
+    'teeth_whitening': 'Blanchiment dentaire',
+    'piercing': 'Piercing',
+    'other': 'Autre',
+}
+
+def get_service_label_fr(service_code: str) -> str:
+    """Convertit un code de service en label français."""
+    if not service_code:
+        return 'Service'
+    # Si c'est déjà un label français, le retourner tel quel
+    if service_code in CATEGORY_LABELS_FR.values():
+        return service_code
+    # Sinon, chercher dans le mapping
+    return CATEGORY_LABELS_FR.get(service_code.lower(), service_code)
+
 
 @api_view(["POST"]) 
 @permission_classes([AllowAny])
@@ -583,7 +687,7 @@ def search_professionals(request):
                 
                 # Ensure we have valid data
                 name = pro.business_name or f"{pro.user.first_name} {pro.user.last_name}".strip() or "Professionnel"
-                service = extra.primary_service or 'Service'
+                service = get_service_label_fr(extra.primary_service) if extra.primary_service else 'Service'
                 rating_val = round(rating, 1) if rating else 4.0
                 price_val = int(price) if price else 50
                 reviews_val = extra.reviews or 0
@@ -650,19 +754,121 @@ def search_professionals(request):
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def get_professional_categories(request):
-    """Get list of professional categories"""
-    categories = [
-        {'code': 'all', 'label': 'Tous'},
-        {'code': 'hairdressing', 'label': 'Coiffure'},
-        {'code': 'makeup', 'label': 'Maquillage'},
-        {'code': 'manicure', 'label': 'Manucure'},
-        {'code': 'esthetics', 'label': 'Esthétique'},
-        {'code': 'massage', 'label': 'Massage'},
-        {'code': 'other', 'label': 'Autre'},
-    ]
+    """Get list of professional categories grouped by type"""
+    
+    # Catégories groupées par type
+    categories_grouped = {
+        'Coiffure': [
+            {'code': 'hairdressing', 'label': 'Coiffure'},
+            {'code': 'haircut_women', 'label': 'Coupe femme'},
+            {'code': 'haircut_men', 'label': 'Coupe homme'},
+            {'code': 'haircut_children', 'label': 'Coupe enfant'},
+            {'code': 'hair_coloring', 'label': 'Coloration'},
+            {'code': 'highlights', 'label': 'Mèches & Balayage'},
+            {'code': 'hair_styling', 'label': 'Brushing & Coiffage'},
+            {'code': 'hair_treatment', 'label': 'Soins capillaires'},
+            {'code': 'keratin', 'label': 'Lissage & Kératine'},
+            {'code': 'hair_extensions', 'label': 'Extensions cheveux'},
+            {'code': 'braiding', 'label': 'Tresses & Nattes'},
+            {'code': 'bridal_hair', 'label': 'Coiffure mariée'},
+        ],
+        'Maquillage': [
+            {'code': 'makeup', 'label': 'Maquillage'},
+            {'code': 'bridal_makeup', 'label': 'Maquillage mariée'},
+            {'code': 'evening_makeup', 'label': 'Maquillage soirée'},
+            {'code': 'natural_makeup', 'label': 'Maquillage naturel'},
+            {'code': 'makeup_lesson', 'label': 'Cours de maquillage'},
+        ],
+        'Ongles': [
+            {'code': 'manicure', 'label': 'Manucure'},
+            {'code': 'pedicure', 'label': 'Pédicure'},
+            {'code': 'nail_art', 'label': 'Nail art'},
+            {'code': 'gel_nails', 'label': 'Pose gel'},
+            {'code': 'acrylic_nails', 'label': 'Pose résine'},
+            {'code': 'semi_permanent', 'label': 'Semi-permanent'},
+            {'code': 'nail_care', 'label': 'Soins des ongles'},
+        ],
+        'Esthétique': [
+            {'code': 'esthetics', 'label': 'Esthétique'},
+            {'code': 'facial', 'label': 'Soin du visage'},
+            {'code': 'deep_cleansing', 'label': 'Nettoyage de peau'},
+            {'code': 'anti_aging', 'label': 'Soin anti-âge'},
+            {'code': 'hydration', 'label': 'Soin hydratant'},
+            {'code': 'acne_treatment', 'label': 'Traitement acné'},
+            {'code': 'microdermabrasion', 'label': 'Microdermabrasion'},
+            {'code': 'chemical_peel', 'label': 'Peeling'},
+            {'code': 'led_therapy', 'label': 'Luminothérapie LED'},
+        ],
+        'Épilation': [
+            {'code': 'waxing', 'label': 'Épilation cire'},
+            {'code': 'waxing_face', 'label': 'Épilation visage'},
+            {'code': 'waxing_body', 'label': 'Épilation corps'},
+            {'code': 'waxing_bikini', 'label': 'Épilation maillot'},
+            {'code': 'threading', 'label': 'Épilation au fil'},
+            {'code': 'laser_hair', 'label': 'Épilation laser'},
+            {'code': 'sugaring', 'label': 'Épilation au sucre'},
+        ],
+        'Sourcils & Cils': [
+            {'code': 'eyebrows', 'label': 'Épilation sourcils'},
+            {'code': 'eyebrow_tint', 'label': 'Teinture sourcils'},
+            {'code': 'eyebrow_lamination', 'label': 'Brow lamination'},
+            {'code': 'microblading', 'label': 'Microblading'},
+            {'code': 'eyelash_extensions', 'label': 'Extension de cils'},
+            {'code': 'eyelash_lift', 'label': 'Rehaussement de cils'},
+            {'code': 'eyelash_tint', 'label': 'Teinture de cils'},
+        ],
+        'Massage & Bien-être': [
+            {'code': 'massage', 'label': 'Massage'},
+            {'code': 'relaxing_massage', 'label': 'Massage relaxant'},
+            {'code': 'deep_tissue', 'label': 'Massage deep tissue'},
+            {'code': 'hot_stone', 'label': 'Massage pierres chaudes'},
+            {'code': 'aromatherapy', 'label': 'Aromathérapie'},
+            {'code': 'reflexology', 'label': 'Réflexologie'},
+            {'code': 'lymphatic_drainage', 'label': 'Drainage lymphatique'},
+            {'code': 'prenatal_massage', 'label': 'Massage prénatal'},
+        ],
+        'Corps': [
+            {'code': 'body_treatment', 'label': 'Soin du corps'},
+            {'code': 'body_scrub', 'label': 'Gommage corps'},
+            {'code': 'body_wrap', 'label': 'Enveloppement'},
+            {'code': 'slimming', 'label': 'Soin minceur'},
+            {'code': 'cellulite', 'label': 'Traitement cellulite'},
+            {'code': 'tanning', 'label': 'Bronzage'},
+            {'code': 'spray_tan', 'label': 'Autobronzant'},
+        ],
+        'Spa & Hammam': [
+            {'code': 'spa', 'label': 'Spa'},
+            {'code': 'hammam', 'label': 'Hammam'},
+            {'code': 'sauna', 'label': 'Sauna'},
+            {'code': 'jacuzzi', 'label': 'Jacuzzi'},
+        ],
+        'Maquillage permanent': [
+            {'code': 'permanent_makeup', 'label': 'Maquillage permanent'},
+            {'code': 'lip_tattoo', 'label': 'Tatouage lèvres'},
+            {'code': 'eyeliner_tattoo', 'label': 'Tatouage eye-liner'},
+        ],
+        'Hommes': [
+            {'code': 'barber', 'label': 'Barbier'},
+            {'code': 'beard_trim', 'label': 'Taille de barbe'},
+            {'code': 'beard_care', 'label': 'Soins barbe'},
+            {'code': 'men_facial', 'label': 'Soin visage homme'},
+        ],
+        'Autres': [
+            {'code': 'henna', 'label': 'Henné'},
+            {'code': 'teeth_whitening', 'label': 'Blanchiment dentaire'},
+            {'code': 'piercing', 'label': 'Piercing'},
+            {'code': 'other', 'label': 'Autre'},
+        ],
+    }
+    
+    # Liste plate pour la compatibilité
+    categories_flat = [{'code': 'all', 'label': 'Tous'}]
+    for group_name, items in categories_grouped.items():
+        categories_flat.extend(items)
     
     return Response({
-        'categories': categories
+        'categories': categories_flat,
+        'categories_grouped': categories_grouped
     })
 
 @api_view(["GET"])
@@ -694,7 +900,8 @@ def test_professionals(request):
                 results.append({
                     'id': pro.id,
                     'name': pro.business_name or f"{pro.user.first_name} {pro.user.last_name}".strip(),
-                    'service': extra.primary_service or 'Service',
+                    'gender': getattr(extra, 'gender', 'female') or 'female',
+                    'service': get_service_label_fr(extra.primary_service) if extra.primary_service else 'Service',
                     'rating': extra.rating or 4.0,
                     'price': extra.price or 50,
                     'lat': pro_lat,
@@ -770,7 +977,8 @@ def get_all_professionals(request):
                 results.append({
                     'id': pro.id,
                     'name': pro.business_name or f"{pro.user.first_name} {pro.user.last_name}".strip() or "Professionnel",
-                    'service': extra.primary_service or 'Service',
+                    'gender': getattr(extra, 'gender', 'female') or 'female',
+                    'service': get_service_label_fr(extra.primary_service) if extra.primary_service else 'Service',
                     'categoryCode': extra.primary_service or 'other',
                     'rating': round(extra.rating, 1) if extra.rating else 4.0,
                     'reviews': extra.reviews or 0,
@@ -948,7 +1156,8 @@ def simple_professionals_api(request):
                 result = {
                     'id': pro.id,
                     'name': name,
-                    'service': (extra.primary_service if (extra and getattr(extra, 'primary_service', None)) else 'Service'),
+                    'gender': getattr(extra, 'gender', 'female') if extra else 'female',
+                    'service': get_service_label_fr(extra.primary_service) if (extra and getattr(extra, 'primary_service', None)) else 'Service',
                     'services': services_list,
                     'rating': rating_val,
                     'reviews': int(extra.reviews) if (extra and extra.reviews) else 0,

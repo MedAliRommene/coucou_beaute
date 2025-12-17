@@ -385,6 +385,7 @@ def signup_view(request: HttpRequest) -> HttpResponse:
 
         # Professional application flow
         phone = request.POST.get('phone') or ''
+        gender = request.POST.get('gender') or 'female'
         category = request.POST.get('activity_category') or 'other'
         service_type = request.POST.get('service_type') or 'mobile'
         address = request.POST.get('address') or ''
@@ -395,6 +396,51 @@ def signup_view(request: HttpRequest) -> HttpResponse:
         salon_name = request.POST.get('salon_name') or ''
         spoken_languages = request.POST.getlist('spoken_languages') or ['french']
         subscription_active = bool(request.POST.get('subscription_active'))
+        
+        # Récupérer les services (JSON)
+        import json
+        services_json = request.POST.get('services') or '[]'
+        try:
+            services = json.loads(services_json)
+            if not isinstance(services, list):
+                services = []
+        except Exception:
+            services = []
+        
+        # Si aucun service, créer un service par défaut basé sur la catégorie
+        if not services:
+            category_labels = {
+                'hairdressing': 'Coiffure', 'haircut_women': 'Coupe femme', 'haircut_men': 'Coupe homme',
+                'haircut_children': 'Coupe enfant', 'hair_coloring': 'Coloration', 'highlights': 'Mèches & Balayage',
+                'hair_styling': 'Brushing & Coiffage', 'hair_treatment': 'Soins capillaires', 'keratin': 'Lissage & Kératine',
+                'hair_extensions': 'Extensions cheveux', 'braiding': 'Tresses & Nattes', 'bridal_hair': 'Coiffure mariée',
+                'makeup': 'Maquillage', 'bridal_makeup': 'Maquillage mariée', 'evening_makeup': 'Maquillage soirée',
+                'natural_makeup': 'Maquillage naturel', 'makeup_lesson': 'Cours de maquillage',
+                'manicure': 'Manucure', 'pedicure': 'Pédicure', 'nail_art': 'Nail art', 'gel_nails': 'Pose gel',
+                'acrylic_nails': 'Pose résine', 'semi_permanent': 'Semi-permanent', 'nail_care': 'Soins des ongles',
+                'esthetics': 'Esthétique', 'facial': 'Soin du visage', 'deep_cleansing': 'Nettoyage de peau',
+                'anti_aging': 'Soin anti-âge', 'hydration': 'Soin hydratant', 'acne_treatment': 'Traitement acné',
+                'microdermabrasion': 'Microdermabrasion', 'chemical_peel': 'Peeling', 'led_therapy': 'Luminothérapie LED',
+                'waxing': 'Épilation cire', 'waxing_face': 'Épilation visage', 'waxing_body': 'Épilation corps',
+                'waxing_bikini': 'Épilation maillot', 'threading': 'Épilation au fil', 'laser_hair': 'Épilation laser',
+                'sugaring': 'Épilation au sucre', 'eyebrows': 'Épilation sourcils', 'eyebrow_tint': 'Teinture sourcils',
+                'eyebrow_lamination': 'Brow lamination', 'microblading': 'Microblading', 'eyelash_extensions': 'Extension de cils',
+                'eyelash_lift': 'Rehaussement de cils', 'eyelash_tint': 'Teinture de cils',
+                'massage': 'Massage', 'relaxing_massage': 'Massage relaxant', 'deep_tissue': 'Massage deep tissue',
+                'hot_stone': 'Massage pierres chaudes', 'aromatherapy': 'Aromathérapie', 'reflexology': 'Réflexologie',
+                'lymphatic_drainage': 'Drainage lymphatique', 'prenatal_massage': 'Massage prénatal',
+                'body_treatment': 'Soin du corps', 'body_scrub': 'Gommage corps', 'body_wrap': 'Enveloppement',
+                'slimming': 'Soin minceur', 'cellulite': 'Traitement cellulite', 'tanning': 'Bronzage', 'spray_tan': 'Autobronzant',
+                'spa': 'Spa', 'hammam': 'Hammam', 'sauna': 'Sauna', 'jacuzzi': 'Jacuzzi',
+                'permanent_makeup': 'Maquillage permanent', 'lip_tattoo': 'Tatouage lèvres', 'eyeliner_tattoo': 'Tatouage eye-liner',
+                'barber': 'Barbier', 'beard_trim': 'Taille de barbe', 'beard_care': 'Soins barbe', 'men_facial': 'Soin visage homme',
+                'henna': 'Henné', 'teeth_whitening': 'Blanchiment dentaire', 'piercing': 'Piercing', 'other': 'Autre'
+            }
+            services = [{
+                'name': category_labels.get(category, 'Service'),
+                'duration_min': 60,
+                'price': 50
+            }]
         # Handle uploaded files
         profile_photo = None
         id_document = None
@@ -429,9 +475,11 @@ def signup_view(request: HttpRequest) -> HttpResponse:
             'last_name': last_name or '',
             'email': email,
             'phone_number': phone,
+            'gender': gender,
             'activity_category': category,
             'service_type': service_type,
             'spoken_languages': spoken_languages,
+            'services': services,
             'governorate': governorate,
             'address': address,
             'latitude': lat,
@@ -1369,7 +1417,14 @@ def pro_profile(request: HttpRequest) -> HttpResponse:
             extra_hint = {
                 'bio': e.bio or '',
                 'city': e.city or '',
+                'governorate': getattr(e, 'governorate', '') or '',
+                'address': getattr(e, 'address', '') or '',
+                'latitude': getattr(e, 'latitude', None),
+                'longitude': getattr(e, 'longitude', None),
                 'phone_number': getattr(e, 'phone_number', '') or getattr(pro.user, 'phone', '') or '',
+                'phone_secondary': getattr(e, 'phone_secondary', '') or '',
+                'email': getattr(e, 'email', '') or request.user.email or '',
+                'email_secondary': getattr(e, 'email_secondary', '') or '',
                 'social_instagram': e.social_instagram or '',
                 'social_facebook': e.social_facebook or '',
                 'social_tiktok': e.social_tiktok or '',
@@ -1415,7 +1470,10 @@ def pro_profile(request: HttpRequest) -> HttpResponse:
         app_hint = {}
 
     prefill = { 'application_hint': app_hint or {}, 'extra': extra_hint or {} }
-    return render(request, 'front_web/profil_professionnelle.html', { 'prefill': json.dumps(prefill) })
+    return render(request, 'front_web/profil_professionnelle.html', { 
+        'prefill': prefill,
+        'prefill_json': json.dumps(prefill)
+    })
 @login_required
 @require_POST
 def save_professional_extras_web(request: HttpRequest) -> HttpResponse:
@@ -1486,22 +1544,42 @@ def save_professional_extras_web(request: HttpRequest) -> HttpResponse:
     extra, _ = ProfessionalProfileExtra.objects.get_or_create(professional=pro)
     extra.bio = clean_str(payload.get('bio') or '', 1000)
     extra.city = clean_str(payload.get('city') or '', 120)
-    # Téléphone: enregistrer sur User et sur Extra (pour compatibilité)
-    phone_raw = clean_str(payload.get('phone') or '', 32)
-    try:
-        if hasattr(pro.user, 'phone'):
-            pro.user.phone = phone_raw
-            pro.user.save(update_fields=['phone'])
-    except Exception:
-        pass
-    extra.phone_number = phone_raw
+    extra.address = clean_str(payload.get('address') or '', 500)
+    
+    # Latitude et Longitude
+    if 'latitude' in payload:
+        try:
+            lat = float(payload.get('latitude') or 0)
+            if -90 <= lat <= 90:
+                extra.latitude = lat
+        except (ValueError, TypeError):
+            pass
+    if 'longitude' in payload:
+        try:
+            lng = float(payload.get('longitude') or 0)
+            if -180 <= lng <= 180:
+                extra.longitude = lng
+        except (ValueError, TypeError):
+            pass
+    
+    # Téléphone principal: enregistrer sur User et sur Extra (pour compatibilité)
+    phone_raw = clean_str(payload.get('phone') or payload.get('phone_number') or '', 32)
+    if phone_raw:
+        try:
+            if hasattr(pro.user, 'phone'):
+                pro.user.phone = phone_raw
+                pro.user.save(update_fields=['phone'])
+        except Exception:
+            pass
+        extra.phone_number = phone_raw
     # Nom du centre: enregistrer sur Professional
-    business_raw = clean_str(payload.get('business') or '', 255)
-    try:
-        pro.business_name = business_raw
-        pro.save(update_fields=['business_name'])
-    except Exception:
-        pass
+    business_raw = clean_str(payload.get('business') or payload.get('business_name') or '', 255)
+    if business_raw:
+        try:
+            pro.business_name = business_raw
+            pro.save(update_fields=['business_name'])
+        except Exception:
+            pass
     # Photo de profil
     try:
         photo_src = payload.get('profile_photo') or ''
@@ -1522,6 +1600,19 @@ def save_professional_extras_web(request: HttpRequest) -> HttpResponse:
     extra.services = clean_services(payload.get('services') or [])
     extra.working_days = working_days
     extra.working_hours = {'start': start, 'end': end}
+    
+    # Gouvernorat
+    if 'governorate' in payload:
+        extra.governorate = clean_str(payload.get('governorate') or '', 64)
+    
+    # Téléphone secondaire et emails
+    if 'phone_secondary' in payload:
+        extra.phone_secondary = clean_str(payload.get('phone_secondary') or '', 32)
+    if 'email' in payload:
+        extra.email = clean_str(payload.get('email') or '', 255)
+    if 'email_secondary' in payload:
+        extra.email_secondary = clean_str(payload.get('email_secondary') or '', 255)
+    
     gallery = payload.get('gallery') or []
     if isinstance(gallery, list):
         extra.gallery = gallery[:20]
@@ -1854,7 +1945,7 @@ def pro_appointments(request: HttpRequest) -> HttpResponse:
                         client_info['address'] = a.client.address
                     if hasattr(a.client, 'city') and a.client.city:
                         client_info['city'] = a.client.city
-
+                        
             except Exception as e:
                 # Log l'erreur mais continue avec les valeurs par défaut
                 import logging

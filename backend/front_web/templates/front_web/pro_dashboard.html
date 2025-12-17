@@ -1,7 +1,9 @@
 {% extends 'front_web/base_prof.html' %}
+{% load gender_tags %}
 {% block template_id %}front_web/pro_dashboard.html{% endblock %}
 
-{% block title %}Détail du Professionnel - Coucou Beauté{% endblock %}
+{% block title %}Mon Espace {% if extra.gender == 'male' %}Professionnel{% else %}Professionnelle{% endif %} - Coucou
+Beauté{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -1013,7 +1015,24 @@
             </div>
         </div>
     </div>
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Lien rapide vers le profil complet -->
+    <div class="glass p-4 flex items-center justify-between mb-6">
+        <div class="flex items-center gap-3">
+            <div
+                class="w-10 h-10 rounded-xl bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center text-white">
+                <i data-lucide="user-cog" class="w-5 h-5"></i>
+            </div>
+            <div>
+                <div class="font-medium text-gray-900">Gérer mon profil</div>
+                <div class="text-xs text-gray-500">Modifier vos informations, localisation et services</div>
+            </div>
+        </div>
+        <a href="{% url 'front_web:pro_profile' %}" class="btn-glass">
+            <i data-lucide="settings" class="w-4 h-4 mr-2"></i> Modifier le profil
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 hidden">
         <div class="glass p-6 lg:col-span-2">
             <h2 class="text-xl font-semibold text-gray-900 mb-3">Informations du centre</h2>
             <div class="grid md:grid-cols-2 gap-4">
@@ -1075,8 +1094,9 @@
                                 class="w-4 h-4"></i> Horaires</div>
 
                     </div>
-                    <div id="hoursText" class="text-gray-900 mt-1">{{ pro.extra.working_hours.start }} - {{pro.extra.working_hours.end }}</div>
-                        
+                    <div id="hoursText" class="text-gray-900 mt-1">{{ pro.extra.working_hours.start }} -
+                        {{pro.extra.working_hours.end }}</div>
+
 
 
 
@@ -1152,12 +1172,12 @@
     <!-- Modals -->
     <div id="modalBio" class="hidden fixed inset-0 bg-black/40 z-50 items-center justify-center">
         <div class="bg-white rounded-2xl p-6 w-full max-w-lg">
-            < <textarea id="inputBio" rows="5" class="w-full border rounded-xl p-3" placeholder="Biographie"></textarea>
-                <div class="mt-4 flex justify-end gap-2">
-                    <button class="btn-secondary-glass" onclick="closeModal('modalBio')">Annuler</button>
-                    <button class="btn-glass"
-                        onclick="saveExtras({bio: document.getElementById('inputBio').value})">Enregistrer</button>
-                </div>
+            <textarea id="inputBio" rows="5" class="w-full border rounded-xl p-3" placeholder="Biographie"></textarea>
+            <div class="mt-4 flex justify-end gap-2">
+                <button class="btn-secondary-glass" onclick="closeModal('modalBio')">Annuler</button>
+                <button class="btn-glass"
+                    onclick="saveExtras({bio: document.getElementById('inputBio').value})">Enregistrer</button>
+            </div>
         </div>
     </div>
     <div id="modalHours" class="hidden fixed inset-0 bg-black/40 z-50 items-center justify-center">
@@ -1188,13 +1208,21 @@
         </div>
     </div>
     <div id="modalServices" class="hidden fixed inset-0 bg-black/40 z-50 items-center justify-center">
-        <div class="bg-white rounded-2xl p-6 w-full max-w-2xl">
-            <h3 class="text-lg font-semibold mb-3">Modifier les services</h3>
-            <textarea id="inputServices" rows="6" class="w-full border rounded-xl p-3"
-                placeholder="JSON ex: [{&quot;name&quot;:&quot;Soin&quot;,&quot;duration_min&quot;:45,&quot;price&quot;:80}]"></textarea>
-            <div class="mt-2 flex justify-end gap-2">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold">Gérer mes services</h3>
+                <button type="button" onclick="addNewService()"
+                    class="text-sm text-blueLight hover:underline flex items-center gap-1">
+                    <i data-lucide="plus-circle" class="w-4 h-4"></i> Ajouter un service
+                </button>
+            </div>
+            <div id="servicesListEditor" class="space-y-3 mb-4">
+                <!-- Services seront chargés dynamiquement -->
+            </div>
+            <input type="hidden" id="inputServices" />
+            <div class="mt-4 flex justify-end gap-2 border-t pt-4">
                 <button class="btn-secondary-glass" onclick="closeModal('modalServices')">Annuler</button>
-                <button class="btn-glass" onclick="saveServices()">Enregistrer</button>
+                <button class="btn-glass" onclick="saveServicesFromEditor()">Enregistrer les services</button>
             </div>
         </div>
     </div>
@@ -1695,6 +1723,111 @@
     function saveServices() {
         try { const data = JSON.parse(document.getElementById('inputServices').value || '[]'); saveExtras({ services: data }); } catch (e) { alert('JSON invalide'); }
     }
+
+    // Gestion des services avec interface conviviale
+    let currentServices = [];
+
+    function loadServicesEditor() {
+        // Charger les services actuels depuis les données du profil
+        try {
+            const servicesData = JSON.parse('{{ extra.services|escapejs|default:"[]" }}');
+            currentServices = Array.isArray(servicesData) ? servicesData : [];
+        } catch (e) {
+            currentServices = [];
+        }
+        renderServicesEditor();
+    }
+
+    function renderServicesEditor() {
+        const container = document.getElementById('servicesListEditor');
+        if (!container) return;
+
+        if (currentServices.length === 0) {
+            container.innerHTML = `
+                <div class="text-center py-8 text-gray-500">
+                    <i data-lucide="scissors" class="w-12 h-12 mx-auto mb-3 text-gray-300"></i>
+                    <p>Aucun service configuré</p>
+                    <button type="button" onclick="addNewService()" class="mt-3 text-sm text-blueLight hover:underline">
+                        Ajouter votre premier service
+                    </button>
+                </div>
+            `;
+            if (window.lucide) window.lucide.createIcons();
+            return;
+        }
+
+        container.innerHTML = currentServices.map((service, index) => `
+            <div class="service-editor-item grid grid-cols-12 gap-2 items-center bg-gray-50 p-3 rounded-xl" data-index="${index}">
+                <input type="text" value="${service.name || ''}" placeholder="Nom du service" 
+                    onchange="updateService(${index}, 'name', this.value)"
+                    class="col-span-5 border rounded-lg px-3 py-2 bg-white text-sm" />
+                <div class="col-span-3">
+                    <div class="flex items-center gap-1">
+                        <input type="number" value="${service.duration_min || 60}" placeholder="Durée" 
+                            onchange="updateService(${index}, 'duration_min', parseInt(this.value))"
+                            class="w-full border rounded-lg px-3 py-2 bg-white text-sm" min="15" />
+                        <span class="text-xs text-gray-500">min</span>
+                    </div>
+                </div>
+                <div class="col-span-3">
+                    <div class="flex items-center gap-1">
+                        <input type="number" value="${service.price || 0}" placeholder="Prix" 
+                            onchange="updateService(${index}, 'price', parseFloat(this.value))"
+                            class="w-full border rounded-lg px-3 py-2 bg-white text-sm" min="0" step="0.5" />
+                        <span class="text-xs text-gray-500">DT</span>
+                    </div>
+                </div>
+                <button type="button" onclick="removeService(${index})" 
+                    class="col-span-1 text-gray-400 hover:text-red-500 transition-colors">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+            </div>
+        `).join('');
+
+        if (window.lucide) window.lucide.createIcons();
+    }
+
+    function addNewService() {
+        currentServices.push({
+            name: '',
+            duration_min: 60,
+            price: 50
+        });
+        renderServicesEditor();
+    }
+
+    function updateService(index, field, value) {
+        if (currentServices[index]) {
+            currentServices[index][field] = value;
+        }
+    }
+
+    function removeService(index) {
+        if (currentServices.length > 1 || confirm('Supprimer ce service ?')) {
+            currentServices.splice(index, 1);
+            renderServicesEditor();
+        }
+    }
+
+    function saveServicesFromEditor() {
+        // Filtrer les services vides
+        const validServices = currentServices.filter(s => s.name && s.name.trim());
+        if (validServices.length === 0) {
+            alert('Veuillez ajouter au moins un service avec un nom');
+            return;
+        }
+        saveExtras({ services: validServices });
+    }
+
+    // Charger l'éditeur de services quand le modal s'ouvre
+    const originalOpenModal = openModal;
+    openModal = function (id) {
+        originalOpenModal(id);
+        if (id === 'modalServices') {
+            loadServicesEditor();
+        }
+    };
+
     async function saveGallery() {
         const input = document.getElementById('inputGallery');
         const files = input.files; const list = [];

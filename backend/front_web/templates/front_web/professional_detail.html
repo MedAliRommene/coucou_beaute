@@ -1,5 +1,6 @@
 {% extends 'front_web/base_client.html' %}
 {% load static %}
+{% load gender_tags %}
 {% block template_id %}front_web/professional_detail.html{% endblock %}
 {% block title %}{{ pro.business_name|default:pro.user.get_full_name }} - Coucou Beauté{% endblock %}
 {% block extra_css %}
